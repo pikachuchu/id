@@ -36,17 +36,23 @@ class Grid:
         for row in range(self.length):
             for col in range(self.width * 2 / 5):
                 result = self.rand.random()
-                if result < .70:
+                if result < .75:
                     # <   1000 10000
-                    # .25 .265
+                    # .25 .265 .2927
                     # .35 .385
                     # .50 .469
-                    # .55 .487
-                    # .60 .518
-                    # .65 .522
+                    # .55 .487 .4802
+                    # .60 .518 .4972
+                    # .65 .522 .5022
+                    # .66      .4956
                     # .67 .509 .5052
+                    # .68      .4987
                     # .70 .522 .5001
-                    # .75 .488
+                    # .75 .488 .5182
+                    # .76      .5012
+                    # .77      .4969
+                    # .80      .5126
+                    # .85      .4758
                     self.cells[row][col] = Cell("R", 3)
                     self.cells[row][self.width - col - 1] = Cell("R", 3) # TODO enmy
     def step(self):
