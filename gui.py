@@ -13,8 +13,8 @@ class Application(tk.Frame):
         self.cells = [[None for col in range(self.width)] for row in range(self.length)]
         self.textids = [[1 for col in range(self.width)] for row in range(self.length)]
         self.board = grid.Grid(self.length, self.width);
-        self.cellheight = 100 
-        self.cellwidth = 100 
+        self.cellheight = 50 
+        self.cellwidth = 50 
         for col in range(self.width):
             top.columnconfigure(col, weight = 1)
             self.columnconfigure(col, weight = 1)
@@ -25,6 +25,10 @@ class Application(tk.Frame):
             for col in range(self.width):
                 bg = '#000000'
                 self.cells[row][col] = tk.Canvas(self, height = self.cellheight, width = self.cellwidth, bg = bg, bd = 0)
+                self.cells[row][col].board_row = row
+                self.cells[row][col].board_col = col
+                # TODO <Configure> http://effbot.org/tkinterbook/tkinter-events-and-bindings.htm
+                self.cells[row][col].bind('<Button-3>', self.kill)
                 self.cells[row][col].grid(sticky = tk.N+tk.S+tk.E+tk.W, column = col, row = row)
         self.master.title("Intelligent Design")
         self.drawThings()
@@ -32,6 +36,16 @@ class Application(tk.Frame):
         self.nextButton.grid(column = self.width, row = 0, sticky = tk.N)
     def updateBoard(self):
         self.board.step()
+        self.drawThings()
+    def kill(self, event):
+        # FIXME inefficient
+        for row in range(self.length):
+            for col in range(self.width):
+                if str(self.cells[row][col]) == str(event.widget):
+                    brow = row
+                    bcol = col
+                    break
+        self.board.kill(brow,bcol)
         self.drawThings()
     def drawThings(self):
         font = tkFont.Font(size=3 * self.cellheight / 5)

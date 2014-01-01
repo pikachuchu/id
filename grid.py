@@ -75,7 +75,7 @@ class Grid:
                         if count == 3 and team != neutralstr:
                             threes.append(team)
                     if len(threes) == 1:
-                        strength = strengths[threes[0]] + self.rand.randint(1,9)
+                        strength = strengths[threes[0]] + self.rand.randint(1,12)
                         step[row][col] = Cell(threes[0], strength / 4)
                     if len(threes) == 2:
                         if strengths[threes[0]] > strengths[threes[1]]:
@@ -84,7 +84,7 @@ class Grid:
                             winner = threes[1]
                         else:
                             winner = threes[self.rand.randint(0,1)]
-                        strength = strengths[winner] + self.rand.randint(1,9)
+                        strength = strengths[winner] + self.rand.randint(1,12)
                         step[row][col] = Cell(winner, strength / 4)
         self.cells = step
         self.turn += 1
@@ -94,6 +94,8 @@ class Grid:
                 if self.cells[row][col].team != neutralstr:
                     return False
         return True
+    def kill(self, row, col):
+        self.cells[row][col] = neutral()
 """
 extinct = 0
 stable = 0
