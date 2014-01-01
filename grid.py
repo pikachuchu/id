@@ -94,7 +94,7 @@ class Grid:
                 if self.cells[row][col].team != neutralstr:
                     return False
         return True
-
+"""
 extinct = 0
 stable = 0
 for x in range(1000):
@@ -108,3 +108,4 @@ for x in range(1000):
         stable += 1
 print "COMPLETE"
 print "Stable: ", stable
+"""
