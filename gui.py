@@ -16,7 +16,11 @@ class Application(tk.Frame):
             for col in range(self.width):
                 bg = '#000000'
                 self.cells[row][col] = tk.Canvas(self, height = 50, width = 50, bg = bg, bd = 0)
-                self.cells[row][col].grid(column = col, row = row)
+                self.cells[row][col].grid(sticky = tk.N+tk.S+tk.E+tk.W, column = col, row = row)
+        for col in range(self.width):
+            self.columnconfigure(col, weight = 1)
+        for row in range(self.length):
+            self.rowconfigure(row, weight = 1)
         self.master.title("Intelligent Design")
         self.drawThings()
         self.nextButton = tk.Button(self, text = "Next", command = self.updateBoard)
