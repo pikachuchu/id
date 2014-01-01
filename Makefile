@@ -1,2 +1,2 @@
 all:
-	python grid.py
+	python gui.py
