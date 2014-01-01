@@ -4,23 +4,28 @@ import grid
 class Application(tk.Frame):
     def __init__(self, master=None):
         tk.Frame.__init__(self,master)
-        self.grid()
         self.createWidgets()
+        self.grid(sticky=tk.N+tk.S+tk.E+tk.W)
     def createWidgets(self):
+        top = self.winfo_toplevel()
         self.length = 10
         self.width = 10
         self.cells = [[None for col in range(self.width)] for row in range(self.length)]
         self.textids = [[1 for col in range(self.width)] for row in range(self.length)]
         self.board = grid.Grid(self.length, self.width);
+        self.cellheight = 100 
+        self.cellwidth = 100 
+        for col in range(self.width):
+            top.columnconfigure(col, weight = 1)
+            self.columnconfigure(col, weight = 1)
+        for row in range(self.length):
+            top.rowconfigure(row, weight = 1)
+            self.rowconfigure(row, weight = 1)
         for row in range(self.length):
             for col in range(self.width):
                 bg = '#000000'
-                self.cells[row][col] = tk.Canvas(self, height = 50, width = 50, bg = bg, bd = 0)
+                self.cells[row][col] = tk.Canvas(self, height = self.cellheight, width = self.cellwidth, bg = bg, bd = 0)
                 self.cells[row][col].grid(sticky = tk.N+tk.S+tk.E+tk.W, column = col, row = row)
-        for col in range(self.width):
-            self.columnconfigure(col, weight = 1)
-        for row in range(self.length):
-            self.rowconfigure(row, weight = 1)
         self.master.title("Intelligent Design")
         self.drawThings()
         self.nextButton = tk.Button(self, text = "Next", command = self.updateBoard)
@@ -29,7 +34,7 @@ class Application(tk.Frame):
         self.board.step()
         self.drawThings()
     def drawThings(self):
-        font = tkFont.Font(size=30)
+        font = tkFont.Font(size=3 * self.cellheight / 5)
         for row in range(self.length):
             for col in range(self.width):
                 self.cells[row][col].delete(self.textids[row][col])
