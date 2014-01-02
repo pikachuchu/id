@@ -4,6 +4,7 @@ import grid
 class Application(tk.Frame):
     def __init__(self, master=None):
         tk.Frame.__init__(self,master)
+        self.configure_count = 0
         self.createWidgets()
         self.grid(sticky=tk.N+tk.S+tk.E+tk.W)
     def createWidgets(self):
@@ -28,6 +29,7 @@ class Application(tk.Frame):
                 self.cells[row][col].board_row = row
                 self.cells[row][col].board_col = col
                 # TODO <Configure> http://effbot.org/tkinterbook/tkinter-events-and-bindings.htm
+                self.cells[row][col].bind('<Configure>', self.configureCell)
                 self.cells[row][col].bind('<Button-3>', self.kill)
                 self.cells[row][col].grid(sticky = tk.N+tk.S+tk.E+tk.W, column = col, row = row)
         self.master.title("Intelligent Design")
@@ -47,8 +49,18 @@ class Application(tk.Frame):
                     break
         self.board.kill(brow,bcol)
         self.drawThings()
+    def configureCell(self, event):
+        # FIXME creates n^2 events when ideally only use one
+        self.configure_count+=1
+        if (self.configure_count == self.length * self.width):
+            # have we received all of these events?
+            self.cellheight=event.height
+            self.cellwidth=event.height
+            self.drawThings()
+            self.configure_count = 0
+        
     def drawThings(self):
-        font = tkFont.Font(size=3 * self.cellheight / 5)
+        font = tkFont.Font(size=3 * min(self.cellheight,self.cellwidth) / 5)
         for row in range(self.length):
             for col in range(self.width):
                 self.cells[row][col].delete(self.textids[row][col])
@@ -56,12 +68,13 @@ class Application(tk.Frame):
                 strength = self.board.cells[row][col].strength
                 if team == "R":
                     color = '#FF0000'
-                if team == "B":
+                elif team == "B":
                     color = '#0000FF'
                 if team == grid.neutralstr:
                     color = '#e4e4e4'
-                self.textids[row][col] = self.cells[row][col].create_text(25,25,text=str(strength), fill=color, font = font)
-                self.cells[row][col].grid(column = col, row = row)
+                else:
+                    self.textids[row][col] = self.cells[row][col].create_text(self.cellheight/2,self.cellwidth/2,text=str(strength), fill=color, font = font)
+                    self.cells[row][col].grid(column = col, row = row)
        
 #def reportEvent(event):
 #    print 'keysym=%s, keysym_num=%s' % (event.keysym, event.keysym_num)
