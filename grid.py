@@ -8,8 +8,13 @@ class Cell:
     def __str__(self):
         return str(self.team) + str(self.strength)
 neutralstr = "N"
+_neutral = Cell(neutralstr,0)
+_cells=dict()
+for team in ["R","B"]:
+    for strength in range(1,10):
+        _cells[(team,strength)] = Cell(team,strength)
 def neutral():
-    return Cell(neutralstr,0)
+    return _neutral
 class Grid:
     def __init__(self, length = 8, width = 8):
         self.cells = [[neutral() for col in range(width)] for row in range(length)]
@@ -54,8 +59,8 @@ class Grid:
                     # .77      .4969
                     # .80      .5126
                     # .85      .4758
-                    self.cells[row][col] = Cell("R", 3)
-                    self.cells[row][self.width - col - 1] = Cell("B", 3)
+                    self.cells[row][col] = _cells[("R", 3)]
+                    self.cells[row][self.width - col - 1] = _cells[("B", 3)]
     def step(self):
         step = [[neutral() for col in range(self.width)] for row in range(self.length)]
         for row in range(self.length):
@@ -76,7 +81,7 @@ class Grid:
                             threes.append(team)
                     if len(threes) == 1:
                         strength = strengths[threes[0]] + self.rand.randint(1,12)
-                        step[row][col] = Cell(threes[0], strength / 4)
+                        step[row][col] = _cells[(threes[0], strength / 4)]
                     if len(threes) == 2:
                         if strengths[threes[0]] > strengths[threes[1]]:
                             winner = threes[0]
@@ -85,7 +90,7 @@ class Grid:
                         else:
                             winner = threes[self.rand.randint(0,1)]
                         strength = strengths[winner] + self.rand.randint(1,12)
-                        step[row][col] = Cell(winner, strength / 4)
+                        step[row][col] = _cells[(winner, strength / 4)]
         self.cells = step
         self.turn += 1
     def extinct(self):
