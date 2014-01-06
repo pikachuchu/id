@@ -74,7 +74,7 @@ class Grid:
                 if self.cells[row][col].team == tornadostr:
                     adjacents = self.adj(row,col)
                     temp = None
-                    for i in range(len(adjacents)):
+                    for i in reversed(range(len(adjacents))):
                          r1,c1 = adjacents[i]
                          r2,c2 = adjacents[(i + 1) % len(adjacents)]
                          temp = self.cells[r1][c1]
