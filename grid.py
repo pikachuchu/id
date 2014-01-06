@@ -67,7 +67,11 @@ class Grid:
                     strengths[self.cells[r][c].team] += self.cells[r][c].strength
                 if self.cells[row][col].team != neutralstr:
                     friendly = counts[self.cells[row][col].team]
-                    if friendly >= 2 and friendly <= 3:
+                    sumenmy = 0
+                    for team, strength in strengths.items():
+                        if team != self.cells[row][col].team:
+                            sumenmy += strength
+                    if friendly >= 2 and friendly <= 3 and sumenmy <= strengths[self.cells[row][col].team]:
                         step[row][col] = self.cells[row][col]
                 else:
                     threes = []
