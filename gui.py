@@ -9,8 +9,8 @@ class Application(tk.Frame):
         self.grid(sticky=tk.N+tk.S+tk.E+tk.W)
     def createWidgets(self):
         top = self.winfo_toplevel()
-        self.length = 10
-        self.width = 10
+        self.length = 15
+        self.width = 15
         self.cells = [[None for col in range(self.width)] for row in range(self.length)]
         self.textids = [[1 for col in range(self.width)] for row in range(self.length)]
         self.board = grid.Grid(self.length, self.width);
@@ -75,9 +75,9 @@ class Application(tk.Frame):
                     color = '#FF0000'
                 elif team == "B":
                     color = '#0000FF'
-                if team == grid.neutralstr:
+                if team in grid.neutralteams:
                     color = '#e4e4e4'
-                else:
+                if team != grid.neutralstr:
                     self.textids[row][col] = self.cells[row][col].create_text(self.cellheight/2,self.cellwidth/2,text=str(strength), fill=color, font = font)
                     self.cells[row][col].grid(column = col, row = row)
        
