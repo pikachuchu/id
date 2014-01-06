@@ -67,8 +67,10 @@ class Grid:
                     self.cells[row][self.width - col - 1] = neutral()
         self.cells[self.width / 2][self.length / 2] = tornado()
     def step(self):
-        step = [[neutral() for col in range(self.width)] for row in range(self.length)]
-        tornadoes = []
+        self.external()
+        self.internal()
+    def external(self):
+        self.tornadoes = []
         for row in range(self.length):
             for col in range(self.width):
                 if self.cells[row][col].team == tornadostr:
@@ -82,7 +84,9 @@ class Grid:
                          self.cells[r2][c2] = temp
                     # set new location
                     r, c = random.choice(adjacents)
-                    tornadoes.append((r,c))
+                    self.tornadoes.append((r,c))
+    def internal(self):
+        step = [[neutral() for col in range(self.width)] for row in range(self.length)]
         for row in range(self.length):
             for col in range(self.width):
                 counts = collections.Counter() 
@@ -115,7 +119,7 @@ class Grid:
                             winner = threes[self.rand.randint(0,1)]
                         strength = strengths[winner] + self.rand.randint(1,12)
                         step[row][col] = Cell(winner, strength / 4)
-        for r,c in tornadoes:
+        for r,c in self.tornadoes:
             step[r][c] = tornado()
         self.cells = step
         self.turn += 1
@@ -142,3 +146,4 @@ for x in range(1000):
 print "COMPLETE"
 print "Stable: ", stable
 """
+
