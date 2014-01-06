@@ -36,8 +36,13 @@ class Application(tk.Frame):
         self.drawThings()
         self.nextButton = tk.Button(self, text = "Next", command = self.updateBoard)
         self.nextButton.grid(column = self.width, row = 0, sticky = tk.N)
+        self.resetButton = tk.Button(self, text = "Reset", command = self.resetBoard)
+        self.resetButton.grid(column = self.width, row = 1, sticky = tk.N)
     def updateBoard(self):
         self.board.step()
+        self.drawThings()
+    def resetBoard(self):
+        self.board.reset()
         self.drawThings()
     def kill(self, event):
         # FIXME inefficient
@@ -80,3 +85,5 @@ class Application(tk.Frame):
 #    print 'keysym=%s, keysym_num=%s' % (event.keysym, event.keysym_num)
 root = Application()
 root.mainloop()
+
+

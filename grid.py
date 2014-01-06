@@ -56,6 +56,9 @@ class Grid:
                     # .85      .4758
                     self.cells[row][col] = Cell("R", 3)
                     self.cells[row][self.width - col - 1] = Cell("B", 3)
+                else:
+                    self.cells[row][col] = neutral()
+                    self.cells[row][self.width - col - 1] = neutral()
     def step(self):
         step = [[neutral() for col in range(self.width)] for row in range(self.length)]
         for row in range(self.length):
