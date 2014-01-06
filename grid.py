@@ -35,7 +35,7 @@ class Grid:
     def reset(self):
         self.turn = 0
         for row in range(self.length):
-            for col in range(self.width / 2):
+            for col in range((self.width + 1) / 2):
                 result = self.rand.random()
                 if result < .75 and col < self.width * 2 / 5:
                     # <   1000 10000
