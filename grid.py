@@ -7,6 +7,8 @@ class Cell:
         self.strength = strength
     def __str__(self):
         return str(self.team) + str(self.strength)
+    def __eq__(self, other):
+        return self.team == other.team and self.strength == other.strength
 neutralstr = "N"
 def neutral():
     return Cell(neutralstr,0)
@@ -70,21 +72,25 @@ class Grid:
         self.external()
         self.internal()
     def external(self):
+        ret = False # return whether anything was effected
         self.tornadoes = []
         for row in range(self.length):
             for col in range(self.width):
                 if self.cells[row][col].team == tornadostr:
                     adjacents = self.adj(row,col)
                     temp = None
-                    for i in reversed(range(len(adjacents))):
-                         r1,c1 = adjacents[i]
-                         r2,c2 = adjacents[(i + 1) % len(adjacents)]
-                         temp = self.cells[r1][c1]
-                         self.cells[r1][c1] = self.cells[r2][c2]
-                         self.cells[r2][c2] = temp
+                    for i in reversed(range(len(adjacents) - 1)):
+                        r1,c1 = adjacents[i]
+                        r2,c2 = adjacents[(i + 1) % len(adjacents)]
+                        if self.cells[r2][c2].team != neutralstr:
+                            ret = True
+                        if self.cells[r1][c1].team != neutralstr:
+                            ret = True
+                        self.cells[r1][c1], self.cells[r2][c2] = self.cells[r2][c2], self.cells[r1][c1]
                     # set new location
                     r, c = random.choice(adjacents)
                     self.tornadoes.append((r,c))
+        return ret
     def internal(self):
         step = [[neutral() for col in range(self.width)] for row in range(self.length)]
         for row in range(self.length):

@@ -40,10 +40,10 @@ class Application(tk.Frame):
         self.resetButton = tk.Button(self, text = "Reset", command = self.resetBoard)
         self.resetButton.grid(column = self.width, row = 1, sticky = tk.N)
     def updateBoard(self):
-        self.board.external()
-        self.drawThings()
-        self.update()
-        time.sleep(0.18)
+        if self.board.external():
+            self.drawThings()
+            self.update()
+            time.sleep(0.3)
         self.board.internal()
         self.drawThings()
     def resetBoard(self):
