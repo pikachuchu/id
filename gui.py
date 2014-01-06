@@ -1,6 +1,7 @@
 import Tkinter as tk
 import tkFont
 import grid
+import time
 class Application(tk.Frame):
     def __init__(self, master=None):
         tk.Frame.__init__(self,master)
@@ -39,7 +40,11 @@ class Application(tk.Frame):
         self.resetButton = tk.Button(self, text = "Reset", command = self.resetBoard)
         self.resetButton.grid(column = self.width, row = 1, sticky = tk.N)
     def updateBoard(self):
-        self.board.step()
+        self.board.external()
+        self.drawThings()
+        self.update()
+        time.sleep(0.18)
+        self.board.internal()
         self.drawThings()
     def resetBoard(self):
         self.board.reset()
