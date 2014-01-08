@@ -2,10 +2,16 @@ import Tkinter as tk
 import tkFont
 import grid
 import time
+import Image
+import ImageTk
 class Application(tk.Frame):
     def __init__(self, master=None):
         tk.Frame.__init__(self,master)
         self.configure_count = 0
+        self.tornado_image = Image.open("assets/tornado.gif")
+        self.tornado_photoimage = ImageTk.PhotoImage(self.tornado_image)
+        self.tornado_width = 300
+        self.tornado_height = 300
         self.createWidgets()
         self.grid(sticky=tk.N+tk.S+tk.E+tk.W)
     def createWidgets(self):
@@ -80,10 +86,18 @@ class Application(tk.Frame):
                     color = '#FF0000'
                 elif team == "B":
                     color = '#0000FF'
-                if team in grid.neutralteams:
+                elif team in grid.neutralteams:
                     color = '#e4e4e4'
                 if team != grid.neutralstr:
-                    self.textids[row][col] = self.cells[row][col].create_text(self.cellheight/2,self.cellwidth/2,text=str(strength), fill=color, font = font)
+                    if team == grid.tornadostr:
+                        if self.tornado_width != self.cellwidth or self.tornado_height != self.cellheight:
+                            self.tornado_image.thumbnail((self.cellwidth,self.cellheight), Image.ANTIALIAS)
+                            self.tornado_photoimage = ImageTk.PhotoImage(self.tornado_image)
+                            self.tornado_width = self.cellwidth
+                            self.tornado_height = self.cellheight
+                        self.textids[row][col] = self.cells[row][col].create_image(self.cellheight/2,self.cellwidth/2,image=self.tornado_photoimage)
+                    else:
+                        self.textids[row][col] = self.cells[row][col].create_text(self.cellheight/2,self.cellwidth/2,text=str(strength), fill=color, font = font)
                     self.cells[row][col].grid(column = col, row = row)
        
 #def reportEvent(event):
