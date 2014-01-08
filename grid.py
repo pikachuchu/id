@@ -22,6 +22,7 @@ class Grid:
         self.rand = random.Random()
         self.width = width
         self.height = height 
+        self.selected = set()
         self.reset()
     def __str__(self):
         cat = ""
@@ -137,6 +138,9 @@ class Grid:
         return True
     def kill(self, row, col):
         self.cells[row][col] = neutral()
+    def select(self, row, col):
+        self.selected.clear()
+        self.selected.add((row,col))
 """
 extinct = 0
 stable = 0

@@ -38,6 +38,7 @@ class Application(tk.Frame):
                 # TODO <Configure> http://effbot.org/tkinterbook/tkinter-events-and-bindings.htm
                 self.cells[row][col].bind('<Configure>', self.configureCell)
                 self.cells[row][col].bind('<Button-3>', self.kill)
+                self.cells[row][col].bind('<Button-1>', self.select)
                 self.cells[row][col].grid(sticky = tk.N+tk.S+tk.E+tk.W, column = col, row = row)
         self.master.title("Intelligent Design")
         self.drawThings()
@@ -65,6 +66,16 @@ class Application(tk.Frame):
                     break
         self.board.kill(brow,bcol)
         self.drawThings()
+    def select(self, event):
+        # FIXME inefficient
+        for row in range(self.height):
+            for col in range(self.width):
+                if str(self.cells[row][col]) == str(event.widget):
+                    brow = row
+                    bcol = col
+                    break
+        self.board.select(brow,bcol)
+        self.drawThings()
     def configureCell(self, event):
         # FIXME creates n^2 events when ideally only use one
         self.configure_count+=1
@@ -82,7 +93,10 @@ class Application(tk.Frame):
                 team = self.board.cells[row][col].team
                 strength = self.board.cells[row][col].strength
                 if team == "R":
-                    color = '#FF0000'
+                    if (row,col) in self.board.selected:
+                        color = '#FF7777'
+                    else:
+                        color = '#FF0000'
                 elif team == "B":
                     color = '#0000FF'
                 elif team in grid.neutral_teams:
