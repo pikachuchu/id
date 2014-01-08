@@ -66,14 +66,16 @@ class Application(tk.Frame):
                     brow = row
                     bcol = col
                     break
+        change = False
         if (brow,bcol) in self.board.selected:
             for row, col in self.board.selected:
-                self.board.kill(row,col)
-            self.board.clearSelection()
+                change = self.board.kill(row,col) or change
+            change = self.board.clearSelection() or change 
         else:
-            self.board.kill(brow,bcol)
-            self.board.clearSelection()
-        self.drawThings()
+            change = self.board.kill(brow,bcol) or change
+            change = self.board.clearSelection() or change
+        if change:
+            self.drawThings()
     def select(self, event):
         # FIXME inefficient
         for row in range(self.height):

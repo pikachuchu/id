@@ -149,7 +149,10 @@ class Grid:
                     return False
         return True
     def kill(self, row, col):
-        self.cells[row][col] = neutral()
+        if self.cells[row][col].team not in neutral_teams:
+            self.cells[row][col] = neutral()
+            return True
+        return False
     def select(self, row, col):
         if set([(row,col)]) == self.selected:
             self.selected.clear()
@@ -162,7 +165,10 @@ class Grid:
         else:
             self.selected.add((row,col))
     def clearSelection(self):
+        if len(self.selected) == 0:
+            return False
         self.selected.clear()
+        return True
 """
 extinct = 0
 stable = 0
