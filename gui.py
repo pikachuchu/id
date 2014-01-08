@@ -19,6 +19,7 @@ class Application(tk.Frame):
         self.height = 15
         self.width = 15
         self.cells = [[None for col in range(self.width)] for row in range(self.height)]
+        self.cell_locations = dict()
         self.text_ids = [[1 for col in range(self.width)] for row in range(self.height)]
         self.select_ids = [[None for col in range(self.width)] for row in range(self.height)]
         self.board = grid.Grid(self.height, self.width);
@@ -34,6 +35,7 @@ class Application(tk.Frame):
             for col in range(self.width):
                 bg = '#000000'
                 self.cells[row][col] = tk.Canvas(self, height = self.cell_height, width = self.cell_width, bg = bg, bd = 0)
+                self.cell_locations[self.cells[row][col]] = (row,col)
                 self.cells[row][col].board_row = row
                 self.cells[row][col].board_col = col
                 # TODO <Configure> http://effbot.org/tkinterbook/tkinter-events-and-bindings.htm
@@ -59,13 +61,7 @@ class Application(tk.Frame):
         self.board.reset()
         self.drawThings()
     def kill(self, event):
-        # FIXME inefficient
-        for row in range(self.height):
-            for col in range(self.width):
-                if str(self.cells[row][col]) == str(event.widget):
-                    brow = row
-                    bcol = col
-                    break
+        brow,bcol = self.cell_locations[event.widget]
         change = False
         if (brow,bcol) in self.board.selected:
             for row, col in self.board.selected:
@@ -77,13 +73,7 @@ class Application(tk.Frame):
         if change:
             self.drawThings()
     def select(self, event):
-        # FIXME inefficient
-        for row in range(self.height):
-            for col in range(self.width):
-                if str(self.cells[row][col]) == str(event.widget):
-                    brow = row
-                    bcol = col
-                    break
+        brow,bcol = self.cell_locations[event.widget]
         if self.board.cells[brow][bcol].team not in grid.neutral_teams:
             self.board.select(brow,bcol)
             self.drawThings()
@@ -91,13 +81,7 @@ class Application(tk.Frame):
             self.board.clearSelection()
             self.drawThings()
     def toggle(self, event):
-        # FIXME inefficient
-        for row in range(self.height):
-            for col in range(self.width):
-                if str(self.cells[row][col]) == str(event.widget):
-                    brow = row
-                    bcol = col
-                    break
+        brow,bcol = self.cell_locations[event.widget]
         if self.board.cells[brow][bcol].team not in grid.neutral_teams:
             self.board.toggle(brow,bcol)
             self.drawThings()
