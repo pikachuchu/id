@@ -20,6 +20,7 @@ class Application(tk.Frame):
         self.width = 15
         self.cells = [[None for col in range(self.width)] for row in range(self.height)]
         self.text_ids = [[1 for col in range(self.width)] for row in range(self.height)]
+        self.select_ids = [[None for col in range(self.width)] for row in range(self.height)]
         self.board = grid.Grid(self.height, self.width);
         self.cell_height = 50 
         self.cell_width = 50 
@@ -39,6 +40,7 @@ class Application(tk.Frame):
                 self.cells[row][col].bind('<Configure>', self.configureCell)
                 self.cells[row][col].bind('<Button-3>', self.kill)
                 self.cells[row][col].bind('<Button-1>', self.select)
+                self.cells[row][col].bind('<Control-Button-1>', self.toggle)
                 self.cells[row][col].grid(sticky = tk.N+tk.S+tk.E+tk.W, column = col, row = row)
         self.master.title("Intelligent Design")
         self.drawThings()
@@ -64,7 +66,13 @@ class Application(tk.Frame):
                     brow = row
                     bcol = col
                     break
-        self.board.kill(brow,bcol)
+        if (brow,bcol) in self.board.selected:
+            for row, col in self.board.selected:
+                self.board.kill(row,col)
+            self.board.clearSelection()
+        else:
+            self.board.kill(brow,bcol)
+            self.board.clearSelection()
         self.drawThings()
     def select(self, event):
         # FIXME inefficient
@@ -74,8 +82,23 @@ class Application(tk.Frame):
                     brow = row
                     bcol = col
                     break
-        self.board.select(brow,bcol)
-        self.drawThings()
+        if self.board.cells[brow][bcol].team not in grid.neutral_teams:
+            self.board.select(brow,bcol)
+            self.drawThings()
+        else:
+            self.board.clearSelection()
+            self.drawThings()
+    def toggle(self, event):
+        # FIXME inefficient
+        for row in range(self.height):
+            for col in range(self.width):
+                if str(self.cells[row][col]) == str(event.widget):
+                    brow = row
+                    bcol = col
+                    break
+        if self.board.cells[brow][bcol].team not in grid.neutral_teams:
+            self.board.toggle(brow,bcol)
+            self.drawThings()
     def configureCell(self, event):
         # FIXME creates n^2 events when ideally only use one
         self.configure_count+=1
@@ -85,6 +108,12 @@ class Application(tk.Frame):
             self.cell_width=event.height
             self.drawThings()
             self.configure_count = 0
+    def outlineIfSelected(self, row,col):
+        if self.select_ids[row][col] != None:
+            self.cells[row][col].delete(self.select_ids[row][col])
+            self.select_ids[row][col] = None
+        if (row,col) in self.board.selected:
+            self.select_ids[row][col] = self.cells[row][col].create_rectangle(0,0,self.cell_width,self.cell_height,outline='#FFFF33',width=10)
     def drawThings(self):
         font = tkFont.Font(size=3 * min(self.cell_height,self.cell_width) / 5)
         for row in range(self.height):
@@ -92,11 +121,9 @@ class Application(tk.Frame):
                 self.cells[row][col].delete(self.text_ids[row][col])
                 team = self.board.cells[row][col].team
                 strength = self.board.cells[row][col].strength
+                self.outlineIfSelected(row,col)
                 if team == "R":
-                    if (row,col) in self.board.selected:
-                        color = '#FF7777'
-                    else:
-                        color = '#FF0000'
+                    color = '#FF0000'
                 elif team == "B":
                     color = '#0000FF'
                 elif team in grid.neutral_teams:

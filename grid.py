@@ -22,7 +22,6 @@ class Grid:
         self.rand = random.Random()
         self.width = width
         self.height = height 
-        self.selected = set()
         self.reset()
     def __str__(self):
         cat = ""
@@ -43,6 +42,7 @@ class Grid:
         return ret
     def reset(self):
         self.turn = 0
+        self.selected = set()
         for row in range(self.height):
             for col in range((self.width + 1) / 2):
                 result = self.rand.random()
@@ -79,7 +79,6 @@ class Grid:
             for col in range(self.width):
                 if self.cells[row][col].team == tornado_str:
                     adjacents = self.adj(row,col)
-                    temp = None
                     for i in reversed(range(len(adjacents) - 1)):
                         r1,c1 = adjacents[i]
                         r2,c2 = adjacents[(i + 1) % len(adjacents)]
@@ -88,6 +87,16 @@ class Grid:
                         if self.cells[r1][c1].team != neutral_str:
                             ret = True
                         self.cells[r1][c1], self.cells[r2][c2] = self.cells[r2][c2], self.cells[r1][c1]
+                        temp1 = (r1,c1) in self.selected
+                        temp2 = (r2,c2) in self.selected
+                        if temp2:
+                            self.selected.add((r1,c1))
+                        elif temp1:
+                            self.selected.remove((r1,c1))
+                        if temp1:
+                            self.selected.add((r2,c2))
+                        elif temp2:
+                            self.selected.remove((r1,c1))
                     # set new location
                     r, c = random.choice(adjacents)
                     self.tornadoes.append((r,c))
@@ -109,6 +118,9 @@ class Grid:
                             sum_enemy += strength
                     if friendly >= 2 and friendly <= 3 and sum_enemy <= strengths[self.cells[row][col].team]:
                         step[row][col] = self.cells[row][col]
+                    else:
+                        if (row,col) in self.selected:
+                            self.selected.remove((row,col))
                 elif self.cells[row][col].team == neutral_str:
                     threes = []
                     for team, count in counts.items():
@@ -139,8 +151,18 @@ class Grid:
     def kill(self, row, col):
         self.cells[row][col] = neutral()
     def select(self, row, col):
+        if set([(row,col)]) == self.selected:
+            self.selected.clear()
+        else:
+            self.selected.clear()
+            self.selected.add((row,col))
+    def toggle(self, row, col):
+        if (row,col) in self.selected:
+            self.selected.remove((row,col))
+        else:
+            self.selected.add((row,col))
+    def clearSelection(self):
         self.selected.clear()
-        self.selected.add((row,col))
 """
 extinct = 0
 stable = 0
