@@ -16,23 +16,23 @@ class Application(tk.Frame):
         self.grid(sticky=tk.N+tk.S+tk.E+tk.W)
     def createWidgets(self):
         top = self.winfo_toplevel()
-        self.length = 15
+        self.height = 15
         self.width = 15
-        self.cells = [[None for col in range(self.width)] for row in range(self.length)]
-        self.textids = [[1 for col in range(self.width)] for row in range(self.length)]
-        self.board = grid.Grid(self.length, self.width);
-        self.cellheight = 50 
-        self.cellwidth = 50 
+        self.cells = [[None for col in range(self.width)] for row in range(self.height)]
+        self.text_ids = [[1 for col in range(self.width)] for row in range(self.height)]
+        self.board = grid.Grid(self.height, self.width);
+        self.cell_height = 50 
+        self.cell_width = 50 
         for col in range(self.width):
             top.columnconfigure(col, weight = 1)
             self.columnconfigure(col, weight = 1)
-        for row in range(self.length):
+        for row in range(self.height):
             top.rowconfigure(row, weight = 1)
             self.rowconfigure(row, weight = 1)
-        for row in range(self.length):
+        for row in range(self.height):
             for col in range(self.width):
                 bg = '#000000'
-                self.cells[row][col] = tk.Canvas(self, height = self.cellheight, width = self.cellwidth, bg = bg, bd = 0)
+                self.cells[row][col] = tk.Canvas(self, height = self.cell_height, width = self.cell_width, bg = bg, bd = 0)
                 self.cells[row][col].board_row = row
                 self.cells[row][col].board_col = col
                 # TODO <Configure> http://effbot.org/tkinterbook/tkinter-events-and-bindings.htm
@@ -57,7 +57,7 @@ class Application(tk.Frame):
         self.drawThings()
     def kill(self, event):
         # FIXME inefficient
-        for row in range(self.length):
+        for row in range(self.height):
             for col in range(self.width):
                 if str(self.cells[row][col]) == str(event.widget):
                     brow = row
@@ -68,41 +68,38 @@ class Application(tk.Frame):
     def configureCell(self, event):
         # FIXME creates n^2 events when ideally only use one
         self.configure_count+=1
-        if (self.configure_count == self.length * self.width):
+        if (self.configure_count == self.height * self.width):
             # have we received all of these events?
-            self.cellheight=event.height
-            self.cellwidth=event.height
+            self.cell_height=event.height
+            self.cell_width=event.height
             self.drawThings()
             self.configure_count = 0
-        
     def drawThings(self):
-        font = tkFont.Font(size=3 * min(self.cellheight,self.cellwidth) / 5)
-        for row in range(self.length):
+        font = tkFont.Font(size=3 * min(self.cell_height,self.cell_width) / 5)
+        for row in range(self.height):
             for col in range(self.width):
-                self.cells[row][col].delete(self.textids[row][col])
+                self.cells[row][col].delete(self.text_ids[row][col])
                 team = self.board.cells[row][col].team
                 strength = self.board.cells[row][col].strength
                 if team == "R":
                     color = '#FF0000'
                 elif team == "B":
                     color = '#0000FF'
-                elif team in grid.neutralteams:
+                elif team in grid.neutral_teams:
                     color = '#e4e4e4'
-                if team != grid.neutralstr:
-                    if team == grid.tornadostr:
-                        if self.tornado_width != self.cellwidth or self.tornado_height != self.cellheight:
-                            self.tornado_image.thumbnail((self.cellwidth,self.cellheight), Image.ANTIALIAS)
-                            self.tornado_photoimage = ImageTk.PhotoImage(self.tornado_image)
-                            self.tornado_width = self.cellwidth
-                            self.tornado_height = self.cellheight
-                        self.textids[row][col] = self.cells[row][col].create_image(self.cellheight/2,self.cellwidth/2,image=self.tornado_photoimage)
+                if team != grid.neutral_str:
+                    if team == grid.tornado_str:
+                        if self.tornado_width != self.cell_width or self.tornado_height != self.cell_height:
+                            self.tornado_image.thumbnail((self.cell_width,self.cell_height), Image.ANTIALIAS)
+                            self.tornado_photoimage = PIL.ImageTk.PhotoImage(self.tornado_image)
+                            self.tornado_width = self.cell_width
+                            self.tornado_height = self.cell_height
+                        self.text_ids[row][col] = self.cells[row][col].create_image(self.cell_height/2,self.cell_width/2,image=self.tornado_photoimage)
                     else:
-                        self.textids[row][col] = self.cells[row][col].create_text(self.cellheight/2,self.cellwidth/2,text=str(strength), fill=color, font = font)
+                        self.text_ids[row][col] = self.cells[row][col].create_text(self.cell_height/2,self.cell_width/2,text=str(strength), fill=color, font = font)
                     self.cells[row][col].grid(column = col, row = row)
        
 #def reportEvent(event):
 #    print 'keysym=%s, keysym_num=%s' % (event.keysym, event.keysym_num)
 root = Application()
 root.mainloop()
-
-

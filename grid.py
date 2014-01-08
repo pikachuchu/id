@@ -9,19 +9,19 @@ class Cell:
         return str(self.team) + str(self.strength)
     def __eq__(self, other):
         return self.team == other.team and self.strength == other.strength
-neutralstr = "N"
+neutral_str = "N"
 def neutral():
-    return Cell(neutralstr,0)
-tornadostr = "T"
+    return Cell(neutral_str,0)
+tornado_str = "T"
 def tornado():
-    return Cell(tornadostr,0)
-neutralteams = [neutralstr, tornadostr]
+    return Cell(tornado_str,0)
+neutral_teams = [neutral_str, tornado_str]
 class Grid:
-    def __init__(self, length = 8, width = 8):
-        self.cells = [[neutral() for col in range(width)] for row in range(length)]
+    def __init__(self, height = 8, width = 8):
+        self.cells = [[neutral() for col in range(width)] for row in range(height)]
         self.rand = random.Random()
         self.width = width
-        self.length = length
+        self.height = height 
         self.reset()
     def __str__(self):
         cat = ""
@@ -34,15 +34,15 @@ class Grid:
         # return list of valid adjacent cell indices (row, col)
         # counter clockwise
         ret = []
-        for diffx, diffy in [(1,1), (0,1), (-1,1), (-1,0), (-1,-1), (0,-1), (1,-1), (1,0)]:
-            r = row +diffx
-            c = col + diffy
-            if r >= 0 and c >= 0 and r < self.length and c < self.width:
+        for diff_x, diff_y in [(1,1), (0,1), (-1,1), (-1,0), (-1,-1), (0,-1), (1,-1), (1,0)]:
+            r = row +diff_x
+            c = col + diff_y
+            if r >= 0 and c >= 0 and r < self.height and c < self.width:
                 ret.append((r,c))
         return ret
     def reset(self):
         self.turn = 0
-        for row in range(self.length):
+        for row in range(self.height):
             for col in range((self.width + 1) / 2):
                 result = self.rand.random()
                 if result < .75 and col < self.width * 2 / 5:
@@ -67,24 +67,24 @@ class Grid:
                 else:
                     self.cells[row][col] = neutral()
                     self.cells[row][self.width - col - 1] = neutral()
-        self.cells[self.width / 2][self.length / 2] = tornado()
+        self.cells[self.width / 2][self.height / 2] = tornado()
     def step(self):
         self.external()
         self.internal()
     def external(self):
         ret = False # return whether anything was effected
         self.tornadoes = []
-        for row in range(self.length):
+        for row in range(self.height):
             for col in range(self.width):
-                if self.cells[row][col].team == tornadostr:
+                if self.cells[row][col].team == tornado_str:
                     adjacents = self.adj(row,col)
                     temp = None
                     for i in reversed(range(len(adjacents) - 1)):
                         r1,c1 = adjacents[i]
                         r2,c2 = adjacents[(i + 1) % len(adjacents)]
-                        if self.cells[r2][c2].team != neutralstr:
+                        if self.cells[r2][c2].team != neutral_str:
                             ret = True
-                        if self.cells[r1][c1].team != neutralstr:
+                        if self.cells[r1][c1].team != neutral_str:
                             ret = True
                         self.cells[r1][c1], self.cells[r2][c2] = self.cells[r2][c2], self.cells[r1][c1]
                     # set new location
@@ -92,26 +92,26 @@ class Grid:
                     self.tornadoes.append((r,c))
         return ret
     def internal(self):
-        step = [[neutral() for col in range(self.width)] for row in range(self.length)]
-        for row in range(self.length):
+        step = [[neutral() for col in range(self.width)] for row in range(self.height)]
+        for row in range(self.height):
             for col in range(self.width):
                 counts = collections.Counter() 
                 strengths = collections.Counter()
                 for (r,c) in self.adj(row,col):
                     counts[self.cells[r][c].team] += 1
                     strengths[self.cells[r][c].team] += self.cells[r][c].strength
-                if self.cells[row][col].team not in neutralteams:
+                if self.cells[row][col].team not in neutral_teams:
                     friendly = counts[self.cells[row][col].team]
-                    sumenmy = 0
+                    sum_enemy = 0
                     for team, strength in strengths.items():
                         if team != self.cells[row][col].team:
-                            sumenmy += strength
-                    if friendly >= 2 and friendly <= 3 and sumenmy <= strengths[self.cells[row][col].team]:
+                            sum_enemy += strength
+                    if friendly >= 2 and friendly <= 3 and sum_enemy <= strengths[self.cells[row][col].team]:
                         step[row][col] = self.cells[row][col]
-                elif self.cells[row][col].team == neutralstr:
+                elif self.cells[row][col].team == neutral_str:
                     threes = []
                     for team, count in counts.items():
-                        if count == 3 and team not in neutralteams:
+                        if count == 3 and team not in neutral_teams:
                             threes.append(team)
                     if len(threes) == 1:
                         strength = strengths[threes[0]] + self.rand.randint(1,12)
@@ -130,9 +130,9 @@ class Grid:
         self.cells = step
         self.turn += 1
     def extinct(self):
-        for row in range(self.length):
+        for row in range(self.height):
             for col in range(self.width):
-                if self.cells[row][col].team != neutralstr:
+                if self.cells[row][col].team != neutral_str:
                     return False
         return True
     def kill(self, row, col):
