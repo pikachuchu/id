@@ -105,7 +105,7 @@ class Application(tk.Frame):
                     if team == grid.tornado_str:
                         if self.tornado_width != self.cell_width or self.tornado_height != self.cell_height:
                             self.tornado_image.thumbnail((self.cell_width,self.cell_height), Image.ANTIALIAS)
-                            self.tornado_photoimage = PIL.ImageTk.PhotoImage(self.tornado_image)
+                            self.tornado_photoimage = ImageTk.PhotoImage(self.tornado_image)
                             self.tornado_width = self.cell_width
                             self.tornado_height = self.cell_height
                         self.text_ids[row][col] = self.cells[row][col].create_image(self.cell_height/2,self.cell_width/2,image=self.tornado_photoimage)
