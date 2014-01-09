@@ -25,6 +25,7 @@ class Application(tk.Frame):
         self.board = grid.Grid(self.height, self.width);
         self.cell_height = 50 
         self.cell_width = 50 
+        self.master.bind('<Key>', self.key)
         for col in range(self.width):
             top.columnconfigure(col, weight = 1)
             self.columnconfigure(col, weight = 1)
@@ -59,6 +60,26 @@ class Application(tk.Frame):
         self.drawThings()
     def resetBoard(self):
         self.board.reset()
+        self.drawThings()
+    def key(self, event):
+        if event.char == 'q':
+            self.board.move((-1,-1))
+        elif event.char == 'w':
+            self.board.move((-1,0)) 
+        elif event.char == 'e':
+            self.board.move((-1,1)) 
+        elif event.char == 'a':
+            self.board.move((0,-1)) 
+        elif event.char == 'd':
+            self.board.move((0,1)) 
+        elif event.char == 'z':
+            self.board.move((1,-1)) 
+        elif event.char == 'x':
+            self.board.move((1,0))
+        elif event.char == 'c':
+            self.board.move((1,1))
+        else:
+            return
         self.drawThings()
     def kill(self, event):
         brow,bcol = self.cell_locations[event.widget]

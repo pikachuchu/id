@@ -16,6 +16,16 @@ tornado_str = "T"
 def tornado():
     return Cell(tornado_str,0)
 neutral_teams = [neutral_str, tornado_str]
+orderings = {
+    (1,1): lambda x: -x[0],
+    (0,1): lambda x: -x[1],
+    (-1,1): lambda x: x[1],
+    (-1,0): lambda x: x[0],
+    (-1,-1): lambda x: x[0],
+    (0,-1): lambda x: x[1],
+    (1,-1): lambda x: -x[0],
+    (1,0): lambda x: -x[0]
+}
 class Grid:
     def __init__(self, height = 8, width = 8):
         self.cells = [[neutral() for col in range(width)] for row in range(height)]
@@ -30,6 +40,8 @@ class Grid:
                 cat += str(cell) + "\t"
             cat += "\n"
         return cat
+    def inGrid(self, row, col):
+        return row >= 0 and col >= 0 and row < self.height and col < self.width
     def adj(self, row, col):
         # return list of valid adjacent cell indices (row, col)
         # counter clockwise
@@ -37,7 +49,7 @@ class Grid:
         for diff_x, diff_y in [(1,1), (0,1), (-1,1), (-1,0), (-1,-1), (0,-1), (1,-1), (1,0)]:
             r = row +diff_x
             c = col + diff_y
-            if r >= 0 and c >= 0 and r < self.height and c < self.width:
+            if self.inGrid(r,c):
                 ret.append((r,c))
         return ret
     def reset(self):
@@ -96,7 +108,7 @@ class Grid:
                         if temp1:
                             self.selected.add((r2,c2))
                         elif temp2:
-                            self.selected.remove((r1,c1))
+                            self.selected.remove((r2,c2))
                     # set new location
                     r, c = random.choice(adjacents)
                     self.tornadoes.append((r,c))
@@ -169,6 +181,26 @@ class Grid:
             return False
         self.selected.clear()
         return True
+    def move(self, displacement):
+        for row, col in self.selected:
+            brow = row + displacement[0]
+            bcol = col + displacement[1]
+            if self.inGrid(brow, bcol) and (self.cells[brow][bcol] == neutral() or (brow,bcol) in self.selected):
+                continue
+            else:
+                break
+        else:
+            #move is valid
+            ordered = sorted(self.selected, key = orderings[displacement])
+            for row, col in ordered:
+                brow = row + displacement[0]
+                bcol = col + displacement[1]
+                self.cells[brow][bcol] = self.cells[row][col]
+                self.cells[row][col] = neutral() 
+                self.selected.remove((row,col))
+                self.selected.add((brow,bcol))
+            
+            
 """
 extinct = 0
 stable = 0
