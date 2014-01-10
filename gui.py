@@ -43,6 +43,7 @@ class Application(tk.Frame):
                 self.cells[row][col].bind('<Configure>', self.configureCell)
                 self.cells[row][col].bind('<Button-3>', self.kill)
                 self.cells[row][col].bind('<Button-1>', self.select)
+                self.cells[row][col].bind('<Double-Button-1>', self.selectAll)
                 self.cells[row][col].bind('<Control-Button-1>', self.toggle)
                 self.cells[row][col].grid(sticky = tk.N+tk.S+tk.E+tk.W, column = col, row = row)
         self.master.title("Intelligent Design")
@@ -97,6 +98,14 @@ class Application(tk.Frame):
         brow,bcol = self.cell_locations[event.widget]
         if self.board.cells[brow][bcol].team not in grid.neutral_teams:
             self.board.select(brow,bcol)
+            self.drawThings()
+        else:
+            self.board.clearSelection()
+            self.drawThings()
+    def selectAll(self, event):
+        brow,bcol = self.cell_locations[event.widget]
+        if self.board.cells[brow][bcol].team not in grid.neutral_teams:
+            self.board.selectAll(brow,bcol)
             self.drawThings()
         else:
             self.board.clearSelection()

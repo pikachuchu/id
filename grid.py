@@ -171,6 +171,19 @@ class Grid:
         else:
             self.selected.clear()
             self.selected.add((row,col))
+    def selectAll(self, row, col):
+        self.selected.clear()
+        self.selected.add((row,col))
+        frontier = collections.deque()
+        frontier.append((row,col))
+        team = self.cells[row][col].team
+        while frontier:
+            prow, pcol = frontier.pop()
+            for (arow,acol) in self.adj(prow,pcol):
+                if (arow,acol) not in self.selected:
+                    if self.cells[arow][acol].team == team:
+                        self.selected.add((arow,acol))
+                        frontier.append((arow,acol))
     def toggle(self, row, col):
         if (row,col) in self.selected:
             self.selected.remove((row,col))
