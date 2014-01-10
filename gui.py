@@ -2,8 +2,8 @@ import Tkinter as tk
 import tkFont
 import grid
 import time
-import Image
-import ImageTk
+from PIL import Image
+from PIL import ImageTk
 class Application(tk.Frame):
     def __init__(self, master=None):
         tk.Frame.__init__(self,master)
