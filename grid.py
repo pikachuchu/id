@@ -191,6 +191,7 @@ class Grid:
                 if (arow,acol) not in visited:
                     if self.cells[arow][acol].team == team:
                         visited.add((arow,acol))
+			self.selected.add((arow,acol))
                         frontier.append((arow,acol))
     def clearSelection(self):
         if len(self.selected) == 0:
