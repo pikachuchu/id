@@ -45,6 +45,7 @@ class Application(tk.Frame):
                 self.cells[row][col].bind('<Button-1>', self.select)
                 self.cells[row][col].bind('<Double-Button-1>', self.selectAll)
                 self.cells[row][col].bind('<Control-Button-1>', self.toggle)
+                self.cells[row][col].bind('<Control-Double-Button-1>', self.addAll)
                 self.cells[row][col].grid(sticky = tk.N+tk.S+tk.E+tk.W, column = col, row = row)
         self.master.title("Intelligent Design")
         self.drawThings()
@@ -114,6 +115,11 @@ class Application(tk.Frame):
         brow,bcol = self.cell_locations[event.widget]
         if self.board.cells[brow][bcol].team not in grid.neutral_teams:
             self.board.toggle(brow,bcol)
+            self.drawThings()
+    def addAll(self, event):
+        brow,bcol = self.cell_locations[event.widget]
+        if self.board.cells[brow][bcol].team not in grid.neutral_teams:
+            self.board.addAll(brow,bcol)
             self.drawThings()
     def configureCell(self, event):
         # FIXME creates n^2 events when ideally only use one

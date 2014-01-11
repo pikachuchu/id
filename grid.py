@@ -173,22 +173,25 @@ class Grid:
             self.selected.add((row,col))
     def selectAll(self, row, col):
         self.selected.clear()
-        self.selected.add((row,col))
-        frontier = collections.deque()
-        frontier.append((row,col))
-        team = self.cells[row][col].team
-        while frontier:
-            prow, pcol = frontier.pop()
-            for (arow,acol) in self.adj(prow,pcol):
-                if (arow,acol) not in self.selected:
-                    if self.cells[arow][acol].team == team:
-                        self.selected.add((arow,acol))
-                        frontier.append((arow,acol))
+        self.addAll(row, col)
     def toggle(self, row, col):
         if (row,col) in self.selected:
             self.selected.remove((row,col))
         else:
             self.selected.add((row,col))
+    def addAll(self, row, col):
+        self.selected.add((row,col))
+        frontier = collections.deque()
+        visted = set([(row,col)])
+        frontier.append((row,col))
+        team = self.cells[row][col].team
+        while frontier:
+            prow, pcol = frontier.pop()
+            for (arow,acol) in self.adj(prow,pcol):
+                if (arow,acol) not in visted:
+                    if self.cells[arow][acol].team == team:
+                        visited.add((arow,acol))
+                        frontier.append((arow,acol))
     def clearSelection(self):
         if len(self.selected) == 0:
             return False
