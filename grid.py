@@ -11,6 +11,8 @@ class Cell:
         return str(self.team) + str(self.strength)
     def __eq__(self, other):
         return self.team == other.team and self.strength == other.strength
+    def __ne__(self, other):
+        return not self == other
     def isMedic(self):
         return self.pheno[0] > 1
     def isMedic2(self):
@@ -72,7 +74,6 @@ class Land:
             return neighbors == 2 or neighbors == 3
         return neighbors >= 2 and neighbors <= 4
     def color(self):
-        print self.percent
         if self.percent < .05:
             return '#000000' 
         if self.percent < .25:
