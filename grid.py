@@ -182,13 +182,13 @@ class Grid:
     def addAll(self, row, col):
         self.selected.add((row,col))
         frontier = collections.deque()
-        visted = set([(row,col)])
+        visited = set([(row,col)])
         frontier.append((row,col))
         team = self.cells[row][col].team
         while frontier:
             prow, pcol = frontier.pop()
             for (arow,acol) in self.adj(prow,pcol):
-                if (arow,acol) not in visted:
+                if (arow,acol) not in visited:
                     if self.cells[arow][acol].team == team:
                         visited.add((arow,acol))
                         frontier.append((arow,acol))
