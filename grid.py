@@ -197,7 +197,7 @@ class Grid:
                     for team, strength in strengths.items():
                         if team != self.cells[row][col].team:
                             sum_enemy += strength
-                    if friendly >= 2 and friendly <= 3 and sum_enemy <= strengths[self.cells[row][col].team]:
+                    if self.land[row][col].canSupport(friendly) and sum_enemy <= strengths[self.cells[row][col].team]:
                         step[row][col] = self.cells[row][col]
                     else:
                         if (row,col) in self.selected:
