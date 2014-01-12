@@ -2,19 +2,39 @@ import random
 import collections
 class Cell:
     # read only
-    def __init__(self, team, strength):
+    def __init__(self, team, strength, dna):
         self.team = team
         self.strength = strength
+	self.dna = dna 
+	self.pheno = [dna[0][i] + dna[1][i] + dna[2][i] for i in range(3)]
     def __str__(self):
         return str(self.team) + str(self.strength)
     def __eq__(self, other):
         return self.team == other.team and self.strength == other.strength
+    def isMedic(self):
+        return self.pheno[0] > 1
+    def isWarrior(self):
+        return self.pheno[0] < -1
+    def isPriest(self):
+        return self.pheno[1] > 1
+    def isScientist(self):
+        return self.pheno[1] < -1
+    def isFarmer(self):
+        return self.pheno[2] > 1
+    def isHunter(self):
+        return self.pheno[2] < -1
+    def randStrand(self):
+        return random.choice(self.dna)
+def offspring(cell1, cell2, cell3):
+    return Cell(cell1.team, (cell1.strength + cell2.strength + cell3.strength + random.randint(1,12)) / 4, [cell1.randStrand(), cell2.randStrand(), cell3.randStrand()])
+def initDna():
+    return [(0,0,0), (0,0,0), (0,0,0)]
 neutral_str = "N"
 def neutral():
-    return Cell(neutral_str,0)
+    return Cell(neutral_str,0, initDna())
 tornado_str = "T"
 def tornado():
-    return Cell(tornado_str,0)
+    return Cell(tornado_str,0, initDna())
 neutral_teams = [neutral_str, tornado_str]
 orderings = {
     (1,1): lambda x: -x[0],
@@ -75,8 +95,8 @@ class Grid:
                     # .77      .4969
                     # .80      .5126
                     # .85      .4758
-                    self.cells[row][col] = Cell("R", 3)
-                    self.cells[row][self.width - col - 1] = Cell("B", 3)
+                    self.cells[row][col] = Cell("R", 3, initDna())
+                    self.cells[row][self.width - col - 1] = Cell("B", 3, initDna())
                 else:
                     self.cells[row][col] = neutral()
                     self.cells[row][self.width - col - 1] = neutral()
@@ -140,7 +160,8 @@ class Grid:
                             threes.append(team)
                     if len(threes) == 1:
                         strength = strengths[threes[0]] + self.rand.randint(1,12)
-                        step[row][col] = Cell(threes[0], strength / 4)
+                        parents = [self.cells[loc[0]][loc[1]] for loc in self.adj(row,col) if self.cells[loc[0]][loc[1]].team == threes[0]] 
+                        step[row][col] = offspring(parents[0],parents[1],parents[2])
                     if len(threes) == 2:
                         if strengths[threes[0]] > strengths[threes[1]]:
                             winner = threes[0]
@@ -148,8 +169,8 @@ class Grid:
                             winner = threes[1]
                         else:
                             winner = threes[self.rand.randint(0,1)]
-                        strength = strengths[winner] + self.rand.randint(1,12)
-                        step[row][col] = Cell(winner, strength / 4)
+                        parents = [self.cells[loc[0]][loc[1]] for loc in self.adj(row,col) if self.cells[loc[0]][loc[1]].team == winner] 
+                        step[row][col] = offspring(parents[0],parents[1],parents[2])
         for r,c in self.tornadoes:
             step[r][c] = tornado()
         self.cells = step
