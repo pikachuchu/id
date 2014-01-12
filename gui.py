@@ -76,6 +76,8 @@ class Application(tk.Frame):
         self.nextButton.grid(column = self.width, row = 0, sticky = tk.N)
         self.resetButton = tk.Button(self, text = "Reset", command = self.resetBoard, width = self.buttonWidth, height = self.buttonHeight)
         self.resetButton.grid(column = self.width, row = 1, sticky = tk.N)
+        self.spartaButton = tk.Button(self, text = "300", command = self.step300, width = self.buttonWidth, height = self.buttonHeight)
+        self.spartaButton.grid(column = self.width, row = 2, sticky = tk.N)
         self.drawThings()
     def specWarrior(self):
         self.specialize('Warrior')
@@ -98,6 +100,10 @@ class Application(tk.Frame):
         self.drawThings()
     def resetBoard(self):
         self.board.reset()
+        self.drawThings()
+    def step300(self):
+        for i in range(300):
+            self.board.step()
         self.drawThings()
     def key(self, event):
         if event.char == 'q':
