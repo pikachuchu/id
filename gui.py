@@ -141,6 +141,7 @@ class Application(tk.Frame):
         for row in range(self.height):
             for col in range(self.width):
                 self.cells[row][col].delete(self.text_ids[row][col])
+                self.cells[row][col].configure(bg = self.board.color(row, col))
                 team = self.board.cells[row][col].team
                 strength = self.board.cells[row][col].strength
                 self.outlineIfSelected(row,col)

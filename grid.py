@@ -58,6 +58,37 @@ orderings = {
     (1,-1): lambda x: -x[0],
     (1,0): lambda x: -x[0]
 }
+class Land:
+    def __init__(self, percent):
+        self.percent = percent
+    def isLiving(self):
+        return self.percent >= .05
+    def canSupport(self, neighbors):
+        if self.percent < .05:
+            return False
+        if self.percent < .25:
+            return neighbors == 2
+        if self.percent < .75:
+            return neighbors == 2 or neighbors == 3
+        return neighbors >= 2 and neighbors <= 4
+    def color(self):
+        print self.percent
+        if self.percent < .05:
+            return '#000000' 
+        if self.percent < .25:
+            return '#FF0000'
+        if self.percent < .75:
+            return '#99FF33'
+        return '#009900'
+    def regen(self):
+        self.percent += .05 * self.percent
+        self.percent = min(self.percent, 1.0)
+    def deplete(self, cell):
+        if cell != neutral():
+            self.percent -= .05
+            self.percent -= (abs(cell.pheno[0]) + abs(cell.pheno[1]) + abs(cell.pheno[2])) * .01
+def baseLand():
+    return Land(.6)
 class Grid:
     def __init__(self, height = 8, width = 8):
         self.cells = [[neutral() for col in range(width)] for row in range(height)]
@@ -86,6 +117,7 @@ class Grid:
         return ret
     def reset(self):
         self.turn = 0
+        self.land = [[baseLand() for col in range(self.width)] for row in range(self.height)]
         self.selected = set()
         for row in range(self.height):
             for col in range((self.width + 1) / 2):
@@ -113,6 +145,8 @@ class Grid:
                     self.cells[row][col] = neutral()
                     self.cells[row][self.width - col - 1] = neutral()
         self.cells[self.width / 2][self.height / 2] = tornado()
+    def color(self, row, col):
+        return self.land[row][col].color()
     def step(self):
         self.external()
         self.internal()
@@ -149,6 +183,8 @@ class Grid:
         step = [[neutral() for col in range(self.width)] for row in range(self.height)]
         for row in range(self.height):
             for col in range(self.width):
+                self.land[row][col].deplete(self.cells[row][col])
+                self.land[row][col].regen()
                 counts = collections.Counter() 
                 strengths = collections.Counter()
                 for (r,c) in self.adj(row,col):
