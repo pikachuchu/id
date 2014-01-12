@@ -77,12 +77,12 @@ class Land:
         if self.percent < .05:
             return '#000000' 
         if self.percent < .25:
-            return '#FF0000'
+            return '#663300'
         if self.percent < .75:
             return '#99FF33'
         return '#009900'
     def regen(self):
-        self.percent += .05 * self.percent
+        self.percent += .04 * self.percent
         self.percent = min(self.percent, 1.0)
     def deplete(self, cell):
         if cell != neutral():
