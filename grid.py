@@ -5,10 +5,46 @@ class Cell:
     def __init__(self, team, strength, dna):
         self.team = team
         self.strength = strength
-	self.dna = dna 
-	self.pheno = [dna[0][i] + dna[1][i] + dna[2][i] for i in range(3)]
+        self.dna = dna 
+        self.updatePheno()
+    def updatePheno(self):
+        self.pheno = [self.dna[0][i] + self.dna[1][i] + self.dna[2][i] for i in range(3)]
+    def specialize(self, mod):
+        to_change, change_by = mod
+        for strand in self.dna:
+            strand[to_change] += change_by
+        self.updatePheno()
+    def modFromString(self, specialization):
+        # return (to_change, change_by)
+        if specialization == "Medic":
+            return (0, 1)
+        elif specialization == "Warrior":
+            return (0,-1)
+        elif specialization == "Cleric":
+            return (1, 1)
+        elif specialization == "Scientist":
+            return (1,-1)
+        elif specialization == "Farmer":
+            return (2, 1)
+        elif specialization == "Hunter":
+            return (2,-1)
+        else:
+            raise Exception("Unknown specialization")
     def __str__(self):
-        return str(self.team) + str(self.strength)
+        ret = str(self.strength)
+        if self.isWarrior():
+            ret += "W"
+        elif self.isMedic():
+            ret += "M"
+        if self.isCleric():
+            ret += "C"
+        elif self.isScientist():
+            ret += "S"
+        if self.isFarmer():
+            ret += "F"
+        elif self.isHunter():
+            ret += "H"
+        return ret
     def __eq__(self, other):
         return self.team == other.team and self.strength == other.strength
     def __ne__(self, other):
@@ -21,9 +57,9 @@ class Cell:
         return self.pheno[0] < -1
     def isWarrior2(self):
         return self.pheno[0] < -4
-    def isPriest(self):
+    def isCleric(self):
         return self.pheno[1] > 1
-    def isPriest2(self):
+    def isCleric2(self):
         return self.pheno[1] > 4
     def isScientist(self):
         return self.pheno[1] < -1
@@ -42,7 +78,7 @@ class Cell:
 def offspring(cell1, cell2, cell3):
     return Cell(cell1.team, (cell1.strength + cell2.strength + cell3.strength + random.randint(1,12)) / 4, [cell1.randStrand(), cell2.randStrand(), cell3.randStrand()])
 def initDna():
-    return [(0,0,0), (0,0,0), (0,0,0)]
+    return [[0,0,0], [0,0,0], [0,0,0]]
 neutral_str = "N"
 def neutral():
     return Cell(neutral_str,0, initDna())
@@ -235,6 +271,10 @@ class Grid:
             self.cells[row][col] = neutral()
             return True
         return False
+    def specialize(self, specialization):
+        for (row,col) in self.selected:
+            mod = self.cells[row][col].modFromString(specialization)
+            self.cells[row][col].specialize(mod)
     def select(self, row, col):
         if set([(row,col)]) == self.selected:
             self.selected.clear()
