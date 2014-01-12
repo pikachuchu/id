@@ -1,4 +1,42 @@
 Specialization tree
+    Warrior
+        1
+        2 Includes self in survive total
+        Hearty offspring
+        Bonuses to strength
+    Medic
+        1 25%
+        2 75%
+        Neighbors can't die to combat percentage
+    Cleric
+        1 5%
+        2 8%
+        Converts enemy neighbors
+    Scientist
+        1 +1
+        2 +2
+        Increases (?) points
+        Provides global benefit
+    Farmer
+        1 
+        Unit enriches land
+    Hunter
+        1 Enemy
+        2 Allied
+        Deaths enrich land
+Land and fertility
+    Colors denote level in gui
+    Level comes from land value
+        0 - 5 <BLACK> Dead land can support no cells
+        5 - 25 <RED> Diminished land can suport a cell that has 2 neighbors
+        25 - 75 <LIGHT-GREEN> Starting land can support a cell that has 2 to 3 neighbors
+        75 - 100 <DARK-GREEN> Enriched land can support a cell that has 2 to 4 neighbors
+    Living land regenerates
+    Cells consume land value
+    Specialized cells consume more land value
+        
+    
+
 Transferring specializations to offspring:
     Each cell has three strands of DNA
     A strand contains a list of genes
