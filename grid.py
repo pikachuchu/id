@@ -124,6 +124,8 @@ class Land:
         if cell != neutral():
             self.percent -= .05
             self.percent -= (abs(cell.pheno[0]) + abs(cell.pheno[1]) + abs(cell.pheno[2])) * .01
+    def decimate(self, prop):
+        self.percent *= prop 
 def baseLand():
     return Land(.6)
 class Grid:
@@ -194,6 +196,10 @@ class Grid:
             for col in range(self.width):
                 if self.cells[row][col].team == tornado_str:
                     adjacents = self.adj(row,col)
+                    self.land[row][col].decimate(.65)
+                    for i in range(len(adjacents)):
+                        r,c = adjacents[i]
+                        self.land[r][c].decimate(.85)
                     for i in reversed(range(len(adjacents) - 1)):
                         r1,c1 = adjacents[i]
                         r2,c2 = adjacents[(i + 1) % len(adjacents)]
