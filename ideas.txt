@@ -1,0 +1,58 @@
+Specialization tree
+Transferring specializations to offspring:
+    Each cell has three strands of DNA
+    A strand contains a list of genes
+    Each cell is either on or off for a specific phenotype
+    Parents will pass one of their strands of DNA to offspring (equally likely)
+    Therefore each offspring has 3 strands again
+    Two genes may be opposites of each other, in which case the third strand determines the phenotype, for example:
+        S and P are opposites
+        Offspring gets SgP
+        Phenotype would be g
+Special friendly cells:
+    Missionary: converts adjacent enemy cell to friendly with some probability
+    Fertility: can reproduce with fewer than 3 cells
+    Warrior: starts out with more strength
+    Scientist: randomly garners technology points while alive and can help spawn more scientists
+Point systems:
+    Technology: allows for relocation of cells, greater food supply to support more population, in vitro fertilization (add cell anywhere)
+    Evolution: garner points by killing enemies and reproducing, can be used for evolving cells, lose points for killing own cells
+Random events:
+    Lightning strike: kills cell
+    Tornado: kills cell, rotates adjacent cells ccw
+Special enemies:
+    Predator: harder to kill
+    Virus: can infect a cell and lower strength
+    Vampire: can infect a cell and convert
+    Suicide bomber: can kill self and all adjacent cells
+Infection mechanism:
+    Chance to infect one adjacent enemy cell
+    Evolution points can be spent for resistance
+
+
+
+
+
+Micro game:
+    control each step
+    accumulate points to spend on:
+        adding organism
+        moving organism
+    random events:
+        natural disaster (affects large area)
+        lightning strike (affects 1 organism)
+    goal:
+        eliminate all of opposing species
+    difficulty adjustment:
+        win under certain number of steps
+        amount of points awarded
+Macro game:
+    give update every x number of steps
+    evolve characteristics to help species:
+        strength increase
+        technology (food production)
+        
+General ideas:
+    resources determine overpopulation
+    
+
