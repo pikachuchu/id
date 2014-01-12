@@ -72,9 +72,9 @@ class Application(tk.Frame):
                 y += 1
             self.specialization_buttons.append(tk.Button(self.specialization_menu, text = option, command = getattr(self,'spec'+option), width = self.buttonWidth, height = self.buttonHeight))
             self.specialization_buttons[-1].grid(column = x, row = y)
-        self.nextButton = tk.Button(self, text = "Next", command = self.updateBoard)
+        self.nextButton = tk.Button(self, text = "Next", command = self.updateBoard, width = self.buttonWidth, height = self.buttonHeight)
         self.nextButton.grid(column = self.width, row = 0, sticky = tk.N)
-        self.resetButton = tk.Button(self, text = "Reset", command = self.resetBoard)
+        self.resetButton = tk.Button(self, text = "Reset", command = self.resetBoard, width = self.buttonWidth, height = self.buttonHeight)
         self.resetButton.grid(column = self.width, row = 1, sticky = tk.N)
         self.drawThings()
     def specWarrior(self):
