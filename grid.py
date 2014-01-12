@@ -13,16 +13,28 @@ class Cell:
         return self.team == other.team and self.strength == other.strength
     def isMedic(self):
         return self.pheno[0] > 1
+    def isMedic2(self):
+        return self.pheno[0] > 4
     def isWarrior(self):
         return self.pheno[0] < -1
+    def isWarrior2(self):
+        return self.pheno[0] < -4
     def isPriest(self):
         return self.pheno[1] > 1
+    def isPriest2(self):
+        return self.pheno[1] > 4
     def isScientist(self):
         return self.pheno[1] < -1
+    def isScientist2(self):
+        return self.pheno[1] < -4
     def isFarmer(self):
         return self.pheno[2] > 1
+    def isFarmer2(self):
+        return self.pheno[2] > 4
     def isHunter(self):
         return self.pheno[2] < -1
+    def isHunter2(self):
+        return self.pheno[2] < -4
     def randStrand(self):
         return random.choice(self.dna)
 def offspring(cell1, cell2, cell3):
