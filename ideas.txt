@@ -1,26 +1,26 @@
 Specialization tree
-    Warrior
+    Warrior (Maroon)
         1
         2 Includes self in survive total
         Hearty offspring
         Bonuses to strength
-    Medic
+    Medic (White)
         1 25%
         2 75%
         Neighbors can't die to combat percentage
-    Cleric
+    Cleric (Salmon)
         1 5%
         2 8%
         Converts enemy neighbors
-    Scientist
+    Scientist (Purple)
         1 +1
         2 +2
         Increases (?) points
         Provides global benefit
-    Farmer
+    Farmer (Cyan)
         1 
         Unit enriches land
-    Hunter
+    Hunter (Orange)
         1 Enemy
         2 Allied
         Deaths enrich land
@@ -34,7 +34,22 @@ Land and fertility
     Living land regenerates
     Cells consume land value
     Specialized cells consume more land value
-        
+Taken Colors:
+    Red (team)
+    Blue (team)
+    Green (land)
+    Brown (land)
+    Black (land)
+    Yellow (selection)
+    Yellow-Green (land)       
+Remaining:
+    Purple
+    Pink
+    Orange
+    Cyan
+    Salmon
+    Maroon
+    Indigo
     
 
 Transferring specializations to offspring:

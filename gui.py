@@ -5,23 +5,23 @@ import time
 from PIL import Image
 from PIL import ImageTk
 class Application(tk.Frame):
-    def photo(self,size):
-        if size in self.tornado_images:
-            self.tornado_image = self.tornado_images[size]
-            self.tornado_photo = self.tornado_photos[size]
+    def changePhoto(self,size,loc):
+        # updates image and photo
+        if (size,loc) in self.images:
+            self.image = self.images[(size,loc)]
+            self.photoimage = self.photos[(size,loc)]
         else:
-            self.tornado_image = Image.open("assets/tornado.gif")
-            self.tornado_image.thumbnail(size, Image.ANTIALIAS)
-            self.tornado_photoimage = ImageTk.PhotoImage(self.tornado_image)
-            self.tornado_images[size] = self.tornado_image
-            self.tornado_photos[size] = self.tornado_photos
+            self.image = Image.open(loc)
+            # TODO distort
+            self.image.thumbnail(size, Image.ANTIALIAS)
+            self.photoimage = ImageTk.PhotoImage(self.image)
+            self.images[(size,loc)] = self.image
+            self.photos[(size,loc)] = self.photoimage
     def __init__(self, master=None):
         tk.Frame.__init__(self,master)
-        self.tornado_images = dict()
-        self.tornado_photos = dict()
-        self.tornado_width = 300
-        self.tornado_height = 300
-        self.photo((300,300))
+        self.images = dict()
+        self.photos = dict()
+        self.changePhoto((300,300),"assets/tornado.gif")
         self.createWidgets()
         self.grid(sticky=tk.N+tk.S+tk.E+tk.W)
     def createWidgets(self):
@@ -31,12 +31,14 @@ class Application(tk.Frame):
         self.cells = [[None for col in range(self.width)] for row in range(self.height)]
         self.cell_locations = dict()
         self.text_ids = [[1 for col in range(self.width)] for row in range(self.height)]
+        def empty():
+            return []
+        self.spec_ids = [[empty() for col in range(self.width)] for row in range(self.height)]
         self.select_ids = [[None for col in range(self.width)] for row in range(self.height)]
         self.board = grid.Grid(self.height, self.width);
         self.cell_height = 50
         self.cell_width = 50
         self.master.bind('<Key>', self.key)
-        # TODO <Configure> http://effbot.org/tkinterbook/tkinter-events-and-bindings.htm
         self.bind('<Configure>', self.configure)
         for col in range(self.width):
             top.columnconfigure(col, weight = 1)
@@ -193,16 +195,18 @@ class Application(tk.Frame):
             self.cells[row][col].delete(self.select_ids[row][col])
             self.select_ids[row][col] = None
         if (row,col) in self.board.selected:
-            self.select_ids[row][col] = self.cells[row][col].create_rectangle(0,0,self.cell_width,self.cell_height,outline='#FFFF33',width=10)
+            self.select_ids[row][col] = self.cells[row][col].create_rectangle(0,0,self.cell_width,self.cell_height,outline='#000000',width=min(self.cell_width,self.cell_height)/8)
     def drawThings(self):
         font = tkFont.Font(size=2 * min(self.cell_height,self.cell_width) / 5)
         for row in range(self.height):
             for col in range(self.width):
                 self.cells[row][col].delete(self.text_ids[row][col])
+                for spec_id in self.spec_ids[row][col]:
+                    self.cells[row][col].delete(spec_id)
+                self.spec_ids[row][col] = []
                 self.cells[row][col].configure(bg = self.board.color(row, col))
                 team = self.board.cells[row][col].team
                 strength = self.board.cells[row][col].strength
-                self.outlineIfSelected(row,col)
                 if team == "R":
                     color = '#FF0000'
                 elif team == "B":
@@ -211,15 +215,31 @@ class Application(tk.Frame):
                     color = '#e4e4e4'
                 if team != grid.neutral_str:
                     if team == grid.tornado_str:
-                        if self.tornado_width != self.cell_width or self.tornado_height != self.cell_height:
-                            self.photo((self.cell_width,self.cell_height))
-                            self.tornado_width = self.cell_width
-                            self.tornado_height = self.cell_height
-                        self.text_ids[row][col] = self.cells[row][col].create_image(self.cell_width/2,self.cell_height/2,image=self.tornado_photoimage)
+                        self.changePhoto((self.cell_width,self.cell_height),"assets/tornado.gif")
+                        self.text_ids[row][col] = self.cells[row][col].create_image(self.cell_width/2,self.cell_height/2,image=self.photoimage)
                     else:
-                        text = str(self.board.cells[row][col])
+                        text = self.board.cells[row][col].strength
                         self.text_ids[row][col] = self.cells[row][col].create_text(self.cell_width/2,self.cell_height/2,text=text, fill=color, font = font)
+                        if self.board.cells[row][col].isWarrior():
+                            self.changePhoto((self.cell_width/3,self.cell_height/3), "assets/sword.gif")
+                            self.spec_ids[row][col].append(self.cells[row][col].create_image(self.cell_width/6,self.cell_height/6,image=self.photoimage))
+                        elif self.board.cells[row][col].isMedic():
+                            self.changePhoto((self.cell_width/3,self.cell_height/3), "assets/bandage.gif")
+                            self.spec_ids[row][col].append(self.cells[row][col].create_image(5*self.cell_width/6,self.cell_height/6,image=self.photoimage))
+                        if self.board.cells[row][col].isCleric():
+                            self.changePhoto((self.cell_width/3,self.cell_height/3), "assets/candle.gif")
+                            self.spec_ids[row][col].append(self.cells[row][col].create_image(self.cell_width/6,self.cell_height / 3 + self.cell_height / 6,image=self.photoimage))
+                        elif self.board.cells[row][col].isScientist():
+                            self.changePhoto((self.cell_width/3,self.cell_height/3), "assets/testTube.gif")
+                            self.spec_ids[row][col].append(self.cells[row][col].create_image(5*self.cell_width/6,self.cell_height / 3 + self.cell_height / 6,image=self.photoimage))
+                        if self.board.cells[row][col].isFarmer():
+                            self.changePhoto((self.cell_width/3,self.cell_height - 2 * self.cell_height/3), "assets/pitchfork.gif")
+                            self.spec_ids[row][col].append(self.cells[row][col].create_image(self.cell_width/6,self.cell_height - (self.cell_height - 2 * self.cell_height/3) / 2,image=self.photoimage))
+                        elif self.board.cells[row][col].isHunter():
+                            self.changePhoto((self.cell_width/3,self.cell_height - 2 * self.cell_height/3), "assets/bow.gif")
+                            self.spec_ids[row][col].append(self.cells[row][col].create_image(5*self.cell_width/6,self.cell_height - (self.cell_height - 2 * self.cell_height/3) / 2,image=self.photoimage))
                     self.cells[row][col].grid(column = col, row = row)
+                self.outlineIfSelected(row,col)
        
 #def reportEvent(event):
 #    print 'keysym=%s, keysym_num=%s' % (event.keysym, event.keysym_num)
