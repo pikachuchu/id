@@ -58,19 +58,20 @@ class Application(tk.Frame):
                 self.cells[row][col].bind('<Control-Double-Button-1>', self.addAll)
                 self.cells[row][col].grid(sticky = tk.N+tk.S+tk.E+tk.W, column = col, row = row)
         self.master.title("Intelligent Design")
-        self.specialization_menu = tk.LabelFrame(self, text='Specialize')
+        self.specialization_menu = tk.LabelFrame(self, text='Specialize', bg = '#000000', fg = '#FFFFFF')
         self.specializations = ['Warrior','Medic','Cleric','Scientist','Farmer','Hunter']
+        self.specialization_colors = ['#8F3E45', '#00FFFF', '#FA8072', '#B57EDC', '#2FE277', '#FFA500']
         self.specialization_buttons = []
         self.buttonWidth = 10 # letters
         self.buttonHeight = 1 # letters
         x = -1
         y = 0
-        for option in self.specializations:
+        for option,color in zip(self.specializations, self.specialization_colors):
             x += 1
             if x > 1:
                 x = 0
                 y += 1
-            self.specialization_buttons.append(tk.Button(self.specialization_menu, text = option, command = getattr(self,'spec'+option), width = self.buttonWidth, height = self.buttonHeight))
+            self.specialization_buttons.append(tk.Button(self.specialization_menu, text = option, command = getattr(self,'spec'+option), width = self.buttonWidth, height = self.buttonHeight, bg = color))
             self.specialization_buttons[-1].grid(column = x, row = y)
         self.nextButton = tk.Button(self, text = "Next", command = self.updateBoard, width = self.buttonWidth, height = self.buttonHeight)
         self.nextButton.grid(column = self.width, row = 0, sticky = tk.N)
@@ -117,22 +118,27 @@ class Application(tk.Frame):
         elif event.char == 'c':
             self.board.move((1,1))
         elif event.char == 's':
-            if self.board.selected:
-                top = self.winfo_toplevel()
-                if self.specialization_menu.winfo_width() == 1:
-                    self.specialization_menu.place(x=event.x, y=event.y,anchor='center')
-                    self.update()
-                x = max(event.x, self.specialization_menu.winfo_width() / 2)
-                x = min(x, top.winfo_width() - self.specialization_menu.winfo_width() / 2)
-                board_width = sum([self.cells[0][i].winfo_width() for i in range(self.width)])
-                x = min(x, board_width - self.specialization_menu.winfo_width() / 2)
-                y = max(event.y, self.specialization_menu.winfo_height() / 2)
-                y = min(y, top.winfo_height() - self.specialization_menu.winfo_height() / 2)
-                board_height = sum([self.cells[i][0].winfo_height() for i in range(self.height)])
-                y = min(y, board_height - self.specialization_menu.winfo_height() / 2)
-                self.specialization_menu.place(x=x, y=y,anchor='center')
-        else:
-            return
+            if self.specialization_menu.place_info():
+                # if exists
+                self.specialization_menu.place_forget()
+            else:
+                if self.board.selected:
+                    top = self.winfo_toplevel()
+                    if self.specialization_menu.winfo_width() == 1:
+                        # only once
+                        self.specialization_menu.place(x=event.x, y=event.y,anchor='center')
+                        self.update()
+                    x = max(event.x, self.specialization_menu.winfo_width() / 2)
+                    x = min(x, top.winfo_width() - self.specialization_menu.winfo_width() / 2)
+                    board_width = sum([self.cells[0][i].winfo_width() for i in range(self.width)])
+                    x = min(x, board_width - self.specialization_menu.winfo_width() / 2)
+                    y = max(event.y, self.specialization_menu.winfo_height() / 2)
+                    y = min(y, top.winfo_height() - self.specialization_menu.winfo_height() / 2)
+                    board_height = sum([self.cells[i][0].winfo_height() for i in range(self.height)])
+                    y = min(y, board_height - self.specialization_menu.winfo_height() / 2)
+                    self.specialization_menu.place(x=x, y=y,anchor='center')
+                else:
+                    return
         self.drawThings()
     def kill(self, event):
         brow,bcol = self.cell_locations[event.widget]
