@@ -40,12 +40,6 @@ class Application(tk.Frame):
         self.cell_width = 50
         self.master.bind('<Key>', self.key)
         self.bind('<Configure>', self.configure)
-        for col in range(self.width):
-            top.columnconfigure(col, weight = 1)
-            self.columnconfigure(col, weight = 1)
-        for row in range(self.height):
-            top.rowconfigure(row, weight = 1)
-            self.rowconfigure(row, weight = 1)
         for row in range(self.height):
             for col in range(self.width):
                 bg = '#000000'
@@ -64,8 +58,8 @@ class Application(tk.Frame):
         self.specializations = ['Warrior','Medic','Cleric','Scientist','Farmer','Hunter']
         self.specialization_colors = ['#8F3E45', '#00FFFF', '#FA8072', '#B57EDC', '#2FE277', '#FFA500']
         self.specialization_buttons = []
-        self.buttonWidth = 10 # letters
-        self.buttonHeight = 1 # letters
+        self.button_width = 9 # letters
+        self.button_height = 1 # letters
         x = -1
         y = 0
         for option,color in zip(self.specializations, self.specialization_colors):
@@ -73,12 +67,22 @@ class Application(tk.Frame):
             if x > 1:
                 x = 0
                 y += 1
-            self.specialization_buttons.append(tk.Button(self.specialization_menu, text = option, command = getattr(self,'spec'+option), width = self.buttonWidth, height = self.buttonHeight, bg = color))
+            self.specialization_buttons.append(tk.Button(self.specialization_menu, text = option, command = getattr(self,'spec'+option), width = self.button_width, height = self.button_height, bg = color))
             self.specialization_buttons[-1].grid(column = x, row = y)
-        self.nextButton = tk.Button(self, text = "Next", command = self.updateBoard, width = self.buttonWidth, height = self.buttonHeight)
-        self.nextButton.grid(column = self.width, row = 0, sticky = tk.N)
-        self.resetButton = tk.Button(self, text = "Reset", command = self.resetBoard, width = self.buttonWidth, height = self.buttonHeight)
-        self.resetButton.grid(column = self.width, row = 1, sticky = tk.N)
+        self.nextButton = tk.Button(self, text = "Next", command = self.updateBoard, width = self.button_width, height = self.button_height)
+        self.nextButton.grid(row = self.height, column = 0, columnspan = 2, sticky = tk.N)
+        self.resetButton = tk.Button(self, text = "Reset", command = self.resetBoard, width = self.button_width, height = self.button_height)
+        self.resetButton.grid(row = self.height, column = 2, columnspan = 2, sticky = tk.N)
+        self.info_panel_span = 5
+        self.info_panel = tk.Frame(self, width = self.cell_width * self.info_panel_span, height = self.cell_height * self.height)
+        self.info_panel.grid(row = 0, column = self.width, rowspan = self.height, columnspan = self.info_panel_span)
+        self.panel_widgets = []
+        for row in range(self.height):
+            top.rowconfigure(row, weight = 1)
+            self.rowconfigure(row, weight = 1)
+        for col in range(self.width + self.info_panel_span):
+            top.columnconfigure(col, weight = 1)
+            self.columnconfigure(col, weight = 1)
         self.drawThings()
     def specWarrior(self):
         self.specialize('Warrior')
@@ -240,6 +244,41 @@ class Application(tk.Frame):
                             self.spec_ids[row][col].append(self.cells[row][col].create_image(5*self.cell_width/6,self.cell_height - (self.cell_height - 2 * self.cell_height/3) / 2,image=self.photoimage))
                     self.cells[row][col].grid(column = col, row = row)
                 self.outlineIfSelected(row,col)
+        for widget in self.panel_widgets:
+            widget.place_forget()
+        self.panel_widgets = []
+        # populate info_panel based on selection
+        if len(self.board.selected) == 1:
+            row,col = list(self.board.selected)[0]
+            cell = self.board.cells[row][col]
+            img_height = self.cell_height * self.height / 5
+            img_width = self.cell_width * self.info_panel_span / 3
+            img_size = min(img_width, img_height)
+            board_width = sum([self.cells[i][i].winfo_width() for i in range(self.width)])
+            if self.board.cells[row][col].isWarrior():
+                self.changePhoto((img_size,img_size), "assets/sword.gif")
+                self.panel_widgets.append(tk.Label(image=self.photoimage, height = img_size, width = img_size))
+                self.panel_widgets[-1].place(x=board_width + img_size / 2, y=self.cell_height * self.height * 3 / 10, anchor = "center")
+            elif self.board.cells[row][col].isMedic():
+                self.changePhoto((img_size,img_size), "assets/bandage.gif")
+                self.panel_widgets.append(tk.Label(image=self.photoimage, height = img_size, width = img_size))
+                self.panel_widgets[-1].place(x=board_width + img_size / 2, y=self.cell_height * self.height * 3 / 10, anchor = "center")
+            if self.board.cells[row][col].isCleric():
+                self.changePhoto((img_size,img_size), "assets/candle.gif")
+                self.panel_widgets.append(tk.Label(image=self.photoimage, height = img_size, width = img_size))
+                self.panel_widgets[-1].place(x=board_width + img_size / 2, y=self.cell_height * self.height * 5 / 10, anchor = "center")
+            elif self.board.cells[row][col].isScientist():
+                self.changePhoto((img_size,img_size), "assets/testTube.gif")
+                self.panel_widgets.append(tk.Label(image=self.photoimage, height = img_size, width = img_size))
+                self.panel_widgets[-1].place(x=board_width + img_size / 2, y=self.cell_height * self.height * 5 / 10, anchor = "center")
+            if self.board.cells[row][col].isFarmer():
+                self.changePhoto((img_size,img_size), "assets/pitchfork.gif")
+                self.panel_widgets.append(tk.Label(image=self.photoimage, height = img_size, width = img_size))
+                self.panel_widgets[-1].place(x=board_width + img_size / 2, y=self.cell_height * self.height * 7 / 10, anchor = "center")
+            elif self.board.cells[row][col].isHunter():
+                self.changePhoto((img_size,img_size), "assets/bow.gif")
+                self.panel_widgets.append(tk.Label(image=self.photoimage, height = img_size, width = img_size))
+                self.panel_widgets[-1].place(x=board_width + img_size / 2, y=self.cell_height * self.height * 7 / 10, anchor = "center")
        
 #def reportEvent(event):
 #    print 'keysym=%s, keysym_num=%s' % (event.keysym, event.keysym_num)
