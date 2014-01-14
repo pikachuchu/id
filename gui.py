@@ -189,8 +189,7 @@ class Application(tk.Frame):
             self.board.addAll(brow,bcol)
             self.drawThings()
     def configure(self, event):
-        if self.cells[0][0].winfo_height() == 1:
-            self.update()
+        self.update() # set winfo stuff
         self.cell_height=self.cells[0][0].winfo_height()
         self.cell_width=self.cells[0][0].winfo_width()
         self.drawThings()
@@ -199,7 +198,10 @@ class Application(tk.Frame):
             self.cells[row][col].delete(self.select_ids[row][col])
             self.select_ids[row][col] = None
         if (row,col) in self.board.selected:
-            self.select_ids[row][col] = self.cells[row][col].create_rectangle(0,0,self.cell_width,self.cell_height,outline='#000000',width=min(self.cell_width,self.cell_height)/8)
+            width = self.cells[row][col].winfo_width()
+            height = self.cells[row][col].winfo_height()
+            print (width,height)
+            self.select_ids[row][col] = self.cells[row][col].create_rectangle(1,1,width-2,height-2,outline='#000000',width=1)
     def drawThings(self):
         font = tkFont.Font(size=2 * min(self.cell_height,self.cell_width) / 5)
         for row in range(self.height):
