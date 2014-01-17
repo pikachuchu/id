@@ -108,21 +108,45 @@ class Application(tk.Frame):
         self.drawThings()
     def key(self, event):
         if event.char == 'q':
-            self.board.move((-1,-1))
+            if self.specialization_menu.place_info():
+                self.specWarrior()
+            else:
+                self.board.move((-1,-1))
         elif event.char == 'w':
-            self.board.move((-1,0)) 
+            if self.specialization_menu.place_info():
+                pass
+            else:
+                self.board.move((-1,0)) 
         elif event.char == 'e':
-            self.board.move((-1,1)) 
+            if self.specialization_menu.place_info():
+                self.specMedic()
+            else:
+                self.board.move((-1,1)) 
         elif event.char == 'a':
-            self.board.move((0,-1)) 
+            if self.specialization_menu.place_info():
+                self.specCleric()
+            else:
+                self.board.move((0,-1)) 
         elif event.char == 'd':
-            self.board.move((0,1)) 
+            if self.specialization_menu.place_info():
+                self.specScientist()
+            else:
+                self.board.move((0,1)) 
         elif event.char == 'z':
-            self.board.move((1,-1)) 
+            if self.specialization_menu.place_info():
+                self.specFarmer()
+            else:
+                self.board.move((1,-1)) 
         elif event.char == 'x':
-            self.board.move((1,0))
+            if self.specialization_menu.place_info():
+                pass
+            else:
+                self.board.move((1,0))
         elif event.char == 'c':
-            self.board.move((1,1))
+            if self.specialization_menu.place_info():
+                self.specHunter()
+            else:
+                self.board.move((1,1))
         elif event.char == 's':
             if self.specialization_menu.place_info():
                 # if exists
