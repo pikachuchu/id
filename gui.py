@@ -200,7 +200,6 @@ class Application(tk.Frame):
         if (row,col) in self.board.selected:
             width = self.cells[row][col].winfo_width()
             height = self.cells[row][col].winfo_height()
-            print (width,height)
             self.select_ids[row][col] = self.cells[row][col].create_rectangle(1,1,width-2,height-2,outline='#000000',width=1)
     def drawThings(self):
         self.font = tkFont.Font(size=2 * min(self.cell_height,self.cell_width) / 5)
