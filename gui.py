@@ -56,18 +56,19 @@ class Application(tk.Frame):
         self.master.title("Intelligent Design")
         self.specialization_menu = tk.LabelFrame(self, text='Specialize', bg = '#000000', fg = '#FFFFFF')
         self.specializations = ['Warrior','Medic','Cleric','Scientist','Farmer','Hunter']
+        hotkeys = ['Q','E','A','D','Z','C']
         self.specialization_colors = ['#8F3E45', '#00FFFF', '#FA8072', '#B57EDC', '#2FE277', '#FFA500']
         self.specialization_buttons = []
         self.button_width = 9 # letters
         self.button_height = 1 # letters
         x = -1
         y = 0
-        for option,color in zip(self.specializations, self.specialization_colors):
+        for option,color,hotkey in zip(self.specializations, self.specialization_colors, hotkeys):
             x += 1
             if x > 1:
                 x = 0
                 y += 1
-            self.specialization_buttons.append(tk.Button(self.specialization_menu, text = option, command = getattr(self,'spec'+option), width = self.button_width, height = self.button_height, bg = color))
+            self.specialization_buttons.append(tk.Button(self.specialization_menu, text = option + ' (' + hotkey + ')', command = getattr(self,'spec'+option), width = self.button_width, height = self.button_height, bg = color))
             self.specialization_buttons[-1].grid(column = x, row = y)
         self.nextButton = tk.Button(self, text = "Next", command = self.updateBoard, width = self.button_width, height = self.button_height)
         self.nextButton.grid(row = self.height, column = 0, columnspan = 2, sticky = tk.N)
