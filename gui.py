@@ -202,7 +202,7 @@ class Application(tk.Frame):
             height = self.cells[row][col].winfo_height()
             self.select_ids[row][col] = self.cells[row][col].create_rectangle(1,1,width-2,height-2,outline='#000000',width=1)
     def drawThings(self):
-        self.font = tkFont.Font(size=2 * min(self.cell_height,self.cell_width) / 5)
+        self.cell_font = tkFont.Font(size=2 * min(self.cell_height,self.cell_width) / 5)
         for row in range(self.height):
             for col in range(self.width):
                 self.drawCell(row,col)
@@ -217,30 +217,49 @@ class Application(tk.Frame):
             img_width = self.cell_width * self.info_panel_span / 3
             img_size = min(img_width, img_height)
             board_width = sum([self.cells[i][i].winfo_width() for i in range(self.width)])
+            self.desc_font = tkFont.Font(size = img_size / 8)
             if self.board.cells[row][col].isWarrior():
                 self.changePhoto((img_size,img_size), "assets/sword.gif")
                 self.panel_widgets.append(tk.Label(image=self.photoimage, height = img_size, width = img_size))
                 self.panel_widgets[-1].place(x=board_width + img_size / 2, y=self.cell_height * self.height * 3 / 10, anchor = "center")
+                self.panel_widgets.append(tk.Label(text = "Description", font = self.desc_font))
+                self.panel_widgets[-1].place(x=board_width + 3 * img_size / 2, y=self.cell_height * self.height * 3 / 10, anchor = "center")
             elif self.board.cells[row][col].isMedic():
                 self.changePhoto((img_size,img_size), "assets/bandage.gif")
                 self.panel_widgets.append(tk.Label(image=self.photoimage, height = img_size, width = img_size))
                 self.panel_widgets[-1].place(x=board_width + img_size / 2, y=self.cell_height * self.height * 3 / 10, anchor = "center")
+                self.panel_widgets.append(tk.Label(text = "Description", font = self.desc_font))
+                self.panel_widgets[-1].place(x=board_width + 3 * img_size / 2, y=self.cell_height * self.height * 3 / 10, anchor = "center")
             if self.board.cells[row][col].isCleric():
                 self.changePhoto((img_size,img_size), "assets/candle.gif")
                 self.panel_widgets.append(tk.Label(image=self.photoimage, height = img_size, width = img_size))
-                self.panel_widgets[-1].place(x=board_width + img_size / 2, y=self.cell_height * self.height * 5 / 10, anchor = "center")
+                self.panel_widgets[-1].place(x=board_width + img_size / 2, y=self.cell_height * self.height * 3 / 10 + img_size, anchor = "center")
+                self.panel_widgets.append(tk.Label(text = "Description", font = self.desc_font))
+                self.panel_widgets[-1].place(x=board_width + 3 * img_size / 2, y=self.cell_height * self.height * 3 / 10 + img_size, anchor = "center")
             elif self.board.cells[row][col].isScientist():
                 self.changePhoto((img_size,img_size), "assets/testTube.gif")
                 self.panel_widgets.append(tk.Label(image=self.photoimage, height = img_size, width = img_size))
-                self.panel_widgets[-1].place(x=board_width + img_size / 2, y=self.cell_height * self.height * 5 / 10, anchor = "center")
+                self.panel_widgets[-1].place(x=board_width + img_size / 2, y=self.cell_height * self.height * 3 / 10 + img_size, anchor = "center")
+                self.panel_widgets.append(tk.Label(text = "Description", font = self.desc_font))
+                self.panel_widgets[-1].place(x=board_width + 3 * img_size / 2, y=self.cell_height * self.height * 3 / 10 + img_size, anchor = "center")
             if self.board.cells[row][col].isFarmer():
                 self.changePhoto((img_size,img_size), "assets/pitchfork.gif")
                 self.panel_widgets.append(tk.Label(image=self.photoimage, height = img_size, width = img_size))
-                self.panel_widgets[-1].place(x=board_width + img_size / 2, y=self.cell_height * self.height * 7 / 10, anchor = "center")
+                self.panel_widgets[-1].place(x=board_width + img_size / 2, y=self.cell_height * self.height * 3 / 10 + img_size * 2, anchor = "center")
+                self.panel_widgets.append(tk.Label(text = "Description", font = self.desc_font))
+                self.panel_widgets[-1].place(x=board_width + 3 * img_size / 2, y=self.cell_height * self.height * 3 / 10 + img_size * 2, anchor = "center")
             elif self.board.cells[row][col].isHunter():
                 self.changePhoto((img_size,img_size), "assets/bow.gif")
                 self.panel_widgets.append(tk.Label(image=self.photoimage, height = img_size, width = img_size))
-                self.panel_widgets[-1].place(x=board_width + img_size / 2, y=self.cell_height * self.height * 7 / 10, anchor = "center")
+                self.panel_widgets[-1].place(x=board_width + img_size / 2, y=self.cell_height * self.height * 3 / 10 + img_size * 2, anchor = "center")
+                self.panel_widgets.append(tk.Label(text = "Description", font = self.desc_font))
+                self.panel_widgets[-1].place(x=board_width + 3 * img_size / 2, y=self.cell_height * self.height * 3 / 10 + img_size * 2, anchor = "center")
+            self.team_font = tkFont.Font(size = img_size / 2) 
+            self.panel_widgets.append(tk.Label(text = self.board.cells[row][col].team, font = self.team_font))
+            self.panel_widgets[-1].place(x=board_width + self.cell_width * 2.4, y = self.cell_height, anchor = "center")
+            self.strength_font = tkFont.Font(size = img_size / 4)
+            self.panel_widgets.append(tk.Label(text = "Strength: " + str(self.board.cells[row][col].strength), font = self.strength_font))
+            self.panel_widgets[-1].place(x=board_width + self.cell_width * 2.4, y = self.cell_height * 2, anchor = "center")
     def drawCell(self, row, col):
         self.cells[row][col].delete(self.text_ids[row][col])
         for spec_id in self.spec_ids[row][col]:
@@ -261,7 +280,7 @@ class Application(tk.Frame):
                 self.text_ids[row][col] = self.cells[row][col].create_image(self.cell_width/2,self.cell_height/2,image=self.photoimage)
             else:
                 text = self.board.cells[row][col].strength
-                self.text_ids[row][col] = self.cells[row][col].create_text(self.cell_width/2,self.cell_height/2,text=text, fill=color, font = self.font)
+                self.text_ids[row][col] = self.cells[row][col].create_text(self.cell_width/2,self.cell_height/2,text=text, fill=color, font = self.cell_font)
                 if self.board.cells[row][col].isWarrior():
                     self.changePhoto((self.cell_width/3,self.cell_height/3), "assets/sword.gif")
                     self.spec_ids[row][col].append(self.cells[row][col].create_image(self.cell_width/6,self.cell_height/6,image=self.photoimage))
