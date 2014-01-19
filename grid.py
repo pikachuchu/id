@@ -194,8 +194,8 @@ class Grid:
         self.tornadoes = []
         for row in range(self.height):
             for col in range(self.width):
+                adjacents = self.adj(row, col)
                 if self.cells[row][col].team == tornado_str:
-                    adjacents = self.adj(row,col)
                     self.land[row][col].decimate(.65)
                     for i in range(len(adjacents)):
                         r,c = adjacents[i]
@@ -221,6 +221,35 @@ class Grid:
                     # set new location
                     r, c = random.choice(adjacents)
                     self.tornadoes.append((r,c))
+                elif self.cells[row][col].isFarmer():
+                    colors = []
+                    for r,c in adjacents:
+                        colors.append(self.land[r][c].color())
+                        self.land[r][c].regen()
+                    if self.cells[row][col].isFarmer2():
+                        for r,c in adjacents:
+                            self.land[r][c].regen()
+                    for (r,c), color in zip(adjacents, colors):
+                        ret = ret or self.land[r][c].color() == color
+                if self.cells[row][col].isCleric():
+                    for r,c in adjacents:
+                        if self.cells[r][c].team not in neutral_teams and not self.cells[r][c].isCleric():
+                            if self.cells[r][c].team != self.cells[row][col].team:
+                                if self.rand.random() < .10:
+                                    self.cells[r][c].team = self.cells[row][col].team
+                                    ret = True
+                                elif self.cells[row][col].isCleric2() and self.rand.random() < .20:
+                                    self.cells[r][c].team = self.cells[row][col].team
+                                    ret = True
+                if self.cells[row][col].isWarrior():
+                    allies = filter(lambda (r,c): self.cells[row][col].team == self.cells[r][c].team, adjacents)
+                    if allies:
+                        r,c = self.rand.choice(allies)
+                        self.cells[r][c].strength += 1 #max at 9?
+                        ret = True
+                        if self.cells[row][col].isWarrior2():
+                            r,c = self.rand.choice(allies)
+                            self.cells[r][c].strength += 1
         return ret
     def internal(self):
         step = [[neutral() for col in range(self.width)] for row in range(self.height)]
@@ -230,20 +259,45 @@ class Grid:
                 self.land[row][col].regen()
                 counts = collections.Counter() 
                 strengths = collections.Counter()
-                for (r,c) in self.adj(row,col):
+                adjacents = self.adj(row, col)
+                for (r,c) in adjacents:
                     counts[self.cells[r][c].team] += 1
                     strengths[self.cells[r][c].team] += self.cells[r][c].strength
                 if self.cells[row][col].team not in neutral_teams:
                     friendly = counts[self.cells[row][col].team]
+                    if self.cells[row][col].isWarrior2():
+                        friendy += self.cells[row][col].strength
                     sum_enemy = 0
                     for team, strength in strengths.items():
                         if team != self.cells[row][col].team:
                             sum_enemy += strength
-                    if self.land[row][col].canSupport(friendly) and sum_enemy <= strengths[self.cells[row][col].team]:
-                        step[row][col] = self.cells[row][col]
-                    else:
+                    is_dead = True 
+                    if self.land[row][col].canSupport(friendly):
+                        if sum_enemy < strengths[self.cells[row][col].team]:
+                            step[row][col] = self.cells[row][col]
+                            is_dead = False
+                        else:
+                            for r,c in adjacents:
+                                if self.cells[r][c].team == self.cells[row][col].team and self.cells[r][c].isMedic():
+                                    if self.rand.random() < .25:
+                                        step[row][col] = self.cells[row][col]
+                                        is_dead = False
+                                        break
+                                    if self.cells[r][c].isMedic2():
+                                        if self.rand.random() < .67:
+                                            step[row][col] = self.cells[row][col]
+                                            is_dead = False
+                                            break
+                    if is_dead:
                         if (row,col) in self.selected:
                             self.selected.remove((row,col))
+                        for r,c in adjacents:
+                            if self.cells[r][c].isHunter():
+                                self.land[row][col].regen()
+                                self.land[row][col].regen()
+                                if self.cells[r][c].isHunter2():
+                                    self.land[row][col].regen()
+                                    self.land[row][col].regen()
                 elif self.cells[row][col].team == neutral_str:
                     threes = []
                     for team, count in counts.items():
@@ -251,7 +305,7 @@ class Grid:
                             threes.append(team)
                     if len(threes) == 1:
                         strength = strengths[threes[0]] + self.rand.randint(1,12)
-                        parents = [self.cells[loc[0]][loc[1]] for loc in self.adj(row,col) if self.cells[loc[0]][loc[1]].team == threes[0]] 
+                        parents = [self.cells[loc[0]][loc[1]] for loc in adjacents if self.cells[loc[0]][loc[1]].team == threes[0]] 
                         step[row][col] = offspring(parents[0],parents[1],parents[2])
                     if len(threes) == 2:
                         if strengths[threes[0]] > strengths[threes[1]]:
@@ -260,7 +314,7 @@ class Grid:
                             winner = threes[1]
                         else:
                             winner = threes[self.rand.randint(0,1)]
-                        parents = [self.cells[loc[0]][loc[1]] for loc in self.adj(row,col) if self.cells[loc[0]][loc[1]].team == winner] 
+                        parents = [self.cells[loc[0]][loc[1]] for loc in adjacents if self.cells[loc[0]][loc[1]].team == winner] 
                         step[row][col] = offspring(parents[0],parents[1],parents[2])
         for r,c in self.tornadoes:
             step[r][c] = tornado()
