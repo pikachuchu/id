@@ -359,9 +359,17 @@ class Grid:
             return True
         return False
     def specialize(self, specialization):
-        for (row,col) in self.selected:
-            mod = self.cells[row][col].modFromString(specialization)
-            self.cells[row][col].specialize(mod)
+        if self.selected:
+            cost = len(self.selected) * 2
+            r,c = iter(self.selected).next()
+            team = self.cells[r][c].team
+            if cost > self.points[team]:
+                # TODO response
+                return
+            self.points[team] -= cost
+            for (row,col) in self.selected:
+                mod = self.cells[row][col].modFromString(specialization)
+                self.cells[row][col].specialize(mod)
     def select(self, row, col):
         if set([(row,col)]) == self.selected:
             self.selected.clear()
@@ -396,23 +404,31 @@ class Grid:
         self.selected.clear()
         return True
     def move(self, displacement):
-        for row, col in self.selected:
-            brow = row + displacement[0]
-            bcol = col + displacement[1]
-            if self.inGrid(brow, bcol) and (self.cells[brow][bcol] == neutral() or (brow,bcol) in self.selected):
-                continue
-            else:
-                break
-        else:
-            #move is valid
-            ordered = sorted(self.selected, key = orderings[displacement])
-            for row, col in ordered:
+        if self.selected:
+            cost = len(self.selected) * 1
+            r,c = iter(self.selected).next()
+            team = self.cells[r][c].team
+            if cost > self.points[team]:
+                # TODO response
+                return
+            self.points[team] -= cost
+            for row, col in self.selected:
                 brow = row + displacement[0]
                 bcol = col + displacement[1]
-                self.cells[brow][bcol] = self.cells[row][col]
-                self.cells[row][col] = neutral() 
-                self.selected.remove((row,col))
-                self.selected.add((brow,bcol))
+                if self.inGrid(brow, bcol) and (self.cells[brow][bcol] == neutral() or (brow,bcol) in self.selected):
+                    continue
+                else:
+                    break
+            else:
+                #move is valid
+                ordered = sorted(self.selected, key = orderings[displacement])
+                for row, col in ordered:
+                    brow = row + displacement[0]
+                    bcol = col + displacement[1]
+                    self.cells[brow][bcol] = self.cells[row][col]
+                    self.cells[row][col] = neutral() 
+                    self.selected.remove((row,col))
+                    self.selected.add((brow,bcol))
             
             
 """
