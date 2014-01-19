@@ -256,7 +256,6 @@ class Application(tk.Frame):
                 description = "Level: " + str(self.board.cells[row][col].warriorLevel())
                 self.panel_widgets.append(tk.Label(text = description, font = self.desc_font))
                 self.panel_widgets[-1].place(x=board_width + 3 * img_size / 2, y=self.cell_height * self.height * 3 / 10, anchor = "center")
-                print [strand for strand in self.board.cells[row][col].dna]
             elif self.board.cells[row][col].isMedic():
                 self.changePhoto((img_size,img_size), "assets/bandage.gif")
                 self.panel_widgets.append(tk.Label(image=self.photoimage, height = img_size, width = img_size))
