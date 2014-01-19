@@ -142,11 +142,12 @@ class Land:
 def baseLand():
     return Land(.6)
 class Grid:
-    def __init__(self, height = 8, width = 8):
+    def __init__(self, height = 8, width = 8, team1 = "Red", team2 = "Blue"):
         self.cells = [[neutral() for col in range(width)] for row in range(height)]
         self.rand = random.Random()
         self.width = width
         self.height = height 
+        self.teams = [team1,team2]
         self.reset()
     def __str__(self):
         cat = ""
@@ -171,6 +172,9 @@ class Grid:
         self.turn = 0
         self.land = [[baseLand() for col in range(self.width)] for row in range(self.height)]
         self.selected = set()
+        self.points = collections.Counter()
+        self.points[self.teams[0]] = 0
+        self.points[self.teams[1]] = 0
         for row in range(self.height):
             for col in range((self.width + 1) / 2):
                 result = self.rand.random()
@@ -191,8 +195,8 @@ class Grid:
                     # .77      .4969
                     # .80      .5126
                     # .85      .4758
-                    self.cells[row][col] = Cell("R", 3, initDna())
-                    self.cells[row][self.width - col - 1] = Cell("B", 3, initDna())
+                    self.cells[row][col] = Cell(self.teams[0], 3, initDna())
+                    self.cells[row][self.width - col - 1] = Cell(self.teams[1], 3, initDna())
                 else:
                     self.cells[row][col] = neutral()
                     self.cells[row][self.width - col - 1] = neutral()
@@ -245,6 +249,7 @@ class Grid:
                     for (r,c), color in zip(adjacents, colors):
                         ret = ret or self.land[r][c].color() == color
                 if self.cells[row][col].isCleric():
+                    # FIXME left to right bias
                     for r,c in adjacents:
                         if self.cells[r][c].team not in neutral_teams and not self.cells[r][c].isCleric():
                             if self.cells[r][c].team != self.cells[row][col].team:
@@ -254,6 +259,8 @@ class Grid:
                                 elif self.cells[row][col].isCleric2() and self.rand.random() < .20:
                                     self.cells[r][c].team = self.cells[row][col].team
                                     ret = True
+                elif self.cells[row][col].isScientist():
+                    self.points[self.cells[row][col].team] += self.cells[row][col].scientistLevel()
                 if self.cells[row][col].isWarrior():
                     allies = filter(lambda (r,c): self.cells[row][col].team == self.cells[r][c].team, adjacents)
                     if allies:
@@ -301,6 +308,11 @@ class Grid:
                                             step[row][col] = self.cells[row][col]
                                             is_dead = False
                                             break
+                            else:
+                                # killed in combat
+                                for team, strength in strengths.items():
+                                    if team != self.cells[row][col].team and team not in neutral_teams:
+                                        self.points[team] += 1
                     if is_dead:
                         if (row,col) in self.selected:
                             self.selected.remove((row,col))
@@ -320,6 +332,7 @@ class Grid:
                         strength = strengths[threes[0]] + self.rand.randint(1,12)
                         parents = [self.cells[loc[0]][loc[1]] for loc in adjacents if self.cells[loc[0]][loc[1]].team == threes[0]] 
                         step[row][col] = offspring(parents[0],parents[1],parents[2])
+                        self.points[threes[0]] += 1
                     if len(threes) == 2:
                         if strengths[threes[0]] > strengths[threes[1]]:
                             winner = threes[0]
@@ -329,6 +342,7 @@ class Grid:
                             winner = threes[self.rand.randint(0,1)]
                         parents = [self.cells[loc[0]][loc[1]] for loc in adjacents if self.cells[loc[0]][loc[1]].team == winner] 
                         step[row][col] = offspring(parents[0],parents[1],parents[2])
+                        self.points[winner] += 1
         for r,c in self.tornadoes:
             step[r][c] = tornado()
         self.cells = step
