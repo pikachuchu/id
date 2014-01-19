@@ -1,5 +1,6 @@
 import random
 import collections
+import copy
 class Cell:
     # read only
     def __init__(self, team, strength, dna):
@@ -53,30 +54,42 @@ class Cell:
         return self.pheno[0] > 1
     def isMedic2(self):
         return self.pheno[0] > 4
+    def medicLevel(self):
+        return (1 + self.pheno[0]) / 3
     def isWarrior(self):
         return self.pheno[0] < -1
     def isWarrior2(self):
         return self.pheno[0] < -4
+    def warriorLevel(self):
+        return (-self.pheno[0] + 1) / 3
     def isCleric(self):
         return self.pheno[1] > 1
     def isCleric2(self):
         return self.pheno[1] > 4
+    def clericLevel(self):
+        return (self.pheno[1] + 1) / 3
     def isScientist(self):
         return self.pheno[1] < -1
     def isScientist2(self):
         return self.pheno[1] < -4
+    def scientistLevel(self):
+        return (-self.pheno[1] + 1) / 3
     def isFarmer(self):
         return self.pheno[2] > 1
     def isFarmer2(self):
         return self.pheno[2] > 4
+    def farmerLevel(self):
+        return (self.pheno[2] + 1) / 3
     def isHunter(self):
         return self.pheno[2] < -1
     def isHunter2(self):
         return self.pheno[2] < -4
+    def hunterLevel(self):
+        return (-self.pheno[2] + 1) / 3
     def randStrand(self):
         return random.choice(self.dna)
 def offspring(cell1, cell2, cell3):
-    return Cell(cell1.team, (cell1.strength + cell2.strength + cell3.strength + random.randint(1,12)) / 4, [cell1.randStrand(), cell2.randStrand(), cell3.randStrand()])
+    return Cell(cell1.team, (cell1.strength + cell2.strength + cell3.strength + random.randint(1,12)) / 4, [copy.copy(cell1.randStrand()), copy.copy(cell2.randStrand()), copy.copy(cell3.randStrand())])
 def initDna():
     return [[0,0,0], [0,0,0], [0,0,0]]
 neutral_str = "N"
@@ -266,7 +279,7 @@ class Grid:
                 if self.cells[row][col].team not in neutral_teams:
                     friendly = counts[self.cells[row][col].team]
                     if self.cells[row][col].isWarrior2():
-                        friendy += self.cells[row][col].strength
+                        friendly += self.cells[row][col].strength
                     sum_enemy = 0
                     for team, strength in strengths.items():
                         if team != self.cells[row][col].team:
