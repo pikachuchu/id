@@ -74,6 +74,8 @@ class Application(tk.Frame):
         self.nextButton.grid(row = self.height, column = 0, columnspan = 2, sticky = tk.N)
         self.resetButton = tk.Button(self, text = "Reset", command = self.resetBoard, width = self.button_width, height = self.button_height)
         self.resetButton.grid(row = self.height, column = 2, columnspan = 2, sticky = tk.N)
+        self.spartaButton = tk.Button(self, text = "300", command = self.step300, width = self.button_width, height = self.button_height)
+        self.spartaButton.grid(row = self.height, column = 4, columnspan = 2, sticky = tk.N)
         self.info_panel_span = 5
         self.info_panel = tk.Frame(self, width = self.cell_width * self.info_panel_span, height = self.cell_height * self.height)
         self.info_panel.grid(row = 0, column = self.width, rowspan = self.height, columnspan = self.info_panel_span)
@@ -106,6 +108,10 @@ class Application(tk.Frame):
         self.drawThings()
     def resetBoard(self):
         self.board.reset()
+        self.drawThings()
+    def step300(self):
+        for i in range(300):
+            self.board.step()
         self.drawThings()
     def key(self, event):
         if event.char == 'q':
