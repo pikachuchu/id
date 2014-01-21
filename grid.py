@@ -236,7 +236,7 @@ class Grid:
             team = self.cells[r][c].team
             if cost > self.points[team]:
                 # TODO response
-                return
+                return "Mutation requires " + cost + " points."
             self.points[team] -= cost
             for (row,col) in self.selected:
                 mod = self.cells[row][col].modFromString(specialization)
@@ -281,7 +281,7 @@ class Grid:
             team = self.cells[r][c].team
             if cost > self.points[team]:
                 # TODO response
-                return
+                return "Move requires " + str(cost) + " points."
             self.points[team] -= cost
             for row, col in self.selected:
                 brow = row + displacement[0]

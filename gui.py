@@ -22,6 +22,7 @@ class Application(tk.Frame):
         self.images = dict()
         self.photos = dict()
         self.changePhoto((300,300),"assets/tornado.gif")
+        self.info = ""
         self.createWidgets()
         self.grid(sticky=tk.N+tk.S+tk.E+tk.W)
     def createWidgets(self):
@@ -122,21 +123,22 @@ class Application(tk.Frame):
             self.board.step()
         self.drawThings()
     def key(self, event):
+        ret = None
         if event.char == 'q':
             if self.specialization_menu.place_info():
                 self.specWarrior()
             else:
-                self.board.move((-1,-1))
+                ret = self.board.move((-1,-1))
         elif event.char == 'w':
             if self.specialization_menu.place_info():
                 pass
             else:
-                self.board.move((-1,0)) 
+                ret = self.board.move((-1,0)) 
         elif event.char == 'e':
             if self.specialization_menu.place_info():
                 self.specMedic()
             else:
-                self.board.move((-1,1)) 
+                ret = self.board.move((-1,1)) 
         elif event.char == 'a':
             if self.specialization_menu.place_info():
                 self.specCleric()
@@ -146,7 +148,7 @@ class Application(tk.Frame):
             if self.specialization_menu.place_info():
                 self.specScientist()
             else:
-                self.board.move((0,1)) 
+                ret = self.board.move((0,1)) 
         elif event.char == 'z':
             if self.specialization_menu.place_info():
                 self.specFarmer()
@@ -156,12 +158,12 @@ class Application(tk.Frame):
             if self.specialization_menu.place_info():
                 pass
             else:
-                self.board.move((1,0))
+                ret = self.board.move((1,0))
         elif event.char == 'c':
             if self.specialization_menu.place_info():
                 self.specHunter()
             else:
-                self.board.move((1,1))
+                ret = self.board.move((1,1))
         elif event.char == 's':
             if self.specialization_menu.place_info():
                 # if exists
@@ -183,6 +185,8 @@ class Application(tk.Frame):
                     self.specialization_menu.place(x=x, y=y,anchor='center')
                 else:
                     return
+        if ret != None:
+            self.info = ret
         self.drawThings()
     def kill(self, event):
         brow,bcol = self.cell_locations[event.widget]
@@ -197,7 +201,9 @@ class Application(tk.Frame):
         if change:
             self.drawThings()
     def specialize(self,specialization):
-        self.board.specialize(specialization)
+        ret = self.board.specialize(specialization)
+        if ret != None:
+            self.info = ret
         self.specialization_menu.place_forget()
         self.drawThings()
     def select(self, event):
