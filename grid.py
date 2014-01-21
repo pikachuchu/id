@@ -1,104 +1,7 @@
 import random
 import collections
-import copy
-class Cell:
-    # read only
-    def __init__(self, team, strength, dna):
-        self.team = team
-        self.strength = strength
-        self.dna = dna 
-        self.updatePheno()
-    def updatePheno(self):
-        self.pheno = [self.dna[0][i] + self.dna[1][i] + self.dna[2][i] for i in range(3)]
-    def specialize(self, mod):
-        to_change, change_by = mod
-        for strand in self.dna:
-            strand[to_change] += change_by
-        self.updatePheno()
-    def modFromString(self, specialization):
-        # return (to_change, change_by)
-        if specialization == "Medic":
-            return (0, 1)
-        elif specialization == "Warrior":
-            return (0,-1)
-        elif specialization == "Cleric":
-            return (1, 1)
-        elif specialization == "Scientist":
-            return (1,-1)
-        elif specialization == "Farmer":
-            return (2, 1)
-        elif specialization == "Hunter":
-            return (2,-1)
-        else:
-            raise Exception("Unknown specialization")
-    def __str__(self):
-        ret = str(self.strength)
-        if self.isWarrior():
-            ret += "W"
-        elif self.isMedic():
-            ret += "M"
-        if self.isCleric():
-            ret += "C"
-        elif self.isScientist():
-            ret += "S"
-        if self.isFarmer():
-            ret += "F"
-        elif self.isHunter():
-            ret += "H"
-        return ret
-    def __eq__(self, other):
-        return self.team == other.team and self.strength == other.strength
-    def __ne__(self, other):
-        return not self == other
-    def isMedic(self):
-        return self.pheno[0] > 1
-    def isMedic2(self):
-        return self.pheno[0] > 4
-    def medicLevel(self):
-        return (1 + self.pheno[0]) / 3
-    def isWarrior(self):
-        return self.pheno[0] < -1
-    def isWarrior2(self):
-        return self.pheno[0] < -4
-    def warriorLevel(self):
-        return (-self.pheno[0] + 1) / 3
-    def isCleric(self):
-        return self.pheno[1] > 1
-    def isCleric2(self):
-        return self.pheno[1] > 4
-    def clericLevel(self):
-        return (self.pheno[1] + 1) / 3
-    def isScientist(self):
-        return self.pheno[1] < -1
-    def isScientist2(self):
-        return self.pheno[1] < -4
-    def scientistLevel(self):
-        return (-self.pheno[1] + 1) / 3
-    def isFarmer(self):
-        return self.pheno[2] > 1
-    def isFarmer2(self):
-        return self.pheno[2] > 4
-    def farmerLevel(self):
-        return (self.pheno[2] + 1) / 3
-    def isHunter(self):
-        return self.pheno[2] < -1
-    def isHunter2(self):
-        return self.pheno[2] < -4
-    def hunterLevel(self):
-        return (-self.pheno[2] + 1) / 3
-    def randStrand(self):
-        return random.choice(self.dna)
-def offspring(cell1, cell2, cell3):
-    return Cell(cell1.team, (cell1.strength + cell2.strength + cell3.strength + random.randint(1,12)) / 4, [copy.copy(cell1.randStrand()), copy.copy(cell2.randStrand()), copy.copy(cell3.randStrand())])
-def initDna():
-    return [[0,0,0], [0,0,0], [0,0,0]]
-neutral_str = "N"
-def neutral():
-    return Cell(neutral_str,0, initDna())
-tornado_str = "T"
-def tornado():
-    return Cell(tornado_str,0, initDna())
-neutral_teams = [neutral_str, tornado_str]
+from cell import Cell, neutral, initDna, tornado, neutral_str, tornado_str, neutral_teams, offspring
+from land import baseLand
 orderings = {
     (1,1): lambda x: -x[0],
     (0,1): lambda x: -x[1],
@@ -109,38 +12,6 @@ orderings = {
     (1,-1): lambda x: -x[0],
     (1,0): lambda x: -x[0]
 }
-class Land:
-    def __init__(self, percent):
-        self.percent = percent
-    def isLiving(self):
-        return self.percent >= .05
-    def canSupport(self, neighbors):
-        if self.percent < .05:
-            return False
-        if self.percent < .25:
-            return neighbors == 2
-        if self.percent < .75:
-            return neighbors == 2 or neighbors == 3
-        return neighbors >= 2 and neighbors <= 4
-    def color(self):
-        if self.percent < .05:
-            return '#000000' 
-        if self.percent < .25:
-            return '#663300'
-        if self.percent < .75:
-            return '#99FF33'
-        return '#009900'
-    def regen(self):
-        self.percent += .04 * self.percent
-        self.percent = min(self.percent, 1.0)
-    def deplete(self, cell):
-        if cell != neutral():
-            self.percent -= .05
-            self.percent -= (abs(cell.pheno[0]) + abs(cell.pheno[1]) + abs(cell.pheno[2])) * .01
-    def decimate(self, prop):
-        self.percent *= prop 
-def baseLand():
-    return Land(.6)
 class Grid:
     def __init__(self, height = 8, width = 8, team1 = "Red", team2 = "Blue"):
         self.cells = [[neutral() for col in range(width)] for row in range(height)]
