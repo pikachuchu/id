@@ -23,6 +23,7 @@ class Application(tk.Frame):
         self.photos = dict()
         self.changePhoto((300,300),"assets/tornado.gif")
         self.info = ""
+        # TODO reset back to "" on successful user actions
         self.createWidgets()
         self.grid(sticky=tk.N+tk.S+tk.E+tk.W)
     def createWidgets(self):
