@@ -3,6 +3,7 @@ import collections
 from cell import Cell, neutral, initDna, tornado, neutral_str, tornado_str, neutral_teams, offspring, specializations
 from land import baseLand
 import threading
+import ai
 orderings = {
     (1,1): lambda x: -x[0],
     (0,1): lambda x: -x[1],
@@ -88,9 +89,9 @@ class Grid:
             self.external()
             self.internal()
     def external(self):
+        ret = False # return whether anything was effected
+        self.tornadoes = []
         with self.lock:
-            ret = False # return whether anything was effected
-            self.tornadoes = []
             for row in range(self.height):
                 for col in range(self.width):
                     adjacents = self.adj(row, col)
@@ -155,8 +156,9 @@ class Grid:
                                 self.cells[r][c].strength += 1
             return ret
     def internal(self):
+        self.turn += 1
+        step = [[neutral() for col in range(self.width)] for row in range(self.height)]
         with self.lock:
-            step = [[neutral() for col in range(self.width)] for row in range(self.height)]
             for row in range(self.height):
                 for col in range(self.width):
                     self.land[row][col].deplete(self.cells[row][col])
@@ -231,7 +233,6 @@ class Grid:
             for r,c in self.tornadoes:
                 step[r][c] = tornado()
             self.cells = step
-            self.turn += 1
     def extinct(self):
         with self.lock:
             for row in range(self.height):
@@ -240,8 +241,9 @@ class Grid:
                         return False
             return True
     def kill(self, row, col, team):
+        # returns true if any cells were killed
+        ret = False
         with self.lock:
-            ret = False
             if (row, col) in self.selected[team]:
                 for r,c in self.selected[team]:
                     self.cells[r][c] = neutral()
@@ -328,17 +330,28 @@ class Grid:
                         self.cells[row][col] = neutral() 
                         self.selected[team].remove((row,col))
                         self.selected[team].add((brow,bcol))
-    def aiAct(self, turn, team, action, loc):
+    def aiAct(self, turn, team, action, loc, displacement = None):
+        ret = True
+        row,col = loc
         with self.lock:
             # TODO lock
             if turn == self.turn:
                 if action in specializations:
                     self.clearSelection(team)
                     self.selected[team].add(loc)
-                    self.specialize(action, team)
+                    if self.specialize(action, team) != None:
+                        ret = False
+                elif action == "kill":
+                    self.clearSelection(team)
+                    if not self.kill(row,col,team):
+                        ret = False
+                elif action == "move":
+                    self.clearSelection(team)
+                    self.selected[team].add(loc)
+                    self.move(displacement,team)
             else:
                 return False
-        return True
+        return ret
             
 """
 extinct = 0

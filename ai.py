@@ -14,14 +14,16 @@ def easy(board, team, turn, strat, cont):
                 mycells.append((row,col))
     while board.points[team] > 1 and cont[0]:
         if mycells:
-            row, col = random.choice(mycells)
-            specialization = random.choice(strat)
+            with board.lock:
+                row, col = random.choice(mycells)
+                specialization = random.choice(strat)
             if not board.aiAct(turn, team, specialization, (row,col)):
                 # our turn is over
                 cont[0] = False
             else:
                 app.drawThings()
-                app.update()
+                with board.lock:
+                    app.after_idle(app.update)
         else:
             cont[0] = False
     thread.exit()

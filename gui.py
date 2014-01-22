@@ -10,9 +10,6 @@ import threading
 from PIL import Image
 from PIL import ImageTk
 class Application(tk.Frame):
-    def update(self):
-        with self.lock:
-            tk.Frame.update(self)
     def changePhoto(self,size,loc):
         # updates image and photo
         if (size,loc) in self.images:
@@ -28,7 +25,6 @@ class Application(tk.Frame):
     def __init__(self, master=None):
         tk.Frame.__init__(self,master)
         ai.app = self
-        self.lock = threading.RLock()
         self.images = dict()
         self.photos = dict()
         self.changePhoto((300,300),"assets/tornado.gif")
@@ -125,27 +121,26 @@ class Application(tk.Frame):
     def specHunter(self):
         self.specialize('Hunter')
     def stepBoard(self):
-        with self.lock:
+        with self.board.lock:
             if self.board.external():
                 self.drawThings()
-                self.update()
+                self.after_idle(self.update)
                 time.sleep(0.3)
             self.board.internal()
             self.drawThings()
             for i in range(len(self.ai)):
                 self.ai[i] = thread.start_new_thread(ai.easy, (self.board, self.ai_team, self.board.turn, self.ai_strat, [True]))
-                pass
     def resetBoard(self):
-        with self.lock:
+        with self.board.lock:
             self.board.reset()
             self.drawThings()
     def step300(self):
-        with self.lock:
+        with self.board.lock:
             for i in range(300):
                 self.board.step()
             self.drawThings()
     def key(self, event):
-        with self.lock:
+        with self.board.lock:
             ret = None
             if event.char == 'q':
                 if self.specialization_menu.place_info():
@@ -197,7 +192,7 @@ class Application(tk.Frame):
                         if self.specialization_menu.winfo_width() == 1:
                             # only once
                             self.specialization_menu.place(x=event.x, y=event.y,anchor='center')
-                            self.update()
+                            self.update
                         x = max(event.x, self.specialization_menu.winfo_width() / 2)
                         x = min(x, top.winfo_width() - self.specialization_menu.winfo_width() / 2)
                         x = min(x, self.board_width - self.specialization_menu.winfo_width() / 2)
@@ -214,19 +209,19 @@ class Application(tk.Frame):
                 self.info = ""
             self.drawThings()
     def kill(self, event):
-        with self.lock:
+        with self.board.lock:
             brow,bcol = self.cell_locations[event.widget]
             if self.board.kill(brow,bcol,self.player_team):
                 self.drawThings()
     def specialize(self,specialization):
-        with self.lock:
+        with self.board.lock:
             ret = self.board.specialize(specialization, self.player_team)
             if ret != None:
                 self.info = ret
             self.specialization_menu.place_forget()
             self.drawThings()
     def select(self, event):
-        with self.lock:
+        with self.board.lock:
             brow,bcol = self.cell_locations[event.widget]
             if self.board.cells[brow][bcol].team not in grid.neutral_teams:
                 if self.player_team == self.board.cells[brow][bcol].team:
@@ -236,7 +231,7 @@ class Application(tk.Frame):
                 self.board.clearSelection(self.player_team)
                 self.drawThings()
     def selectAll(self, event):
-        with self.lock:
+        with self.board.lock:
             brow,bcol = self.cell_locations[event.widget]
             if self.board.cells[brow][bcol].team not in grid.neutral_teams:
                 if self.player_team == self.board.cells[brow][bcol].team:
@@ -246,25 +241,25 @@ class Application(tk.Frame):
                 self.board.clearSelection(self.player_team)
                 self.drawThings()
     def toggle(self, event):
-        with self.lock:
+        with self.board.lock:
             brow,bcol = self.cell_locations[event.widget]
             if self.player_team == self.board.cells[brow][bcol].team:
                 self.board.toggle(brow,bcol,self.player_team)
                 self.drawThings()
     def addAll(self, event):
-        with self.lock:
+        with self.board.lock:
             brow,bcol = self.cell_locations[event.widget]
             if self.player_team == self.board.cells[brow][bcol].team:
                 self.board.addAll(brow,bcol,self.player_team)
                 self.drawThings()
     def configure(self, event):
-        with self.lock:
+        with self.board.lock:
             self.update() # set winfo stuff
             self.cell_height=self.cells[0][0].winfo_height()
             self.cell_width=self.cells[0][0].winfo_width()
             self.drawThings()
     def outlineIfSelected(self, row,col):
-        with self.lock:
+        with self.board.lock:
             if self.select_ids[row][col] != None:
                 self.cells[row][col].delete(self.select_ids[row][col])
                 self.select_ids[row][col] = None
@@ -273,7 +268,7 @@ class Application(tk.Frame):
                 height = self.cells[row][col].winfo_height()
                 self.select_ids[row][col] = self.cells[row][col].create_rectangle(1,1,width-2,height-2,outline='#000000',width=1)
     def drawThings(self):
-        with self.lock:
+        with self.board.lock:
             self.cell_font = tkFont.Font(size=2 * min(self.cell_height,self.cell_width) / 5)
             for row in range(self.height):
                 for col in range(self.width):
@@ -342,7 +337,7 @@ class Application(tk.Frame):
                 self.panel_widgets["Strength"].configure(text = "Strength: " + str(self.board.cells[row][col].strength), font = self.strength_font)
                 self.panel_widgets["Strength"].place(x=self.board_width + self.cell_width * 2.4, y = self.cell_height * 2, anchor = "center")
     def drawCell(self, row, col):
-        with self.lock:
+        with self.board.lock:
             self.cells[row][col].delete(self.text_ids[row][col])
             for spec_id in self.spec_ids[row][col]:
                 self.cells[row][col].delete(spec_id)
