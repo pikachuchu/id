@@ -98,4 +98,5 @@ tornado_str = "T"
 def tornado():
     return Cell(tornado_str,0, initDna())
 neutral_teams = [neutral_str, tornado_str]
+specializations = ['Warrior','Medic','Cleric','Scientist','Farmer','Hunter']
 

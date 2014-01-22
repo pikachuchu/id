@@ -1,7 +1,8 @@
 import random
 import collections
-from cell import Cell, neutral, initDna, tornado, neutral_str, tornado_str, neutral_teams, offspring
+from cell import Cell, neutral, initDna, tornado, neutral_str, tornado_str, neutral_teams, offspring, specializations
 from land import baseLand
+import threading
 orderings = {
     (1,1): lambda x: -x[0],
     (0,1): lambda x: -x[1],
@@ -19,297 +20,325 @@ class Grid:
         self.width = width
         self.height = height 
         self.teams = [team1,team2]
+        self.lock = threading.RLock()
         self.reset()
     def __str__(self):
-        cat = ""
-        for row in self.cells:
-            for cell in row:
-                cat += str(cell) + "\t"
-            cat += "\n"
-        return cat
+        with self.lock:
+            cat = ""
+            for row in self.cells:
+                for cell in row:
+                    cat += str(cell) + "\t"
+                cat += "\n"
+            return cat
     def inGrid(self, row, col):
-        return row >= 0 and col >= 0 and row < self.height and col < self.width
+        with self.lock:
+            return row >= 0 and col >= 0 and row < self.height and col < self.width
     def adj(self, row, col):
-        # return list of valid adjacent cell indices (row, col)
-        # counter clockwise
-        ret = []
-        for diff_x, diff_y in [(1,1), (0,1), (-1,1), (-1,0), (-1,-1), (0,-1), (1,-1), (1,0)]:
-            r = row +diff_x
-            c = col + diff_y
-            if self.inGrid(r,c):
-                ret.append((r,c))
-        return ret
+        with self.lock:
+            # return list of valid adjacent cell indices (row, col)
+            # counter clockwise
+            ret = []
+            for diff_x, diff_y in [(1,1), (0,1), (-1,1), (-1,0), (-1,-1), (0,-1), (1,-1), (1,0)]:
+                r = row +diff_x
+                c = col + diff_y
+                if self.inGrid(r,c):
+                    ret.append((r,c))
+            return ret
     def reset(self):
-        self.turn = 0
-        self.land = [[baseLand() for col in range(self.width)] for row in range(self.height)]
-        self.selected = dict()
-        for team in self.teams:
-            self.selected[team] = set()
-        self.points = collections.Counter()
-        self.points[self.teams[0]] = 0
-        self.points[self.teams[1]] = 0
-        for row in range(self.height):
-            for col in range((self.width + 1) / 2):
-                result = self.rand.random()
-                if result < .75 and col < self.width * 2 / 5:
-                    # <   1000 10000
-                    # .25 .265 .2927
-                    # .35 .385
-                    # .50 .469
-                    # .55 .487 .4802
-                    # .60 .518 .4972
-                    # .65 .522 .5022
-                    # .66      .4956
-                    # .67 .509 .5052
-                    # .68      .4987
-                    # .70 .522 .5001
-                    # .75 .488 .5182
-                    # .76      .5012
-                    # .77      .4969
-                    # .80      .5126
-                    # .85      .4758
-                    self.cells[row][col] = Cell(self.teams[0], 3, initDna())
-                    self.cells[row][self.width - col - 1] = Cell(self.teams[1], 3, initDna())
-                else:
-                    self.cells[row][col] = neutral()
-                    self.cells[row][self.width - col - 1] = neutral()
-        self.cells[self.width / 2][self.height / 2] = tornado()
+        with self.lock:
+            self.turn = 0
+            self.land = [[baseLand() for col in range(self.width)] for row in range(self.height)]
+            self.selected = dict()
+            for team in self.teams:
+                self.selected[team] = set()
+            self.points = collections.Counter()
+            self.points[self.teams[0]] = 0
+            self.points[self.teams[1]] = 0
+            for row in range(self.height):
+                for col in range((self.width + 1) / 2):
+                    result = self.rand.random()
+                    if result < .75 and col < self.width * 2 / 5:
+                        # <   1000 10000
+                        # .25 .265 .2927
+                        # .35 .385
+                        # .50 .469
+                        # .55 .487 .4802
+                        # .60 .518 .4972
+                        # .65 .522 .5022
+                        # .66      .4956
+                        # .67 .509 .5052
+                        # .68      .4987
+                        # .70 .522 .5001
+                        # .75 .488 .5182
+                        # .76      .5012
+                        # .77      .4969
+                        # .80      .5126
+                        # .85      .4758
+                        self.cells[row][col] = Cell(self.teams[0], 3, initDna())
+                        self.cells[row][self.width - col - 1] = Cell(self.teams[1], 3, initDna())
+                    else:
+                        self.cells[row][col] = neutral()
+                        self.cells[row][self.width - col - 1] = neutral()
+            self.cells[self.width / 2][self.height / 2] = tornado()
     def color(self, row, col):
-        return self.land[row][col].color()
+        with self.lock:
+            return self.land[row][col].color()
     def step(self):
-        self.external()
-        self.internal()
+        with self.lock:
+            self.external()
+            self.internal()
     def external(self):
-        ret = False # return whether anything was effected
-        self.tornadoes = []
-        for row in range(self.height):
-            for col in range(self.width):
-                adjacents = self.adj(row, col)
-                if self.cells[row][col].team == tornado_str:
-                    self.land[row][col].decimate(.65)
-                    for i in range(len(adjacents)):
-                        r,c = adjacents[i]
-                        self.land[r][c].decimate(.85)
-                    for i in reversed(range(len(adjacents) - 1)):
-                        r1,c1 = adjacents[i]
-                        r2,c2 = adjacents[(i + 1) % len(adjacents)]
-                        if self.cells[r2][c2].team != neutral_str:
-                            ret = True
-                        if self.cells[r1][c1].team != neutral_str:
-                            ret = True
-                        self.cells[r1][c1], self.cells[r2][c2] = self.cells[r2][c2], self.cells[r1][c1]
-                        for team in self.teams:
-                            temp1 = (r1,c1) in self.selected[team]
-                            temp2 = (r2,c2) in self.selected[team]
-                            if temp2:
-                                self.selected[team].add((r1,c1))
-                            elif temp1:
-                                self.selected[team].remove((r1,c1))
-                            if temp1:
-                                self.selected[team].add((r2,c2))
-                            elif temp2:
-                                self.selected[team].remove((r2,c2))
-                    # set new location
-                    r, c = random.choice(adjacents)
-                    self.tornadoes.append((r,c))
-                elif self.cells[row][col].isFarmer():
-                    colors = []
-                    for r,c in adjacents:
-                        colors.append(self.land[r][c].color())
-                        self.land[r][c].regen()
-                    if self.cells[row][col].isFarmer2():
+        with self.lock:
+            ret = False # return whether anything was effected
+            self.tornadoes = []
+            for row in range(self.height):
+                for col in range(self.width):
+                    adjacents = self.adj(row, col)
+                    if self.cells[row][col].team == tornado_str:
+                        self.land[row][col].decimate(.65)
+                        for i in range(len(adjacents)):
+                            r,c = adjacents[i]
+                            self.land[r][c].decimate(.85)
+                        for i in reversed(range(len(adjacents) - 1)):
+                            r1,c1 = adjacents[i]
+                            r2,c2 = adjacents[(i + 1) % len(adjacents)]
+                            if self.cells[r2][c2].team != neutral_str:
+                                ret = True
+                            if self.cells[r1][c1].team != neutral_str:
+                                ret = True
+                            self.cells[r1][c1], self.cells[r2][c2] = self.cells[r2][c2], self.cells[r1][c1]
+                            for team in self.teams:
+                                temp1 = (r1,c1) in self.selected[team]
+                                temp2 = (r2,c2) in self.selected[team]
+                                if temp2:
+                                    self.selected[team].add((r1,c1))
+                                elif temp1:
+                                    self.selected[team].remove((r1,c1))
+                                if temp1:
+                                    self.selected[team].add((r2,c2))
+                                elif temp2:
+                                    self.selected[team].remove((r2,c2))
+                        # set new location
+                        r, c = random.choice(adjacents)
+                        self.tornadoes.append((r,c))
+                    elif self.cells[row][col].isFarmer():
+                        colors = []
                         for r,c in adjacents:
+                            colors.append(self.land[r][c].color())
                             self.land[r][c].regen()
-                    for (r,c), color in zip(adjacents, colors):
-                        ret = ret or self.land[r][c].color() == color
-                if self.cells[row][col].isCleric():
-                    # FIXME left to right bias
-                    for r,c in adjacents:
-                        if self.cells[r][c].team not in neutral_teams and not self.cells[r][c].isCleric():
-                            if self.cells[r][c].team != self.cells[row][col].team:
-                                if self.rand.random() < .10:
-                                    self.cells[r][c].team = self.cells[row][col].team
-                                    ret = True
-                                elif self.cells[row][col].isCleric2() and self.rand.random() < .20:
-                                    self.cells[r][c].team = self.cells[row][col].team
-                                    ret = True
-                elif self.cells[row][col].isScientist():
-                    self.points[self.cells[row][col].team] += self.cells[row][col].scientistLevel()
-                if self.cells[row][col].isWarrior():
-                    allies = filter(lambda (r,c): self.cells[row][col].team == self.cells[r][c].team, adjacents)
-                    if allies:
-                        r,c = self.rand.choice(allies)
-                        self.cells[r][c].strength += 1 #max at 9?
-                        ret = True
-                        if self.cells[row][col].isWarrior2():
-                            r,c = self.rand.choice(allies)
-                            self.cells[r][c].strength += 1
-        return ret
-    def internal(self):
-        step = [[neutral() for col in range(self.width)] for row in range(self.height)]
-        for row in range(self.height):
-            for col in range(self.width):
-                self.land[row][col].deplete(self.cells[row][col])
-                self.land[row][col].regen()
-                counts = collections.Counter() 
-                strengths = collections.Counter()
-                adjacents = self.adj(row, col)
-                team = self.cells[row][col].team
-                for (r,c) in adjacents:
-                    counts[self.cells[r][c].team] += 1
-                    strengths[self.cells[r][c].team] += self.cells[r][c].strength
-                if team not in neutral_teams:
-                    friendly = counts[team]
-                    if self.cells[row][col].isWarrior2():
-                        friendly += self.cells[row][col].strength
-                    sum_enemy = 0
-                    for str_team, strength in strengths.items():
-                        if str_team != team:
-                            sum_enemy += strength
-                    is_dead = True 
-                    if self.land[row][col].canSupport(friendly):
-                        if sum_enemy < strengths[team]:
-                            step[row][col] = self.cells[row][col]
-                            is_dead = False
-                        else:
+                        if self.cells[row][col].isFarmer2():
                             for r,c in adjacents:
-                                if self.cells[r][c].team == team and self.cells[r][c].isMedic():
-                                    if self.rand.random() < .25:
-                                        step[row][col] = self.cells[row][col]
-                                        is_dead = False
-                                        break
-                                    if self.cells[r][c].isMedic2():
-                                        if self.rand.random() < .67:
+                                self.land[r][c].regen()
+                        for (r,c), color in zip(adjacents, colors):
+                            ret = ret or self.land[r][c].color() == color
+                    if self.cells[row][col].isCleric():
+                        # FIXME left to right bias
+                        for r,c in adjacents:
+                            if self.cells[r][c].team not in neutral_teams and not self.cells[r][c].isCleric():
+                                if self.cells[r][c].team != self.cells[row][col].team:
+                                    if self.rand.random() < .10:
+                                        self.cells[r][c].team = self.cells[row][col].team
+                                        ret = True
+                                    elif self.cells[row][col].isCleric2() and self.rand.random() < .20:
+                                        self.cells[r][c].team = self.cells[row][col].team
+                                        ret = True
+                    elif self.cells[row][col].isScientist():
+                        self.points[self.cells[row][col].team] += self.cells[row][col].scientistLevel()
+                    if self.cells[row][col].isWarrior():
+                        allies = filter(lambda (r,c): self.cells[row][col].team == self.cells[r][c].team, adjacents)
+                        if allies:
+                            r,c = self.rand.choice(allies)
+                            self.cells[r][c].strength += 1 #max at 9?
+                            ret = True
+                            if self.cells[row][col].isWarrior2():
+                                r,c = self.rand.choice(allies)
+                                self.cells[r][c].strength += 1
+            return ret
+    def internal(self):
+        with self.lock:
+            step = [[neutral() for col in range(self.width)] for row in range(self.height)]
+            for row in range(self.height):
+                for col in range(self.width):
+                    self.land[row][col].deplete(self.cells[row][col])
+                    self.land[row][col].regen()
+                    counts = collections.Counter() 
+                    strengths = collections.Counter()
+                    adjacents = self.adj(row, col)
+                    team = self.cells[row][col].team
+                    for (r,c) in adjacents:
+                        counts[self.cells[r][c].team] += 1
+                        strengths[self.cells[r][c].team] += self.cells[r][c].strength
+                    if team not in neutral_teams:
+                        friendly = counts[team]
+                        if self.cells[row][col].isWarrior2():
+                            friendly += self.cells[row][col].strength
+                        sum_enemy = 0
+                        for str_team, strength in strengths.items():
+                            if str_team != team:
+                                sum_enemy += strength
+                        is_dead = True 
+                        if self.land[row][col].canSupport(friendly):
+                            if sum_enemy < strengths[team]:
+                                step[row][col] = self.cells[row][col]
+                                is_dead = False
+                            else:
+                                for r,c in adjacents:
+                                    if self.cells[r][c].team == team and self.cells[r][c].isMedic():
+                                        if self.rand.random() < .25:
                                             step[row][col] = self.cells[row][col]
                                             is_dead = False
                                             break
+                                        if self.cells[r][c].isMedic2():
+                                            if self.rand.random() < .67:
+                                                step[row][col] = self.cells[row][col]
+                                                is_dead = False
+                                                break
+                                else:
+                                    # killed in combat
+                                    for str_team, strength in strengths.items():
+                                        if str_team != team and str_team not in neutral_teams:
+                                            self.points[str_team] += 1
+                        if is_dead:
+                            if (row,col) in self.selected[team]:
+                                self.selected[team].remove((row,col))
+                            for r,c in adjacents:
+                                if self.cells[r][c].isHunter():
+                                    self.land[row][col].regen()
+                                    self.land[row][col].regen()
+                                    if self.cells[r][c].isHunter2():
+                                        self.land[row][col].regen()
+                                        self.land[row][col].regen()
+                    elif team == neutral_str:
+                        threes = []
+                        for c_team, count in counts.items():
+                            if count == 3 and c_team not in neutral_teams:
+                                threes.append(c_team)
+                        if len(threes) == 1:
+                            strength = strengths[threes[0]] + self.rand.randint(1,12)
+                            parents = [self.cells[loc[0]][loc[1]] for loc in adjacents if self.cells[loc[0]][loc[1]].team == threes[0]] 
+                            step[row][col] = offspring(parents[0],parents[1],parents[2])
+                            self.points[threes[0]] += 1
+                        if len(threes) == 2:
+                            if strengths[threes[0]] > strengths[threes[1]]:
+                                winner = threes[0]
+                            elif strengths[threes[0]] < strengths[threes[1]]:
+                                winner = threes[1]
                             else:
-                                # killed in combat
-                                for str_team, strength in strengths.items():
-                                    if str_team != team and str_team not in neutral_teams:
-                                        self.points[str_team] += 1
-                    if is_dead:
-                        if (row,col) in self.selected[team]:
-                            self.selected[team].remove((row,col))
-                        for r,c in adjacents:
-                            if self.cells[r][c].isHunter():
-                                self.land[row][col].regen()
-                                self.land[row][col].regen()
-                                if self.cells[r][c].isHunter2():
-                                    self.land[row][col].regen()
-                                    self.land[row][col].regen()
-                elif team == neutral_str:
-                    threes = []
-                    for c_team, count in counts.items():
-                        if count == 3 and c_team not in neutral_teams:
-                            threes.append(c_team)
-                    if len(threes) == 1:
-                        strength = strengths[threes[0]] + self.rand.randint(1,12)
-                        parents = [self.cells[loc[0]][loc[1]] for loc in adjacents if self.cells[loc[0]][loc[1]].team == threes[0]] 
-                        step[row][col] = offspring(parents[0],parents[1],parents[2])
-                        self.points[threes[0]] += 1
-                    if len(threes) == 2:
-                        if strengths[threes[0]] > strengths[threes[1]]:
-                            winner = threes[0]
-                        elif strengths[threes[0]] < strengths[threes[1]]:
-                            winner = threes[1]
-                        else:
-                            winner = threes[self.rand.randint(0,1)]
-                        parents = [self.cells[loc[0]][loc[1]] for loc in adjacents if self.cells[loc[0]][loc[1]].team == winner] 
-                        step[row][col] = offspring(parents[0],parents[1],parents[2])
-                        self.points[winner] += 1
-        for r,c in self.tornadoes:
-            step[r][c] = tornado()
-        self.cells = step
-        self.turn += 1
+                                winner = threes[self.rand.randint(0,1)]
+                            parents = [self.cells[loc[0]][loc[1]] for loc in adjacents if self.cells[loc[0]][loc[1]].team == winner] 
+                            step[row][col] = offspring(parents[0],parents[1],parents[2])
+                            self.points[winner] += 1
+            for r,c in self.tornadoes:
+                step[r][c] = tornado()
+            self.cells = step
+            self.turn += 1
     def extinct(self):
-        for row in range(self.height):
-            for col in range(self.width):
-                if self.cells[row][col].team not in neutral_teams:
-                    return False
-        return True
+        with self.lock:
+            for row in range(self.height):
+                for col in range(self.width):
+                    if self.cells[row][col].team not in neutral_teams:
+                        return False
+            return True
     def kill(self, row, col, team):
-        ret = False
-        if (row, col) in self.selected[team]:
-            for r,c in self.selected[team]:
-                self.cells[r][c] = neutral()
-                ret = True
-            ret = self.clearSelection(team) or ret
-        else:
-            if not self.selected[team]:
-                # nothing selected
-                if team == self.cells[row][col].team:
-                    self.cells[row][col] = neutral()
+        with self.lock:
+            ret = False
+            if (row, col) in self.selected[team]:
+                for r,c in self.selected[team]:
+                    self.cells[r][c] = neutral()
                     ret = True
-            ret = self.clearSelection(team) or ret
-        return ret
-    def specialize(self, specialization, team):
-        if self.selected[team]:
-            cost = len(self.selected[team]) * 2
-            if cost > self.points[team]:
-                # TODO response
-                return "Mutation requires " + cost + " points."
-            self.points[team] -= cost
-            for (row,col) in self.selected[team]:
-                mod = self.cells[row][col].modFromString(specialization)
-                self.cells[row][col].specialize(mod)
-    def select(self, row, col, team):
-        if set([(row,col)]) == self.selected[team]:
-            self.selected[team].clear()
-        else:
-            self.selected[team].clear()
-            self.selected[team].add((row,col))
-    def selectAll(self, row, col, team):
-        self.selected[team].clear()
-        self.addAll(row, col, team)
-    def toggle(self, row, col, team):
-        if (row,col) in self.selected[team]:
-            self.selected[team].remove((row,col))
-        else:
-            self.selected[team].add((row,col))
-    def addAll(self, row, col, team):
-        self.selected[team].add((row,col))
-        frontier = collections.deque()
-        visited = set([(row,col)])
-        frontier.append((row,col))
-        while frontier:
-            prow, pcol = frontier.pop()
-            for (arow,acol) in self.adj(prow,pcol):
-                if (arow,acol) not in visited:
-                    if self.cells[arow][acol].team == team:
-                        visited.add((arow,acol))
-			self.selected[team].add((arow,acol))
-                        frontier.append((arow,acol))
-    def clearSelection(self, team):
-        if len(self.selected[team]) == 0:
-            return False
-        self.selected[team].clear()
-        return True
-    def move(self, displacement, team):
-        if self.selected:
-            cost = len(self.selected[team]) * 1
-            if cost > self.points[team]:
-                # TODO response
-                return "Move requires " + str(cost) + " points."
-            self.points[team] -= cost
-            for row, col in self.selected[team]:
-                brow = row + displacement[0]
-                bcol = col + displacement[1]
-                if self.inGrid(brow, bcol) and (self.cells[brow][bcol] == neutral() or (brow,bcol) in self.selected):
-                    continue
-                else:
-                    break
+                ret = self.clearSelection(team) or ret
             else:
-                #move is valid
-                ordered = sorted(self.selected[team], key = orderings[displacement])
-                for row, col in ordered:
+                if not self.selected[team]:
+                    # nothing selected
+                    if team == self.cells[row][col].team:
+                        self.cells[row][col] = neutral()
+                        ret = True
+                ret = self.clearSelection(team) or ret
+            return ret
+    def specialize(self, specialization, team):
+        with self.lock:
+            if self.selected[team]:
+                cost = len(self.selected[team]) * 2
+                if cost > self.points[team]:
+                    # TODO response
+                    return "Mutation requires " + str(cost) + " points."
+                self.points[team] -= cost
+                for (row,col) in self.selected[team]:
+                    mod = self.cells[row][col].modFromString(specialization)
+                    self.cells[row][col].specialize(mod)
+    def select(self, row, col, team):
+        with self.lock:
+            if set([(row,col)]) == self.selected[team]:
+                self.selected[team].clear()
+            else:
+                self.selected[team].clear()
+                self.selected[team].add((row,col))
+    def selectAll(self, row, col, team):
+        with self.lock:
+            self.selected[team].clear()
+            self.addAll(row, col, team)
+    def toggle(self, row, col, team):
+        with self.lock:
+            if (row,col) in self.selected[team]:
+                self.selected[team].remove((row,col))
+            else:
+                self.selected[team].add((row,col))
+    def addAll(self, row, col, team):
+        with self.lock:
+            self.selected[team].add((row,col))
+            frontier = collections.deque()
+            visited = set([(row,col)])
+            frontier.append((row,col))
+            while frontier:
+                prow, pcol = frontier.pop()
+                for (arow,acol) in self.adj(prow,pcol):
+                    if (arow,acol) not in visited:
+                        if self.cells[arow][acol].team == team:
+                            visited.add((arow,acol))
+                            self.selected[team].add((arow,acol))
+                            frontier.append((arow,acol))
+    def clearSelection(self, team):
+        with self.lock:
+            if len(self.selected[team]) == 0:
+                return False
+            self.selected[team].clear()
+            return True
+    def move(self, displacement, team):
+        with self.lock:
+            if self.selected:
+                cost = len(self.selected[team]) * 1
+                if cost > self.points[team]:
+                    # TODO response
+                    return "Move requires " + str(cost) + " points."
+                self.points[team] -= cost
+                for row, col in self.selected[team]:
                     brow = row + displacement[0]
                     bcol = col + displacement[1]
-                    self.cells[brow][bcol] = self.cells[row][col]
-                    self.cells[row][col] = neutral() 
-                    self.selected[team].remove((row,col))
-                    self.selected[team].add((brow,bcol))
-            
+                    if self.inGrid(brow, bcol) and (self.cells[brow][bcol] == neutral() or (brow,bcol) in self.selected):
+                        continue
+                    else:
+                        break
+                else:
+                    #move is valid
+                    ordered = sorted(self.selected[team], key = orderings[displacement])
+                    for row, col in ordered:
+                        brow = row + displacement[0]
+                        bcol = col + displacement[1]
+                        self.cells[brow][bcol] = self.cells[row][col]
+                        self.cells[row][col] = neutral() 
+                        self.selected[team].remove((row,col))
+                        self.selected[team].add((brow,bcol))
+    def aiAct(self, turn, team, action, loc):
+        with self.lock:
+            # TODO lock
+            if turn == self.turn:
+                if action in specializations:
+                    self.clearSelection(team)
+                    self.selected[team].add(loc)
+                    self.specialize(action, team)
+            else:
+                return False
+        return True
             
 """
 extinct = 0

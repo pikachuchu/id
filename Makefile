@@ -1,2 +1,2 @@
 all:
-	python2 gui.py
+	python2 id.py
