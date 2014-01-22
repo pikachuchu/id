@@ -42,7 +42,9 @@ class Grid:
     def reset(self):
         self.turn = 0
         self.land = [[baseLand() for col in range(self.width)] for row in range(self.height)]
-        self.selected = set()
+        self.selected = dict()
+        for team in self.teams:
+            self.selected[team] = set()
         self.points = collections.Counter()
         self.points[self.teams[0]] = 0
         self.points[self.teams[1]] = 0
@@ -96,16 +98,17 @@ class Grid:
                         if self.cells[r1][c1].team != neutral_str:
                             ret = True
                         self.cells[r1][c1], self.cells[r2][c2] = self.cells[r2][c2], self.cells[r1][c1]
-                        temp1 = (r1,c1) in self.selected
-                        temp2 = (r2,c2) in self.selected
-                        if temp2:
-                            self.selected.add((r1,c1))
-                        elif temp1:
-                            self.selected.remove((r1,c1))
-                        if temp1:
-                            self.selected.add((r2,c2))
-                        elif temp2:
-                            self.selected.remove((r2,c2))
+                        for team in self.teams:
+                            temp1 = (r1,c1) in self.selected[team]
+                            temp2 = (r2,c2) in self.selected[team]
+                            if temp2:
+                                self.selected[team].add((r1,c1))
+                            elif temp1:
+                                self.selected[team].remove((r1,c1))
+                            if temp1:
+                                self.selected[team].add((r2,c2))
+                            elif temp2:
+                                self.selected[team].remove((r2,c2))
                     # set new location
                     r, c = random.choice(adjacents)
                     self.tornadoes.append((r,c))
@@ -151,25 +154,26 @@ class Grid:
                 counts = collections.Counter() 
                 strengths = collections.Counter()
                 adjacents = self.adj(row, col)
+                team = self.cells[row][col].team
                 for (r,c) in adjacents:
                     counts[self.cells[r][c].team] += 1
                     strengths[self.cells[r][c].team] += self.cells[r][c].strength
-                if self.cells[row][col].team not in neutral_teams:
-                    friendly = counts[self.cells[row][col].team]
+                if team not in neutral_teams:
+                    friendly = counts[team]
                     if self.cells[row][col].isWarrior2():
                         friendly += self.cells[row][col].strength
                     sum_enemy = 0
-                    for team, strength in strengths.items():
-                        if team != self.cells[row][col].team:
+                    for str_team, strength in strengths.items():
+                        if str_team != team:
                             sum_enemy += strength
                     is_dead = True 
                     if self.land[row][col].canSupport(friendly):
-                        if sum_enemy < strengths[self.cells[row][col].team]:
+                        if sum_enemy < strengths[team]:
                             step[row][col] = self.cells[row][col]
                             is_dead = False
                         else:
                             for r,c in adjacents:
-                                if self.cells[r][c].team == self.cells[row][col].team and self.cells[r][c].isMedic():
+                                if self.cells[r][c].team == team and self.cells[r][c].isMedic():
                                     if self.rand.random() < .25:
                                         step[row][col] = self.cells[row][col]
                                         is_dead = False
@@ -181,12 +185,12 @@ class Grid:
                                             break
                             else:
                                 # killed in combat
-                                for team, strength in strengths.items():
-                                    if team != self.cells[row][col].team and team not in neutral_teams:
-                                        self.points[team] += 1
+                                for str_team, strength in strengths.items():
+                                    if str_team != team and str_team not in neutral_teams:
+                                        self.points[str_team] += 1
                     if is_dead:
-                        if (row,col) in self.selected:
-                            self.selected.remove((row,col))
+                        if (row,col) in self.selected[team]:
+                            self.selected[team].remove((row,col))
                         for r,c in adjacents:
                             if self.cells[r][c].isHunter():
                                 self.land[row][col].regen()
@@ -194,11 +198,11 @@ class Grid:
                                 if self.cells[r][c].isHunter2():
                                     self.land[row][col].regen()
                                     self.land[row][col].regen()
-                elif self.cells[row][col].team == neutral_str:
+                elif team == neutral_str:
                     threes = []
-                    for team, count in counts.items():
-                        if count == 3 and team not in neutral_teams:
-                            threes.append(team)
+                    for c_team, count in counts.items():
+                        if count == 3 and c_team not in neutral_teams:
+                            threes.append(c_team)
                     if len(threes) == 1:
                         strength = strengths[threes[0]] + self.rand.randint(1,12)
                         parents = [self.cells[loc[0]][loc[1]] for loc in adjacents if self.cells[loc[0]][loc[1]].team == threes[0]] 
@@ -221,69 +225,74 @@ class Grid:
     def extinct(self):
         for row in range(self.height):
             for col in range(self.width):
-                if self.cells[row][col].team != neutral_str:
+                if self.cells[row][col].team not in neutral_teams:
                     return False
         return True
-    def kill(self, row, col):
-        if self.cells[row][col].team not in neutral_teams:
-            self.cells[row][col] = neutral()
-            return True
-        return False
-    def specialize(self, specialization):
-        if self.selected:
-            cost = len(self.selected) * 2
-            r,c = iter(self.selected).next()
-            team = self.cells[r][c].team
+    def kill(self, row, col, team):
+        ret = False
+        if (row, col) in self.selected[team]:
+            for r,c in self.selected[team]:
+                self.cells[r][c] = neutral()
+                ret = True
+            ret = self.clearSelection(team) or ret
+        else:
+            if not self.selected[team]:
+                # nothing selected
+                if team == self.cells[row][col].team:
+                    self.cells[row][col] = neutral()
+                    ret = True
+            ret = self.clearSelection(team) or ret
+        return ret
+    def specialize(self, specialization, team):
+        if self.selected[team]:
+            cost = len(self.selected[team]) * 2
             if cost > self.points[team]:
                 # TODO response
                 return "Mutation requires " + cost + " points."
             self.points[team] -= cost
-            for (row,col) in self.selected:
+            for (row,col) in self.selected[team]:
                 mod = self.cells[row][col].modFromString(specialization)
                 self.cells[row][col].specialize(mod)
-    def select(self, row, col):
-        if set([(row,col)]) == self.selected:
-            self.selected.clear()
+    def select(self, row, col, team):
+        if set([(row,col)]) == self.selected[team]:
+            self.selected[team].clear()
         else:
-            self.selected.clear()
-            self.selected.add((row,col))
-    def selectAll(self, row, col):
-        self.selected.clear()
-        self.addAll(row, col)
-    def toggle(self, row, col):
-        if (row,col) in self.selected:
-            self.selected.remove((row,col))
+            self.selected[team].clear()
+            self.selected[team].add((row,col))
+    def selectAll(self, row, col, team):
+        self.selected[team].clear()
+        self.addAll(row, col, team)
+    def toggle(self, row, col, team):
+        if (row,col) in self.selected[team]:
+            self.selected[team].remove((row,col))
         else:
-            self.selected.add((row,col))
-    def addAll(self, row, col):
-        self.selected.add((row,col))
+            self.selected[team].add((row,col))
+    def addAll(self, row, col, team):
+        self.selected[team].add((row,col))
         frontier = collections.deque()
         visited = set([(row,col)])
         frontier.append((row,col))
-        team = self.cells[row][col].team
         while frontier:
             prow, pcol = frontier.pop()
             for (arow,acol) in self.adj(prow,pcol):
                 if (arow,acol) not in visited:
                     if self.cells[arow][acol].team == team:
                         visited.add((arow,acol))
-			self.selected.add((arow,acol))
+			self.selected[team].add((arow,acol))
                         frontier.append((arow,acol))
-    def clearSelection(self):
-        if len(self.selected) == 0:
+    def clearSelection(self, team):
+        if len(self.selected[team]) == 0:
             return False
-        self.selected.clear()
+        self.selected[team].clear()
         return True
-    def move(self, displacement):
+    def move(self, displacement, team):
         if self.selected:
-            cost = len(self.selected) * 1
-            r,c = iter(self.selected).next()
-            team = self.cells[r][c].team
+            cost = len(self.selected[team]) * 1
             if cost > self.points[team]:
                 # TODO response
                 return "Move requires " + str(cost) + " points."
             self.points[team] -= cost
-            for row, col in self.selected:
+            for row, col in self.selected[team]:
                 brow = row + displacement[0]
                 bcol = col + displacement[1]
                 if self.inGrid(brow, bcol) and (self.cells[brow][bcol] == neutral() or (brow,bcol) in self.selected):
@@ -292,14 +301,14 @@ class Grid:
                     break
             else:
                 #move is valid
-                ordered = sorted(self.selected, key = orderings[displacement])
+                ordered = sorted(self.selected[team], key = orderings[displacement])
                 for row, col in ordered:
                     brow = row + displacement[0]
                     bcol = col + displacement[1]
                     self.cells[brow][bcol] = self.cells[row][col]
                     self.cells[row][col] = neutral() 
-                    self.selected.remove((row,col))
-                    self.selected.add((brow,bcol))
+                    self.selected[team].remove((row,col))
+                    self.selected[team].add((brow,bcol))
             
             
 """

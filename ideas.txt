@@ -72,6 +72,7 @@ Special friendly cells:
 Point systems:
     Technology: allows for relocation of cells, greater food supply to support more population, in vitro fertilization (add cell anywhere)
     Evolution: garner points by killing enemies and reproducing, can be used for evolving cells, lose points for killing own cells
+    Can spend points to move your pieces AND ENEMY PIECES
 Random events:
     Lightning strike: kills cell
     Tornado: kills cell, rotates adjacent cells ccw

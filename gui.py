@@ -37,7 +37,9 @@ class Application(tk.Frame):
             return []
         self.spec_ids = [[empty() for col in range(self.width)] for row in range(self.height)]
         self.select_ids = [[None for col in range(self.width)] for row in range(self.height)]
+        # TODO team prompt
         self.board = grid.Grid(self.height, self.width);
+        self.player_team = self.board.teams[0]
         self.cell_height = 50
         self.cell_width = 50
         self.master.bind('<Key>', self.key)
@@ -129,48 +131,48 @@ class Application(tk.Frame):
             if self.specialization_menu.place_info():
                 self.specWarrior()
             else:
-                ret = self.board.move((-1,-1))
+                ret = self.board.move((-1,-1), self.player_team)
         elif event.char == 'w':
             if self.specialization_menu.place_info():
                 pass
             else:
-                ret = self.board.move((-1,0)) 
+                ret = self.board.move((-1,0), self.player_team)
         elif event.char == 'e':
             if self.specialization_menu.place_info():
                 self.specMedic()
             else:
-                ret = self.board.move((-1,1)) 
+                ret = self.board.move((-1,1), self.player_team)
         elif event.char == 'a':
             if self.specialization_menu.place_info():
                 self.specCleric()
             else:
-                self.board.move((0,-1)) 
+                self.board.move((0,-1), self.player_team) 
         elif event.char == 'd':
             if self.specialization_menu.place_info():
                 self.specScientist()
             else:
-                ret = self.board.move((0,1)) 
+                ret = self.board.move((0,1), self.player_team) 
         elif event.char == 'z':
             if self.specialization_menu.place_info():
                 self.specFarmer()
             else:
-                self.board.move((1,-1)) 
+                ret = self.board.move((1,-1), self.player_team) 
         elif event.char == 'x':
             if self.specialization_menu.place_info():
                 pass
             else:
-                ret = self.board.move((1,0))
+                ret = self.board.move((1,0), self.player_team)
         elif event.char == 'c':
             if self.specialization_menu.place_info():
                 self.specHunter()
             else:
-                ret = self.board.move((1,1))
+                ret = self.board.move((1,1), self.player_team)
         elif event.char == 's':
             if self.specialization_menu.place_info():
                 # if exists
                 self.specialization_menu.place_forget()
             else:
-                if self.board.selected:
+                if self.board.selected[self.player_team]:
                     top = self.winfo_toplevel()
                     if self.specialization_menu.winfo_width() == 1:
                         # only once
@@ -188,21 +190,15 @@ class Application(tk.Frame):
                     return
         if ret != None:
             self.info = ret
+        else:
+            self.info = ""
         self.drawThings()
     def kill(self, event):
         brow,bcol = self.cell_locations[event.widget]
-        change = False
-        if (brow,bcol) in self.board.selected:
-            for row, col in self.board.selected:
-                change = self.board.kill(row,col) or change
-            change = self.board.clearSelection() or change 
-        else:
-            change = self.board.kill(brow,bcol) or change
-            change = self.board.clearSelection() or change
-        if change:
+        if self.board.kill(brow,bcol,self.player_team):
             self.drawThings()
     def specialize(self,specialization):
-        ret = self.board.specialize(specialization)
+        ret = self.board.specialize(specialization, self.player_team)
         if ret != None:
             self.info = ret
         self.specialization_menu.place_forget()
@@ -210,28 +206,30 @@ class Application(tk.Frame):
     def select(self, event):
         brow,bcol = self.cell_locations[event.widget]
         if self.board.cells[brow][bcol].team not in grid.neutral_teams:
-            self.board.select(brow,bcol)
-            self.drawThings()
+            if self.player_team == self.board.cells[brow][bcol].team:
+                self.board.select(brow,bcol,self.player_team)
+                self.drawThings()
         else:
-            self.board.clearSelection()
+            self.board.clearSelection(self.player_team)
             self.drawThings()
     def selectAll(self, event):
         brow,bcol = self.cell_locations[event.widget]
         if self.board.cells[brow][bcol].team not in grid.neutral_teams:
-            self.board.selectAll(brow,bcol)
-            self.drawThings()
+            if self.player_team == self.board.cells[brow][bcol].team:
+                self.board.selectAll(brow,bcol,self.player_team)
+                self.drawThings()
         else:
-            self.board.clearSelection()
+            self.board.clearSelection(self.player_team)
             self.drawThings()
     def toggle(self, event):
         brow,bcol = self.cell_locations[event.widget]
-        if self.board.cells[brow][bcol].team not in grid.neutral_teams:
-            self.board.toggle(brow,bcol)
+        if self.player_team == self.board.cells[brow][bcol].team:
+            self.board.toggle(brow,bcol,self.player_team)
             self.drawThings()
     def addAll(self, event):
         brow,bcol = self.cell_locations[event.widget]
-        if self.board.cells[brow][bcol].team not in grid.neutral_teams:
-            self.board.addAll(brow,bcol)
+        if self.player_team == self.board.cells[brow][bcol].team:
+            self.board.addAll(brow,bcol,self.player_team)
             self.drawThings()
     def configure(self, event):
         self.update() # set winfo stuff
@@ -242,7 +240,7 @@ class Application(tk.Frame):
         if self.select_ids[row][col] != None:
             self.cells[row][col].delete(self.select_ids[row][col])
             self.select_ids[row][col] = None
-        if (row,col) in self.board.selected:
+        if (row,col) in self.board.selected[self.player_team]:
             width = self.cells[row][col].winfo_width()
             height = self.cells[row][col].winfo_height()
             self.select_ids[row][col] = self.cells[row][col].create_rectangle(1,1,width-2,height-2,outline='#000000',width=1)
@@ -259,8 +257,8 @@ class Application(tk.Frame):
                 self.panel_widgets[team+"Points"].configure(text = team + ": " + str(points), font = self.cell_font)
                 self.panel_widgets[team+"Points"].place(x = self.board_width, y = self.info_panel.winfo_height() * 9 / 10 - index * self.cell_height * 4 / 5, anchor = tk.NW)
         # populate info_panel based on selection
-        if len(self.board.selected) == 1:
-            row,col = list(self.board.selected)[0]
+        if len(self.board.selected[self.player_team]) == 1:
+            row,col = list(self.board.selected[self.player_team])[0]
             cell = self.board.cells[row][col]
             img_height = self.cell_height * self.height / 5
             img_width = self.cell_width * self.info_panel_span / 3
