@@ -7,9 +7,16 @@ import cell
 import random
 import thread
 import threading
+import Queue
 from PIL import Image
 from PIL import ImageTk
 class Application(tk.Frame):
+    def runTODO(self):
+        while self.eventq.qsize():
+            func, args = self.eventq.get()
+            func(*args)
+        self.update()
+        self.after(100,self.runTODO)
     def changePhoto(self,size,loc):
         # updates image and photo
         if (size,loc) in self.images:
@@ -32,9 +39,11 @@ class Application(tk.Frame):
         # TODO reset back to "" on successful user actions
         self.createWidgets()
         self.grid(sticky=tk.N+tk.S+tk.E+tk.W)
+        self.eventq = Queue.Queue()
         self.ai = []
         self.ai_strat = [random.choice([cell.specializations[a], cell.specializations[a+1]]) for a in range(0,6,2)]
         self.ai.append(thread.start_new_thread(ai.easy, (self.board, self.ai_team, self.board.turn, self.ai_strat, [True])))
+        self.after(24,self.runTODO)
     def createWidgets(self):
         top = self.winfo_toplevel()
         self.height = 15
