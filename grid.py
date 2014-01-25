@@ -126,8 +126,7 @@ class Grid:
                         colors = []
                         for r,c in adjacents:
                             colors.append(self.land[r][c].color())
-                            self.land[r][c].regen()
-                        if self.cells[row][col].isFarmer2():
+                        for i in range(self.cells[row][col].farmerLevel()):
                             for r,c in adjacents:
                                 self.land[r][c].regen()
                         for (r,c), color in zip(adjacents, colors):
@@ -137,23 +136,20 @@ class Grid:
                         for r,c in adjacents:
                             if self.cells[r][c].team not in neutral_teams and not self.cells[r][c].isCleric():
                                 if self.cells[r][c].team != self.cells[row][col].team:
-                                    if self.rand.random() < .10:
-                                        self.cells[r][c].team = self.cells[row][col].team
-                                        ret = True
-                                    elif self.cells[row][col].isCleric2() and self.rand.random() < .20:
-                                        self.cells[r][c].team = self.cells[row][col].team
-                                        ret = True
+                                    for i in range(self.cells[row][col].clericLevel()):
+                                        if self.rand.random() < .10:
+                                            self.cells[r][c].team = self.cells[row][col].team
+                                            ret = True
+                                            break
                     elif self.cells[row][col].isScientist():
                         self.points[self.cells[row][col].team] += self.cells[row][col].scientistLevel()
                     if self.cells[row][col].isWarrior():
                         allies = filter(lambda (r,c): self.cells[row][col].team == self.cells[r][c].team, adjacents)
                         if allies:
-                            r,c = self.rand.choice(allies)
-                            self.cells[r][c].strength += 1 #max at 9?
-                            ret = True
-                            if self.cells[row][col].isWarrior2():
+                            for i in range(self.cells[row][col].warriorLevel()):
                                 r,c = self.rand.choice(allies)
-                                self.cells[r][c].strength += 1
+                                self.cells[r][c].strength += 1 #max at 9?
+                                ret = True
             return ret
     def internal(self):
         self.turn += 1
@@ -186,15 +182,16 @@ class Grid:
                             else:
                                 for r,c in adjacents:
                                     if self.cells[r][c].team == team and self.cells[r][c].isMedic():
-                                        if self.rand.random() < .25:
-                                            step[row][col] = self.cells[row][col]
-                                            is_dead = False
-                                            break
-                                        if self.cells[r][c].isMedic2():
-                                            if self.rand.random() < .67:
+                                        for i in range(self.cells[r][c].medicLevel()):
+                                            if self.rand.random() < .25:
                                                 step[row][col] = self.cells[row][col]
                                                 is_dead = False
                                                 break
+                                        else:
+                                            # Medic did not save
+                                            continue
+                                        # Medic saved
+                                        break
                                 else:
                                     # killed in combat
                                     for str_team, strength in strengths.items():
@@ -206,9 +203,7 @@ class Grid:
                                     self.selected[k_team].remove((row,col))
                             for r,c in adjacents:
                                 if self.cells[r][c].isHunter():
-                                    self.land[row][col].regen()
-                                    self.land[row][col].regen()
-                                    if self.cells[r][c].isHunter2():
+                                    for i in range(self.cells[r][c].hunterLevel()):
                                         self.land[row][col].regen()
                                         self.land[row][col].regen()
                     elif team == neutral_str:
