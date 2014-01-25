@@ -201,8 +201,9 @@ class Grid:
                                         if str_team != team and str_team not in neutral_teams:
                                             self.points[str_team] += 1
                         if is_dead:
-                            if (row,col) in self.selected[team]:
-                                self.selected[team].remove((row,col))
+                            for k_team in self.selected.iterkeys():
+                                if (row,col) in self.selected[k_team]:
+                                    self.selected[k_team].remove((row,col))
                             for r,c in adjacents:
                                 if self.cells[r][c].isHunter():
                                     self.land[row][col].regen()
@@ -245,10 +246,11 @@ class Grid:
         ret = False
         with self.lock:
             if (row, col) in self.selected[team]:
-                for r,c in self.selected[team]:
-                    self.cells[r][c] = neutral()
-                    ret = True
-                ret = self.clearSelection(team) or ret
+                if self.cells[row][col].team == team:
+                    for r,c in self.selected[team]:
+                        self.cells[r][c] = neutral()
+                        ret = True
+                    ret = self.clearSelection(team) or ret
             else:
                 if not self.selected[team]:
                     # nothing selected
@@ -260,14 +262,18 @@ class Grid:
     def specialize(self, specialization, team):
         with self.lock:
             if self.selected[team]:
-                cost = len(self.selected[team]) * 2
-                if cost > self.points[team]:
-                    # TODO response
-                    return "Mutation requires " + str(cost) + " points."
-                self.points[team] -= cost
-                for (row,col) in self.selected[team]:
-                    mod = self.cells[row][col].modFromString(specialization)
-                    self.cells[row][col].specialize(mod)
+                r,c = iter(self.selected[team]).next()
+                if self.cells[r][c].team == team:
+                    cost = len(self.selected[team]) * 2
+                    if cost > self.points[team]:
+                        # TODO response
+                        return "Mutation requires " + str(cost) + " points."
+                    self.points[team] -= cost
+                    for (row,col) in self.selected[team]:
+                        mod = self.cells[row][col].modFromString(specialization)
+                        self.cells[row][col].specialize(mod)
+                else:
+                    return "Cannot specialize enemy team."
     def select(self, row, col, team):
         with self.lock:
             if set([(row,col)]) == self.selected[team]:
@@ -284,9 +290,17 @@ class Grid:
             if (row,col) in self.selected[team]:
                 self.selected[team].remove((row,col))
             else:
+                if self.selected[team]:
+                    r,c = iter(self.selected[team]).next() 
+                    if self.cells[r][c].team != self.cells[row][col].team:
+                        self.clearSelection(team)
                 self.selected[team].add((row,col))
     def addAll(self, row, col, team):
         with self.lock:
+            if self.selected[team]: 
+                r,c = iter(self.selected[team]).next()
+                if self.cells[r][c].team != self.cells[row][col].team:
+                    self.clearSelection(team)
             self.selected[team].add((row,col))
             frontier = collections.deque()
             visited = set([(row,col)])
@@ -295,7 +309,7 @@ class Grid:
                 prow, pcol = frontier.pop()
                 for (arow,acol) in self.adj(prow,pcol):
                     if (arow,acol) not in visited:
-                        if self.cells[arow][acol].team == team:
+                        if self.cells[arow][acol].team == self.cells[row][col].team:
                             visited.add((arow,acol))
                             self.selected[team].add((arow,acol))
                             frontier.append((arow,acol))
@@ -307,21 +321,26 @@ class Grid:
             return True
     def move(self, displacement, team):
         with self.lock:
-            if self.selected:
-                cost = len(self.selected[team]) * 1
+            if self.selected[team]:
+                r,c = iter(self.selected[team]).next()
+                if self.cells[r][c].team != team:
+                    cost = len(self.selected[team]) * 2
+                else:
+                    cost = len(self.selected[team]) * 1
                 if cost > self.points[team]:
                     # TODO response
                     return "Move requires " + str(cost) + " points."
-                self.points[team] -= cost
                 for row, col in self.selected[team]:
                     brow = row + displacement[0]
                     bcol = col + displacement[1]
-                    if self.inGrid(brow, bcol) and (self.cells[brow][bcol] == neutral() or (brow,bcol) in self.selected):
+                    if self.inGrid(brow, bcol) and (self.cells[brow][bcol] == neutral() or (brow,bcol) in self.selected[team]):
                         continue
                     else:
                         break
                 else:
+                    #TODO don't redraw if invalid move
                     #move is valid
+                    self.points[team] -= cost
                     ordered = sorted(self.selected[team], key = orderings[displacement])
                     for row, col in ordered:
                         brow = row + displacement[0]

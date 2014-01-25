@@ -133,7 +133,7 @@ class Application(tk.Frame):
         with self.board.lock:
             if self.board.external():
                 self.drawThings()
-                self.after_idle(self.update)
+                self.update()
                 time.sleep(0.3)
             self.board.internal()
             self.drawThings()
@@ -197,19 +197,21 @@ class Application(tk.Frame):
                     self.specialization_menu.place_forget()
                 else:
                     if self.board.selected[self.player_team]:
-                        top = self.winfo_toplevel()
-                        if self.specialization_menu.winfo_width() == 1:
-                            # only once
-                            self.specialization_menu.place(x=event.x, y=event.y,anchor='center')
-                            self.update
-                        x = max(event.x, self.specialization_menu.winfo_width() / 2)
-                        x = min(x, top.winfo_width() - self.specialization_menu.winfo_width() / 2)
-                        x = min(x, self.board_width - self.specialization_menu.winfo_width() / 2)
-                        y = max(event.y, self.specialization_menu.winfo_height() / 2)
-                        y = min(y, top.winfo_height() - self.specialization_menu.winfo_height() / 2)
-                        board_height = sum([self.cells[i][0].winfo_height() for i in range(self.height)])
-                        y = min(y, board_height - self.specialization_menu.winfo_height() / 2)
-                        self.specialization_menu.place(x=x, y=y,anchor='center')
+                        r,c = iter(self.board.selected[self.player_team]).next()
+                        if self.board.cells[r][c].team == self.player_team:
+                            top = self.winfo_toplevel()
+                            if self.specialization_menu.winfo_width() == 1:
+                                # only once
+                                self.specialization_menu.place(x=event.x, y=event.y,anchor='center')
+                                self.update
+                            x = max(event.x, self.specialization_menu.winfo_width() / 2)
+                            x = min(x, top.winfo_width() - self.specialization_menu.winfo_width() / 2)
+                            x = min(x, self.board_width - self.specialization_menu.winfo_width() / 2)
+                            y = max(event.y, self.specialization_menu.winfo_height() / 2)
+                            y = min(y, top.winfo_height() - self.specialization_menu.winfo_height() / 2)
+                            board_height = sum([self.cells[i][0].winfo_height() for i in range(self.height)])
+                            y = min(y, board_height - self.specialization_menu.winfo_height() / 2)
+                            self.specialization_menu.place(x=x, y=y,anchor='center')
                     else:
                         return
             if ret != None:
@@ -233,9 +235,8 @@ class Application(tk.Frame):
         with self.board.lock:
             brow,bcol = self.cell_locations[event.widget]
             if self.board.cells[brow][bcol].team not in grid.neutral_teams:
-                if self.player_team == self.board.cells[brow][bcol].team:
-                    self.board.select(brow,bcol,self.player_team)
-                    self.drawThings()
+                self.board.select(brow,bcol,self.player_team)
+                self.drawThings()
             else:
                 self.board.clearSelection(self.player_team)
                 self.drawThings()
@@ -243,24 +244,21 @@ class Application(tk.Frame):
         with self.board.lock:
             brow,bcol = self.cell_locations[event.widget]
             if self.board.cells[brow][bcol].team not in grid.neutral_teams:
-                if self.player_team == self.board.cells[brow][bcol].team:
-                    self.board.selectAll(brow,bcol,self.player_team)
-                    self.drawThings()
+                self.board.selectAll(brow,bcol,self.player_team)
+                self.drawThings()
             else:
                 self.board.clearSelection(self.player_team)
                 self.drawThings()
     def toggle(self, event):
         with self.board.lock:
             brow,bcol = self.cell_locations[event.widget]
-            if self.player_team == self.board.cells[brow][bcol].team:
-                self.board.toggle(brow,bcol,self.player_team)
-                self.drawThings()
+            self.board.toggle(brow,bcol,self.player_team)
+            self.drawThings()
     def addAll(self, event):
         with self.board.lock:
             brow,bcol = self.cell_locations[event.widget]
-            if self.player_team == self.board.cells[brow][bcol].team:
-                self.board.addAll(brow,bcol,self.player_team)
-                self.drawThings()
+            self.board.addAll(brow,bcol,self.player_team)
+            self.drawThings()
     def configure(self, event):
         with self.board.lock:
             self.update() # set winfo stuff
