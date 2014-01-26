@@ -241,45 +241,33 @@ class Application(tk.Frame):
             # if exists
             self.specialization_menu.place_forget()
         else:
-            with self.board.lock:
-                brow,bcol = self.cell_locations[event.widget]
-                if self.board.cells[brow][bcol].team not in grid.neutral_teams:
-                    self.board.select(brow,bcol,self.player_team)
-                    self.drawThings()
-                else:
-                    self.board.clearSelection(self.player_team)
-                    self.drawThings()
+            brow,bcol = self.cell_locations[event.widget]
+            self.board.select(brow,bcol,self.player_team)
+            self.drawThings()
     def selectAll(self, event):
         if self.specialization_menu.place_info():
             # if exists
             self.specialization_menu.place_forget()
         else:
-            with self.board.lock:
-                brow,bcol = self.cell_locations[event.widget]
-                if self.board.cells[brow][bcol].team not in grid.neutral_teams:
-                    self.board.selectAll(brow,bcol,self.player_team)
-                    self.drawThings()
-                else:
-                    self.board.clearSelection(self.player_team)
-                    self.drawThings()
+            brow,bcol = self.cell_locations[event.widget]
+            self.board.selectAll(brow,bcol,self.player_team)
+            self.drawThings()
     def toggle(self, event):
         if self.specialization_menu.place_info():
             # if exists
             self.specialization_menu.place_forget()
         else:
-            with self.board.lock:
-                brow,bcol = self.cell_locations[event.widget]
-                self.board.toggle(brow,bcol,self.player_team)
-                self.drawThings()
+            brow,bcol = self.cell_locations[event.widget]
+            self.board.toggle(brow,bcol,self.player_team)
+            self.drawThings()
     def addAll(self, event):
         if self.specialization_menu.place_info():
             # if exists
             self.specialization_menu.place_forget()
         else:
-            with self.board.lock:
-                brow,bcol = self.cell_locations[event.widget]
-                self.board.addAll(brow,bcol,self.player_team)
-                self.drawThings()
+            brow,bcol = self.cell_locations[event.widget]
+            self.board.addAll(brow,bcol,self.player_team)
+            self.drawThings()
     def configure(self, event):
         with self.board.lock:
             self.update() # set winfo stuff

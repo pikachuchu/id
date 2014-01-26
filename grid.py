@@ -271,14 +271,13 @@ class Grid:
                     return "Cannot specialize enemy team."
     def select(self, row, col, team):
         with self.lock:
-            if set([(row,col)]) == self.selected[team]:
-                self.selected[team].clear()
-            else:
-                self.selected[team].clear()
+            was_selected = set([(row,col)]) == self.selected[team]
+            self.clearSelection(team)
+            if not was_selected:
                 self.selected[team].add((row,col))
     def selectAll(self, row, col, team):
         with self.lock:
-            self.selected[team].clear()
+            self.clearSelection(team)
             self.addAll(row, col, team)
     def toggle(self, row, col, team):
         with self.lock:
