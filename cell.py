@@ -91,10 +91,10 @@ def offspring(cell1, cell2, cell3):
     return Cell(cell1.team, (cell1.strength + cell2.strength + cell3.strength + random.randint(1,12)) / 4, [copy.copy(cell1.randStrand()), copy.copy(cell2.randStrand()), copy.copy(cell3.randStrand())])
 def initDna():
     return [[0,0,0], [0,0,0], [0,0,0]]
-neutral_str = "N"
+neutral_str = "Land"
 def neutral():
     return Cell(neutral_str,0, initDna())
-tornado_str = "T"
+tornado_str = "Tornado"
 def tornado():
     return Cell(tornado_str,0, initDna())
 neutral_teams = [neutral_str, tornado_str]
