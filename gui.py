@@ -346,7 +346,7 @@ class Application(tk.Frame):
                     self.panel_widgets["ClericPic"].place(x=self.board_width + img_size / 2, y=self.cell_height * self.height * 3 / 10 + img_size, anchor = "center")
                     cleric_level = self.board.cells[row][col].clericLevel()
                     description = "Level: " + str(cleric_level)
-                    approx_odds = 1 - .1 ** cleric_level
+                    approx_odds = 1 - .9 ** cleric_level
                     approx_odds *= 100
                     approx_odds = int(round(approx_odds))
                     description += "\nHas " + str(approx_odds) + "% chance to convert enemy neighboring cells."
