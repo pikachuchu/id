@@ -317,6 +317,8 @@ class Grid:
         with self.lock:
             if self.selected[team]:
                 r,c = iter(self.selected[team]).next()
+                if self.cells[r][c].team == tornado_str:
+                    return "Cannot move tornado."
                 if self.cells[r][c].team != team:
                     cost = len(self.selected[team]) * 2
                 else:
