@@ -301,6 +301,8 @@ class Application(tk.Frame):
             for row in range(self.height):
                 for col in range(self.width):
                     self.drawCell(row,col)
+            self.drawPanel()
+    def drawPanel(self):
             for widget in self.panel_widgets:
                 self.panel_widgets[widget].place_forget()
             self.board_width = sum([self.cells[i][i].winfo_width() for i in range(self.width)])
