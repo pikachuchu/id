@@ -90,6 +90,7 @@ class Grid:
             self.internal()
     def external(self):
         ret = False # return whether anything was effected
+        self.old_tornadoes = []
         self.tornadoes = []
         with self.lock:
             for row in range(self.height):
@@ -119,6 +120,7 @@ class Grid:
                                     self.selected[team].add((r2,c2))
                                 elif temp2:
                                     self.selected[team].remove((r2,c2))
+                        self.old_tornadoes.append((row,col))
                         # set new location
                         r, c = random.choice(adjacents)
                         self.tornadoes.append((r,c))
@@ -226,8 +228,12 @@ class Grid:
                             parents = [self.cells[loc[0]][loc[1]] for loc in adjacents if self.cells[loc[0]][loc[1]].team == winner] 
                             step[row][col] = offspring(parents[0],parents[1],parents[2])
                             self.points[winner] += 1
-            for r,c in self.tornadoes:
-                step[r][c] = tornado()
+            for (new_r, new_c), (old_r, old_c) in zip(self.tornadoes, self.old_tornadoes):
+                step[new_r][new_c] = tornado()
+                for team in self.teams:
+                    if (old_r,old_c) in self.selected[team]:
+                        self.selected[team].remove((old_r,old_c))
+                        self.selected[team].add((new_r,new_c))
             self.cells = step
     def extinct(self):
         with self.lock:

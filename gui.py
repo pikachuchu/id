@@ -294,7 +294,8 @@ class Application(tk.Frame):
             for widget in self.panel_widgets:
                 self.panel_widgets[widget].place_forget()
             self.board_width = sum([self.cells[i][i].winfo_width() for i in range(self.width)])
-            for index, (team, points) in enumerate(self.board.points.items()):
+            for index, team in enumerate(self.board.teams):
+                points = self.board.points[team]
                 if team not in grid.neutral_teams:
                     self.panel_widgets[team+"Points"].configure(text = team + ": " + str(points), font = self.cell_font)
                     self.panel_widgets[team+"Points"].place(x = self.board_width, y = self.info_panel.winfo_height() * 9 / 10 - index * self.cell_height * 4 / 5, anchor = tk.NW)
@@ -370,10 +371,10 @@ class Application(tk.Frame):
                     self.panel_widgets["HunterInfo"].place(x=self.board_width + img_size, y=self.cell_height * self.height * 3 / 10 + img_size * 2, anchor = tk.W)
                 self.team_font = tkFont.Font(size = img_size / 2) 
                 self.panel_widgets["Title"].configure(text = self.board.cells[row][col].team, font = self.team_font)
-                self.panel_widgets["Title"].place(x=self.board_width + self.cell_width * 2.4, y = self.cell_height, anchor = "center")
+                self.panel_widgets["Title"].place(x=self.board_width + self.cell_width * self.info_panel_span * 2.38 / 5, y = self.cell_height, anchor = "center")
                 self.strength_font = tkFont.Font(size = img_size / 4)
                 self.panel_widgets["Strength"].configure(text = "Strength: " + str(self.board.cells[row][col].strength), font = self.strength_font)
-                self.panel_widgets["Strength"].place(x=self.board_width + self.cell_width * 2.4, y = self.cell_height * 2, anchor = "center")
+                self.panel_widgets["Strength"].place(x=self.board_width + self.cell_width * self.info_panel_span * 2.38 / 5, y = self.cell_height * 2, anchor = "center")
     def drawCell(self, row, col):
         with self.board.lock:
             self.cells[row][col].delete(self.text_ids[row][col])
