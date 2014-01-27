@@ -110,6 +110,7 @@ class Application(tk.Frame):
             self.panel_widgets[spec+"Pic"] = tk.Label()
         self.panel_widgets["Title"] = tk.Label()
         self.panel_widgets["Strength"] = tk.Label()
+        self.panel_widgets["Land"] = tk.Label()
         for row in range(self.height):
             top.rowconfigure(row, weight = 1)
             self.rowconfigure(row, weight = 1)
@@ -203,7 +204,7 @@ class Application(tk.Frame):
                             if self.specialization_menu.winfo_width() == 1:
                                 # only once
                                 self.specialization_menu.place(x=event.x, y=event.y,anchor='center')
-                                self.update
+                                self.update()
                             x = max(event.x, self.specialization_menu.winfo_width() / 2)
                             x = min(x, top.winfo_width() - self.specialization_menu.winfo_width() / 2)
                             x = min(x, self.board_width - self.specialization_menu.winfo_width() / 2)
@@ -302,7 +303,6 @@ class Application(tk.Frame):
             # populate info_panel based on selection
             if len(self.board.selected[self.player_team]) == 1:
                 row,col = list(self.board.selected[self.player_team])[0]
-                cell = self.board.cells[row][col]
                 img_height = self.cell_height * self.height / 5
                 img_width = self.cell_width * self.info_panel_span / 4
                 txt_width = (self.info_panel_span * self.cell_width - img_width) * 9 / 10
@@ -373,8 +373,15 @@ class Application(tk.Frame):
                 self.panel_widgets["Title"].configure(text = self.board.cells[row][col].team, font = self.team_font)
                 self.panel_widgets["Title"].place(x=self.board_width + self.cell_width * self.info_panel_span * 2.38 / 5, y = self.cell_height, anchor = "center")
                 self.strength_font = tkFont.Font(size = img_size / 4)
-                self.panel_widgets["Strength"].configure(text = "Strength: " + str(self.board.cells[row][col].strength), font = self.strength_font)
-                self.panel_widgets["Strength"].place(x=self.board_width + self.cell_width * self.info_panel_span * 2.38 / 5, y = self.cell_height * 2, anchor = "center")
+                self.land_font = tkFont.Font(size = img_size / 6)
+                self.panel_widgets["Land"].configure(text = "Land Quality: " + self.board.land[row][col].description(), font = self.land_font)
+                if self.board.cells[row][col].team not in cell.neutral_teams:
+                    self.panel_widgets["Strength"].configure(text = "Strength: " + str(self.board.cells[row][col].strength), font = self.strength_font)
+                    self.panel_widgets["Strength"].place(x=self.board_width + self.cell_width * self.info_panel_span * 2.38 / 5, y = self.cell_height * 2, anchor = "center")
+                    self.panel_widgets["Land"].place(x=self.board_width + self.cell_width * self.info_panel_span * 2.38 / 5, y = self.cell_height * 2.75, anchor = "center")
+                else:
+                    self.panel_widgets["Land"].place(x=self.board_width + self.cell_width * self.info_panel_span * 2.38 / 5, y = self.cell_height * 2, anchor = "center")
+                
     def drawCell(self, row, col):
         with self.board.lock:
             self.cells[row][col].delete(self.text_ids[row][col])

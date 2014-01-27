@@ -20,6 +20,15 @@ class Land:
         if self.percent < .75:
             return '#99FF33'
         return '#009900'
+    def description(self):
+        percent = int(self.percent*100)
+        if self.percent < .05:
+            return 'Destroyed, ' + str(percent) + '%'
+        if self.percent < .25:
+            return 'Depleted, ' + str(percent) + '%'
+        if self.percent < .75:
+            return 'Normal, ' + str(percent) + '%'
+        return 'Fertile, ' + str(percent) + '%'
     def regen(self):
         self.percent += .04 * self.percent
         self.percent = min(self.percent, 1.0)
