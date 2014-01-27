@@ -275,6 +275,7 @@ class Grid:
                         self.cells[row][col].specialize(mod)
                 else:
                     return "Cannot specialize enemy team."
+        return self.selected
     def select(self, row, col, team):
         with self.lock:
             was_selected = set([(row,col)]) == self.selected[team]
