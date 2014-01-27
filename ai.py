@@ -21,8 +21,6 @@ def easy(board, team, turn, strat, cont):
                 cont[0] = False
             else:
                 app.eventq.put((app.drawThings,()))
-                with board.lock:
-                    pass
         else:
             cont[0] = False
     thread.exit()

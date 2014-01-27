@@ -4,6 +4,7 @@ from cell import Cell, neutral, initDna, tornado, neutral_str, tornado_str, neut
 from land import baseLand
 import threading
 import ai
+import copy
 orderings = {
     (1,1): lambda x: -x[0],
     (0,1): lambda x: -x[1],
@@ -244,21 +245,20 @@ class Grid:
             return True
     def kill(self, row, col, team):
         # returns true if any cells were killed
-        ret = False
+        ret = set()
         with self.lock:
             if (row, col) in self.selected[team]:
                 if self.cells[row][col].team == team:
                     for r,c in self.selected[team]:
                         self.cells[r][c] = neutral()
-                        ret = True
-                    ret = self.clearSelection(team) or ret
+                        ret.add((r,c))
             else:
                 if not self.selected[team]:
                     # nothing selected
                     if team == self.cells[row][col].team:
                         self.cells[row][col] = neutral()
-                        ret = True
-                ret = self.clearSelection(team) or ret
+                        ret.add((row,col))
+            self.clearSelection(team)
             return ret
     def specialize(self, specialization, team):
         with self.lock:
@@ -275,7 +275,7 @@ class Grid:
                         self.cells[row][col].specialize(mod)
                 else:
                     return "Cannot specialize enemy team."
-        return self.selected
+        return self.selected[team]
     def select(self, row, col, team):
         with self.lock:
             was_selected = set([(row,col)]) == self.selected[team]
@@ -286,6 +286,7 @@ class Grid:
         with self.lock:
             self.clearSelection(team)
             self.addAll(row, col, team)
+            return self.selected[team]
     def toggle(self, row, col, team):
         with self.lock:
             if (row,col) in self.selected[team]:
@@ -296,6 +297,7 @@ class Grid:
                     if self.cells[r][c].team != self.cells[row][col].team:
                         self.clearSelection(team)
                 self.selected[team].add((row,col))
+            return self.selected[team]
     def addAll(self, row, col, team):
         with self.lock:
             if self.selected[team]: 
@@ -314,14 +316,17 @@ class Grid:
                             visited.add((arow,acol))
                             self.selected[team].add((arow,acol))
                             frontier.append((arow,acol))
+            return self.selected[team]
     def clearSelection(self, team):
         with self.lock:
+            ret = self.selected[team]
             if len(self.selected[team]) == 0:
-                return False
+                return ret
             self.selected[team].clear()
-            return True
+            return ret
     def move(self, displacement, team):
         with self.lock:
+            ret = copy.copy(self.selected[team])
             if self.selected[team]:
                 r,c = iter(self.selected[team]).next()
                 if self.cells[r][c].team == tornado_str:
@@ -341,7 +346,6 @@ class Grid:
                     else:
                         break
                 else:
-                    #TODO don't redraw if invalid move
                     #move is valid
                     self.points[team] -= cost
                     ordered = sorted(self.selected[team], key = orderings[displacement])
@@ -352,6 +356,8 @@ class Grid:
                         self.cells[row][col] = neutral() 
                         self.selected[team].remove((row,col))
                         self.selected[team].add((brow,bcol))
+                        ret.add((brow,bcol))
+        return ret
     def aiAct(self, turn, team, action, loc, displacement = None):
         ret = True
         row,col = loc
@@ -361,7 +367,7 @@ class Grid:
                 if action in specializations:
                     self.clearSelection(team)
                     self.selected[team].add(loc)
-                    if self.specialize(action, team) != None:
+                    if not self.specialize(action, team):
                         ret = False
                 elif action == "kill":
                     self.clearSelection(team)

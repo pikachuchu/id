@@ -141,85 +141,85 @@ class Application(tk.Frame):
             for i in range(len(self.ai)):
                 self.ai[i] = thread.start_new_thread(ai.easy, (self.board, self.ai_team, self.board.turn, self.ai_strat, [True]))
     def resetBoard(self):
-        with self.board.lock:
-            self.board.reset()
-            self.drawThings()
+        self.board.reset()
+        self.drawThings()
     def step300(self):
-        with self.board.lock:
-            for i in range(300):
-                self.board.step()
-            self.drawThings()
+        for i in range(300):
+            self.board.step()
+        self.drawThings()
     def key(self, event):
-        with self.board.lock:
-            ret = None
-            if event.char == 'q':
-                if self.specialization_menu.place_info():
-                    self.specWarrior()
-                else:
-                    ret = self.board.move((-1,-1), self.player_team)
-            elif event.char == 'w':
-                if self.specialization_menu.place_info():
-                    pass
-                else:
-                    ret = self.board.move((-1,0), self.player_team)
-            elif event.char == 'e':
-                if self.specialization_menu.place_info():
-                    self.specMedic()
-                else:
-                    ret = self.board.move((-1,1), self.player_team)
-            elif event.char == 'a':
-                if self.specialization_menu.place_info():
-                    self.specCleric()
-                else:
-                    self.board.move((0,-1), self.player_team) 
-            elif event.char == 'd':
-                if self.specialization_menu.place_info():
-                    self.specScientist()
-                else:
-                    ret = self.board.move((0,1), self.player_team) 
-            elif event.char == 'z':
-                if self.specialization_menu.place_info():
-                    self.specFarmer()
-                else:
-                    ret = self.board.move((1,-1), self.player_team) 
-            elif event.char == 'x':
-                if self.specialization_menu.place_info():
-                    pass
-                else:
-                    ret = self.board.move((1,0), self.player_team)
-            elif event.char == 'c':
-                if self.specialization_menu.place_info():
-                    self.specHunter()
-                else:
-                    ret = self.board.move((1,1), self.player_team)
-            elif event.char == 's':
-                if self.specialization_menu.place_info():
-                    # if exists
-                    self.specialization_menu.place_forget()
-                else:
-                    if self.board.selected[self.player_team]:
-                        r,c = iter(self.board.selected[self.player_team]).next()
-                        if self.board.cells[r][c].team == self.player_team:
-                            top = self.winfo_toplevel()
-                            if self.specialization_menu.winfo_width() == 1:
-                                # only once
-                                self.specialization_menu.place(x=event.x, y=event.y,anchor='center')
-                                self.update()
-                            x = max(event.x, self.specialization_menu.winfo_width() / 2)
-                            x = min(x, top.winfo_width() - self.specialization_menu.winfo_width() / 2)
-                            x = min(x, self.board_width - self.specialization_menu.winfo_width() / 2)
-                            y = max(event.y, self.specialization_menu.winfo_height() / 2)
-                            y = min(y, top.winfo_height() - self.specialization_menu.winfo_height() / 2)
-                            board_height = sum([self.cells[i][0].winfo_height() for i in range(self.height)])
-                            y = min(y, board_height - self.specialization_menu.winfo_height() / 2)
-                            self.specialization_menu.place(x=x, y=y,anchor='center')
-                    else:
-                        return
-            if ret != None:
-                self.info = ret
+        ret = None
+        if event.char == 'q':
+            if self.specialization_menu.place_info():
+                self.specWarrior()
             else:
-                self.info = ""
-            self.drawThings()
+                ret = self.board.move((-1,-1), self.player_team)
+        elif event.char == 'w':
+            if self.specialization_menu.place_info():
+                pass
+            else:
+                ret = self.board.move((-1,0), self.player_team)
+        elif event.char == 'e':
+            if self.specialization_menu.place_info():
+                self.specMedic()
+            else:
+                ret = self.board.move((-1,1), self.player_team)
+        elif event.char == 'a':
+            if self.specialization_menu.place_info():
+                self.specCleric()
+            else:
+                ret = self.board.move((0,-1), self.player_team) 
+        elif event.char == 'd':
+            if self.specialization_menu.place_info():
+                self.specScientist()
+            else:
+                ret = self.board.move((0,1), self.player_team) 
+        elif event.char == 'z':
+            if self.specialization_menu.place_info():
+                self.specFarmer()
+            else:
+                ret = self.board.move((1,-1), self.player_team) 
+        elif event.char == 'x':
+            if self.specialization_menu.place_info():
+                pass
+            else:
+                ret = self.board.move((1,0), self.player_team)
+        elif event.char == 'c':
+            if self.specialization_menu.place_info():
+                self.specHunter()
+            else:
+                ret = self.board.move((1,1), self.player_team)
+        elif event.char == 's':
+            if self.specialization_menu.place_info():
+                # if exists
+                self.specialization_menu.place_forget()
+            else:
+                if self.board.selected[self.player_team]:
+                    r,c = iter(self.board.selected[self.player_team]).next()
+                    if self.board.cells[r][c].team == self.player_team:
+                        top = self.winfo_toplevel()
+                        if self.specialization_menu.winfo_width() == 1:
+                            # only once
+                            self.specialization_menu.place(x=event.x, y=event.y,anchor='center')
+                            self.update()
+                        x = max(event.x, self.specialization_menu.winfo_width() / 2)
+                        x = min(x, top.winfo_width() - self.specialization_menu.winfo_width() / 2)
+                        x = min(x, self.board_width - self.specialization_menu.winfo_width() / 2)
+                        y = max(event.y, self.specialization_menu.winfo_height() / 2)
+                        y = min(y, top.winfo_height() - self.specialization_menu.winfo_height() / 2)
+                        board_height = sum([self.cells[i][0].winfo_height() for i in range(self.height)])
+                        y = min(y, board_height - self.specialization_menu.winfo_height() / 2)
+                        self.specialization_menu.place(x=x, y=y,anchor='center')
+                else:
+                    return
+        if type(ret) == type(""):
+            self.info = ret
+        elif type(ret) == type(set()):
+            self.info = ""
+            for r,c in ret:
+                print r,c
+                self.drawCell(r,c)
+            self.drawPanel()
     def kill(self, event):
         if self.specialization_menu.place_info():
             # if exists
@@ -231,12 +231,14 @@ class Application(tk.Frame):
                 if self.board.kill(brow,bcol,self.player_team):
                     self.drawThings()
     def specialize(self,specialization):
-        with self.board.lock:
             ret = self.board.specialize(specialization, self.player_team)
-            if ret != None:
+            if type(ret) == type(""):
                 self.info = ret
+            else:
+                for r,c in ret:
+                    self.drawCell(r,c)
             self.specialization_menu.place_forget()
-            self.drawThings()
+            self.drawPanel()
     def select(self, event):
         if self.specialization_menu.place_info():
             # if exists
