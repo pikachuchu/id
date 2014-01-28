@@ -141,6 +141,8 @@ class Application(tk.Frame):
             for i in range(len(self.ai)):
                 self.ai[i] = thread.start_new_thread(ai.medium, (self.board, self.ai_team, self.board.turn, self.ai_strat, [True]))
     def resetBoard(self):
+        self.ai_strat = [random.choice([cell.specializations[a], cell.specializations[a+1]]) for a in range(0,6,2)]
+        self.ai[0] = thread.start_new_thread(ai.medium, (self.board, self.ai_team, self.board.turn, self.ai_strat, [True]))
         self.board.reset()
         self.drawThings()
     def step300(self):
