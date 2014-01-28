@@ -1,3 +1,7 @@
+Harassment
+    Moving opponent pieces costs 2x as much as moving your own
+    Place enemy cells (kill cost?)
+    Praying to tornado (to move)
 Specialization tree
     Warrior (Maroon)
         1
@@ -12,7 +16,10 @@ Specialization tree
         1 10%
         2 28%
         Converts enemy neighbors
-        FIXME left to right advantage
+        Divine Favors
+            Small probability based on level
+            Only lasts one turn
+            Can be used to control tornado, etc.
     Scientist (Purple)
         1 +1
         2 +2

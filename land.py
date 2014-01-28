@@ -36,6 +36,7 @@ class Land:
         if cell != neutral():
             self.percent -= .05
             self.percent -= (abs(cell.pheno[0]) + abs(cell.pheno[1]) + abs(cell.pheno[2])) * .01
+            self.percent = max(self.percent, .004)
     def decimate(self, prop):
         self.percent *= prop 
 def baseLand():

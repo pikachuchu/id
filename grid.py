@@ -266,8 +266,8 @@ class Grid:
                     if team == self.cells[row][col].team:
                         self.cells[row][col] = neutral()
                         ret.add((row,col))
-            self.clearSelection(team)
-            return ret
+            ret = ret.union(self.clearSelection(team))
+        return ret
     def specialize(self, specialization, team):
         with self.lock:
             if self.selected[team]:
@@ -327,9 +327,7 @@ class Grid:
             return self.selected[team]
     def clearSelection(self, team):
         with self.lock:
-            ret = self.selected[team]
-            if len(self.selected[team]) == 0:
-                return ret
+            ret = copy.copy(self.selected[team])
             self.selected[team].clear()
             return ret
     def move(self, displacement, team):
