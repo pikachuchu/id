@@ -36,6 +36,8 @@ def medium(board, team, turn, strat, cont):
         if mycells:
             row, col = random.choice(mycells)
             specialization = random.choice(strat)
+            if specialization is not "Farmer" and specialization is not "Hunter":
+                specialization = random.choice(strat)
             if not board.aiAct(turn, team, specialization, (row,col)):
                 # our turn is over
                 cont[0] = False
