@@ -46,8 +46,9 @@ class Grid:
                 if self.inGrid(r,c):
                     ret.append((r,c))
             return ret
-    def reset(self, include_tornado = True):
+    def reset(self, include_tornado = True, testing = False):
         with self.lock:
+            self.testing = testing
             self.turn = 0
             self.land = [[baseLand() for col in range(self.width)] for row in range(self.height)]
             self.selected = dict()
@@ -275,9 +276,9 @@ class Grid:
         with self.lock:
             if self.selected[team]:
                 r,c = iter(self.selected[team]).next()
-                if self.cells[r][c].team == team:
+                if self.cells[r][c].team == team or self.testing:
                     cost = len(self.selected[team]) * 2
-                    if cost > self.points[team]:
+                    if cost > self.points[team] and not self.testing:
                         # TODO response
                         return "Mutation requires " + str(cost) + " points."
                     self.points[team] -= cost
@@ -338,13 +339,13 @@ class Grid:
             ret = copy.copy(self.selected[team])
             if self.selected[team]:
                 r,c = iter(self.selected[team]).next()
-                if self.cells[r][c].team == tornado_str:
+                if self.cells[r][c].team == tornado_str and not self.testing:
                     return "Cannot move tornado."
                 if self.cells[r][c].team != team:
                     cost = len(self.selected[team]) * 2
                 else:
                     cost = len(self.selected[team]) * 1
-                if cost > self.points[team]:
+                if cost > self.points[team] and not self.testing:
                     # TODO response
                     return "Move requires " + str(cost) + " points."
                 for row, col in self.selected[team]:

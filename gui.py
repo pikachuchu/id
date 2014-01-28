@@ -130,6 +130,15 @@ class Application(tk.Frame):
         self.include_tornado = tk.IntVar()
         self.panel_widgets["TornadoCheck"] = tk.Checkbutton(text="Tornado", variable=self.include_tornado)
         self.panel_widgets["TornadoCheck"].select()
+        self.vers_ai_str = "Versus AI"
+        self.testing_str = "Testing"
+        self.mode = tk.StringVar()
+        self.modes = (
+            self.vers_ai_str,
+            self.testing_str,
+        )
+        self.mode.set(self.modes[0])
+        self.panel_widgets["Mode"] = tk.OptionMenu(self, self.mode, *self.modes)
     def specWarrior(self):
         self.specialize('Warrior')
     def specMedic(self):
@@ -152,8 +161,10 @@ class Application(tk.Frame):
             self.drawThings()
             self.updateAI()
     def resetBoard(self):
-        self.board.reset(self.include_tornado.get() > 0)
-        self.createAI()
+        testing = self.mode.get() == self.testing_str
+        self.board.reset(self.include_tornado.get() > 0, testing = testing)
+        if self.mode.get() == self.vers_ai_str:
+            self.createAI()
         self.drawThings()
     def step300(self):
         for i in range(300):
@@ -208,7 +219,8 @@ class Application(tk.Frame):
             else:
                 if self.board.selected[self.player_team]:
                     r,c = iter(self.board.selected[self.player_team]).next()
-                    if self.board.cells[r][c].team == self.player_team:
+                    testing = self.mode.get() == self.testing_str
+                    if self.board.cells[r][c].team == self.player_team or testing:
                         top = self.winfo_toplevel()
                         if self.specialization_menu.winfo_width() == 1:
                             # only once
@@ -292,7 +304,6 @@ class Application(tk.Frame):
             self.clearPanel()
             # if already exists
             self.drawPanel()
-            self.settings_button.configure(text="Settings")
         else:
             self.clearPanel()
             self.settingsPanel()
@@ -321,7 +332,7 @@ class Application(tk.Frame):
             points = self.board.points[team]
             if team not in grid.neutral_teams:
                 self.panel_widgets[team+"Points"].configure(text = team + ": " + str(points), font = self.cell_font)
-                self.panel_widgets[team+"Points"].place(x = self.board_width, y = self.info_panel.winfo_height() * 9 / 10 - index * self.cell_height * 4 / 5, anchor = tk.NW)
+                self.panel_widgets[team+"Points"].place(x = self.board_width, y = self.info_panel.winfo_height() - index * self.cell_height * 4 / 5, anchor = tk.NW)
     def drawSelectedInfo(self):
         # populate info_panel based on selection
         row,col = iter(self.board.selected[self.player_team]).next()
@@ -404,12 +415,14 @@ class Application(tk.Frame):
         else:
             self.panel_widgets["Land"].place(x=self.board_width + self.cell_width * self.info_panel_span * 2.38 / 5, y = self.cell_height * 2, anchor = "center")
     def settingsPanel(self):
-        self.panel_widgets["TornadoCheck"].place(x=self.board_width + self.cell_width, y = self.cell_height, anchor = tk.CENTER)
+        self.panel_widgets["TornadoCheck"].place(x=self.board_width + self.cell_width, y = self.cell_height * self.height * 2 / 5, anchor = tk.CENTER)
+        self.panel_widgets["Mode"].place(x=self.board_width + self.cell_width, y = self.cell_height, anchor = tk.CENTER)
     def drawPanel(self):
         self.clearPanel()
         self.drawScore()
         if len(self.board.selected[self.player_team]) == 1:
             self.drawSelectedInfo()
+        self.settings_button.configure(text="Settings")
     def drawCell(self, row, col):
         with self.board.lock:
             self.cells[row][col].delete(self.text_ids[row][col])
