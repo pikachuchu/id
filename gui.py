@@ -45,12 +45,14 @@ class Application(tk.Frame):
         self.createAI()
         self.after(24,self.runTODO)
     def createAI(self):
-        self.ai = []
-        self.ai_strat = [random.choice([cell.specializations[a], cell.specializations[a+1]]) for a in range(0,6,2)]
-        self.ai.append(thread.start_new_thread(ai.medium, (self.board, self.ai_team, self.board.turn, self.ai_strat, [True])))
+        if self.mode.get() == self.vers_ai_str:
+            self.ai = []
+            self.ai_strat = [random.choice([cell.specializations[a], cell.specializations[a+1]]) for a in range(0,6,2)]
+            self.ai.append(thread.start_new_thread(ai.medium, (self.board, self.ai_team, self.board.turn, self.ai_strat, [True])))
     def updateAI(self):
-        for i in range(len(self.ai)):
-            self.ai[i] = thread.start_new_thread(ai.medium, (self.board, self.ai_team, self.board.turn, self.ai_strat, [True]))
+        if self.mode.get() == self.vers_ai_str:
+            for i in range(len(self.ai)):
+                self.ai[i] = thread.start_new_thread(ai.medium, (self.board, self.ai_team, self.board.turn, self.ai_strat, [True]))
     def createWidgets(self):
         top = self.winfo_toplevel()
         self.height = 15
@@ -138,6 +140,7 @@ class Application(tk.Frame):
             self.testing_str,
         )
         self.mode.set(self.modes[0])
+        self.testing = self.mode.get() == self.testing_str
         self.panel_widgets["Mode"] = tk.OptionMenu(self, self.mode, *self.modes)
     def specWarrior(self):
         self.specialize('Warrior')
@@ -161,10 +164,9 @@ class Application(tk.Frame):
             self.drawThings()
             self.updateAI()
     def resetBoard(self):
-        testing = self.mode.get() == self.testing_str
-        self.board.reset(self.include_tornado.get() > 0, testing = testing)
-        if self.mode.get() == self.vers_ai_str:
-            self.createAI()
+        self.testing = self.mode.get() == self.testing_str
+        self.board.reset(self.include_tornado.get() > 0, testing = self.testing)
+        self.createAI()
         self.drawThings()
     def step300(self):
         for i in range(300):
@@ -219,8 +221,7 @@ class Application(tk.Frame):
             else:
                 if self.board.selected[self.player_team]:
                     r,c = iter(self.board.selected[self.player_team]).next()
-                    testing = self.mode.get() == self.testing_str
-                    if self.board.cells[r][c].team == self.player_team or testing:
+                    if self.board.cells[r][c].team == self.player_team or self.testing:
                         top = self.winfo_toplevel()
                         if self.specialization_menu.winfo_width() == 1:
                             # only once

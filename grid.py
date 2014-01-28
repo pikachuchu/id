@@ -260,14 +260,14 @@ class Grid:
         ret = set()
         with self.lock:
             if (row, col) in self.selected[team]:
-                if self.cells[row][col].team == team:
+                if self.cells[row][col].team == team or self.testing:
                     for r,c in self.selected[team]:
                         self.cells[r][c] = neutral()
                         ret.add((r,c))
             else:
                 if not self.selected[team]:
                     # nothing selected
-                    if team == self.cells[row][col].team:
+                    if team == self.cells[row][col].team or self.testing:
                         self.cells[row][col] = neutral()
                         ret.add((row,col))
             ret = ret.union(self.clearSelection(team))
@@ -281,7 +281,10 @@ class Grid:
                     if cost > self.points[team] and not self.testing:
                         # TODO response
                         return "Mutation requires " + str(cost) + " points."
-                    self.points[team] -= cost
+                    if self.testing:
+                        self.points[self.cells[r][c].team] -= cost
+                    else:
+                        self.points[team] -= cost
                     for (row,col) in self.selected[team]:
                         mod = self.cells[row][col].modFromString(specialization)
                         self.cells[row][col].specialize(mod)
@@ -341,7 +344,7 @@ class Grid:
                 r,c = iter(self.selected[team]).next()
                 if self.cells[r][c].team == tornado_str and not self.testing:
                     return "Cannot move tornado."
-                if self.cells[r][c].team != team:
+                if self.cells[r][c].team != team and not self.testing:
                     cost = len(self.selected[team]) * 2
                 else:
                     cost = len(self.selected[team]) * 1
@@ -357,7 +360,10 @@ class Grid:
                         break
                 else:
                     #move is valid
-                    self.points[team] -= cost
+                    if self.testing:
+                        self.points[self[r][c].team] -= cost
+                    else:
+                        self.points[team] -= cost
                     ordered = sorted(self.selected[team], key = orderings[displacement])
                     for row, col in ordered:
                         brow = row + displacement[0]
