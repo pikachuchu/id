@@ -42,7 +42,7 @@ class Application(tk.Frame):
         self.eventq = Queue.Queue()
         self.ai = []
         self.ai_strat = [random.choice([cell.specializations[a], cell.specializations[a+1]]) for a in range(0,6,2)]
-        self.ai.append(thread.start_new_thread(ai.easy, (self.board, self.ai_team, self.board.turn, self.ai_strat, [True])))
+        self.ai.append(thread.start_new_thread(ai.medium, (self.board, self.ai_team, self.board.turn, self.ai_strat, [True])))
         self.after(24,self.runTODO)
     def createWidgets(self):
         top = self.winfo_toplevel()
@@ -139,7 +139,7 @@ class Application(tk.Frame):
             self.board.internal()
             self.drawThings()
             for i in range(len(self.ai)):
-                self.ai[i] = thread.start_new_thread(ai.easy, (self.board, self.ai_team, self.board.turn, self.ai_strat, [True]))
+                self.ai[i] = thread.start_new_thread(ai.medium, (self.board, self.ai_team, self.board.turn, self.ai_strat, [True]))
     def resetBoard(self):
         self.board.reset()
         self.drawThings()

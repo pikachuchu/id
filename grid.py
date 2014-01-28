@@ -377,7 +377,9 @@ class Grid:
                         ret = False
                 elif action == "kill":
                     self.clearSelection(team)
-                    if not self.kill(row,col,team):
+                    killed = self.kill(row,col,team)
+                    print killed
+                    if not killed:
                         ret = False
                 elif action == "move":
                     self.clearSelection(team)
