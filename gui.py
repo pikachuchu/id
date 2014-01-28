@@ -283,7 +283,8 @@ class Application(tk.Frame):
         if (row,col) in self.board.selected[self.player_team]:
             width = self.cells[row][col].winfo_width()
             height = self.cells[row][col].winfo_height()
-            self.select_ids[row][col] = self.cells[row][col].create_rectangle(1,1,width-2,height-2,outline='#000000',width=1)
+            color = self.board.land[row][col].outlineColor()
+            self.select_ids[row][col] = self.cells[row][col].create_rectangle(1,1,width-2,height-2,outline=color,width=1)
     def drawThings(self):
         with self.board.lock:
             self.cell_font = tkFont.Font(size=2 * min(self.cell_height,self.cell_width) / 5)

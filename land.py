@@ -20,6 +20,14 @@ class Land:
         if self.percent < .75:
             return '#99FF33'
         return '#009900'
+    def outlineColor(self):
+        if self.percent < .05:
+            return '#FFFF00' 
+        if self.percent < .25:
+            return '#FFFF00'
+        if self.percent < .75:
+            return '#000000'
+        return '#000000'
     def description(self):
         percent = int(self.percent*100)
         if self.percent < .05:
