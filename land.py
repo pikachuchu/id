@@ -38,12 +38,12 @@ class Land:
             return 'Normal, ' + str(percent) + '%'
         return 'Fertile, ' + str(percent) + '%'
     def regen(self):
-        self.percent += .04 * self.percent
+        self.percent += .05 * self.percent
         self.percent = min(self.percent, 1.0)
     def deplete(self, cell):
         if cell != neutral():
             self.percent -= .05
-            self.percent -= (abs(cell.pheno[0]) + abs(cell.pheno[1]) + abs(cell.pheno[2])) * .01
+            self.percent -= (abs(cell.pheno[0]) + abs(cell.pheno[1]) + abs(cell.pheno[2])) * .005
             self.percent = max(self.percent, .004)
     def decimate(self, prop):
         self.percent *= prop 

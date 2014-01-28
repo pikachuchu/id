@@ -211,6 +211,8 @@ class Grid:
                                     for i in range(self.cells[r][c].hunterLevel()):
                                         self.land[row][col].regen()
                                         self.land[row][col].regen()
+                                        self.land[row][col].regen()
+                                        self.land[row][col].regen()
                     elif team == neutral_str:
                         threes = []
                         for c_team, count in counts.items():
