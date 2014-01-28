@@ -46,7 +46,7 @@ class Grid:
                 if self.inGrid(r,c):
                     ret.append((r,c))
             return ret
-    def reset(self):
+    def reset(self, include_tornado = True):
         with self.lock:
             self.turn = 0
             self.land = [[baseLand() for col in range(self.width)] for row in range(self.height)]
@@ -81,7 +81,8 @@ class Grid:
                     else:
                         self.cells[row][col] = neutral()
                         self.cells[row][self.width - col - 1] = neutral()
-            self.cells[self.width / 2][self.height / 2] = tornado()
+            if include_tornado:
+                self.cells[self.width / 2][self.height / 2] = tornado()
     def color(self, row, col):
         with self.lock:
             return self.land[row][col].color()
