@@ -93,6 +93,7 @@ class Grid:
         ret = False # return whether anything was effected
         self.old_tornadoes = []
         self.tornadoes = []
+        conversions = []
         with self.lock:
             for row in range(self.height):
                 for col in range(self.width):
@@ -135,13 +136,12 @@ class Grid:
                         for (r,c), color in zip(adjacents, colors):
                             ret = ret or self.land[r][c].color() == color
                     if self.cells[row][col].isCleric():
-                        # FIXME left to right bias
                         for r,c in adjacents:
                             if self.cells[r][c].team not in neutral_teams and not self.cells[r][c].isCleric():
                                 if self.cells[r][c].team != self.cells[row][col].team:
                                     for i in range(self.cells[row][col].clericLevel()):
                                         if self.rand.random() < .10:
-                                            self.cells[r][c].team = self.cells[row][col].team
+                                            conversions.append((self.cells[row][col].team, r, c))
                                             ret = True
                                             break
                     elif self.cells[row][col].isScientist():
@@ -153,6 +153,8 @@ class Grid:
                                 r,c = self.rand.choice(allies)
                                 self.cells[r][c].strength += 1 #max at 9?
                                 ret = True
+            for dteam, r, c in conversions:
+                self.cells[r][c].team = dteam
             return ret
     def internal(self):
         self.turn += 1
