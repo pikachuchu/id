@@ -219,7 +219,10 @@ class Grid:
                             parents = [self.cells[loc[0]][loc[1]] for loc in adjacents if self.cells[loc[0]][loc[1]].team == threes[0]] 
                             step[row][col] = offspring(parents[0],parents[1],parents[2])
                             self.points[threes[0]] += 1
-                        if len(threes) == 2:
+                            for steam in self.selected:
+                                if (row,col) in self.selected[steam]:
+                                    self.selected[steam].remove((row,col))
+                        elif len(threes) == 2:
                             if strengths[threes[0]] > strengths[threes[1]]:
                                 winner = threes[0]
                             elif strengths[threes[0]] < strengths[threes[1]]:
@@ -228,6 +231,9 @@ class Grid:
                                 winner = threes[self.rand.randint(0,1)]
                             parents = [self.cells[loc[0]][loc[1]] for loc in adjacents if self.cells[loc[0]][loc[1]].team == winner] 
                             step[row][col] = offspring(parents[0],parents[1],parents[2])
+                            for steam in self.selected:
+                                if (row,col) in self.selected[steam]:
+                                    self.selected[steam].remove((row,col))
                             self.points[winner] += 1
             for (new_r, new_c), (old_r, old_c) in zip(self.tornadoes, self.old_tornadoes):
                 step[new_r][new_c] = tornado()
