@@ -314,7 +314,7 @@ class Application(tk.Frame):
                 self.panel_widgets["WarriorPic"].configure(image=self.photoimage, height = img_size, width = img_size)
                 self.panel_widgets["WarriorPic"].place(x=self.board_width + img_size / 2, y=self.cell_height * self.height * 3 / 10, anchor = "center")
                 warrior_level = self.board.cells[row][col].warriorLevel()
-                description = "Level: " + str(warrior_level)
+                description = "Level " + str(warrior_level) + " Warrior"
                 description += "\nGrants " + str(warrior_level) + " permanent bonus strength distributed among random allied neighbors."
                 if warrior_level >= 2:
                     description += "\nIncludes its own strength in combat survival."
@@ -325,7 +325,7 @@ class Application(tk.Frame):
                 self.panel_widgets["MedicPic"].configure(image=self.photoimage, height = img_size, width = img_size)
                 self.panel_widgets["MedicPic"].place(x=self.board_width + img_size / 2, y=self.cell_height * self.height * 3 / 10, anchor = "center")
                 medic_level = self.board.cells[row][col].medicLevel()
-                description = "Level: " + str(medic_level)
+                description = "Level " + str(medic_level) + " Medic"
                 approx_odds = 1 - .75 ** medic_level
                 approx_odds *= 100
                 approx_odds = int(round(approx_odds))
@@ -337,7 +337,7 @@ class Application(tk.Frame):
                 self.panel_widgets["ClericPic"].configure(image=self.photoimage, height = img_size, width = img_size)
                 self.panel_widgets["ClericPic"].place(x=self.board_width + img_size / 2, y=self.cell_height * self.height * 3 / 10 + img_size, anchor = "center")
                 cleric_level = self.board.cells[row][col].clericLevel()
-                description = "Level: " + str(cleric_level)
+                description = "Level " + str(cleric_level) + " Cleric"
                 approx_odds = 1 - .9 ** cleric_level
                 approx_odds *= 100
                 approx_odds = int(round(approx_odds))
@@ -350,7 +350,7 @@ class Application(tk.Frame):
                 self.panel_widgets["ScientistPic"].configure(image=self.photoimage, height = img_size, width = img_size)
                 self.panel_widgets["ScientistPic"].place(x=self.board_width + img_size / 2, y=self.cell_height * self.height * 3 / 10 + img_size, anchor = "center")
                 scientist_level = self.board.cells[row][col].scientistLevel()
-                description = "Level: " + str(scientist_level)
+                description = "Level " + str(scientist_level) + " Scientist"
                 description += "\nGrants " + str(scientist_level) + " points per turn."
                 self.panel_widgets["ScientistInfo"].configure(text = description, font = self.desc_font, wraplength = txt_width)
                 self.panel_widgets["ScientistInfo"].place(x=self.board_width + img_size, y=self.cell_height * self.height * 3 / 10 + img_size, anchor = tk.W)
@@ -358,7 +358,7 @@ class Application(tk.Frame):
                 self.changePhoto((img_size,img_size), "assets/pitchfork.gif")
                 self.panel_widgets["FarmerPic"].configure(image=self.photoimage, height = img_size, width = img_size)
                 self.panel_widgets["FarmerPic"].place(x=self.board_width + img_size / 2, y=self.cell_height * self.height * 3 / 10 + img_size * 2, anchor = "center")
-                description = "Level: " + str(self.board.cells[row][col].farmerLevel())
+                description = "Level " + str(self.board.cells[row][col].farmerLevel()) + " Farmer"
                 description += "\nImproves adjacent land proportional to level."
                 self.panel_widgets["FarmerInfo"].configure(text = description, font = self.desc_font, wraplength = txt_width)
                 self.panel_widgets["FarmerInfo"].place(x=self.board_width + img_size, y=self.cell_height * self.height * 3 / 10 + img_size * 2, anchor = tk.W)
@@ -366,7 +366,7 @@ class Application(tk.Frame):
                 self.changePhoto((img_size,img_size), "assets/bow.gif")
                 self.panel_widgets["HunterPic"].configure(image=self.photoimage, height = img_size, width = img_size)
                 self.panel_widgets["HunterPic"].place(x=self.board_width + img_size / 2, y=self.cell_height * self.height * 3 / 10 + img_size * 2, anchor = "center")
-                description = "Level: " + str(self.board.cells[row][col].hunterLevel())
+                description = "Level " + str(self.board.cells[row][col].hunterLevel()) + " Hunter"
                 description += "\nVastly improves land proportional to level when neighbors die."
                 self.panel_widgets["HunterInfo"].configure(text = description, font = self.desc_font, wraplength = txt_width)
                 self.panel_widgets["HunterInfo"].place(x=self.board_width + img_size, y=self.cell_height * self.height * 3 / 10 + img_size * 2, anchor = tk.W)
