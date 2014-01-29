@@ -48,11 +48,11 @@ class Application(tk.Frame):
         if self.mode.get() == self.vers_ai_str:
             self.ai = []
             self.ai_strat = [random.choice([cell.specializations[a], cell.specializations[a+1]]) for a in range(0,6,2)]
-            self.ai.append(thread.start_new_thread(ai.medium, (self.board, self.ai_team, self.board.turn, self.ai_strat, [True])))
+            self.ai.append(thread.start_new_thread(self.ai_levels[self.difficulty.get()], (self.board, self.ai_team, self.board.turn, self.ai_strat, [True])))
     def updateAI(self):
         if self.mode.get() == self.vers_ai_str:
             for i in range(len(self.ai)):
-                self.ai[i] = thread.start_new_thread(ai.medium, (self.board, self.ai_team, self.board.turn, self.ai_strat, [True]))
+                self.ai[i] = thread.start_new_thread(self.ai_levels[self.difficulty.get()], (self.board, self.ai_team, self.board.turn, self.ai_strat, [True]))
     def createWidgets(self):
         top = self.winfo_toplevel()
         self.height = 15
@@ -141,7 +141,14 @@ class Application(tk.Frame):
         )
         self.mode.set(self.modes[0])
         self.testing = self.mode.get() == self.testing_str
-        self.panel_widgets["Mode"] = tk.OptionMenu(self, self.mode, *self.modes)
+        self.ai_levels = {
+            "Easy" : ai.easy,
+            "Medium" : ai.medium
+        }
+        self.difficulty = tk.StringVar()
+        self.difficulty.set("Medium")
+        self.panel_widgets["Mode"] = tk.OptionMenu(self, self.mode, *self.modes, command=self.changeMode)
+        self.panel_widgets["Difficulty"] = tk.OptionMenu(self, self.difficulty, *self.ai_levels)
     def specWarrior(self):
         self.specialize('Warrior')
     def specMedic(self):
@@ -300,6 +307,9 @@ class Application(tk.Frame):
         self.cell_width=self.cells[0][0].winfo_width()
         self.board_width = sum([self.cells[i][i].winfo_width() for i in range(self.width)])
         self.drawThings()
+    def changeMode(self, mode):
+        self.clearPanel()
+        self.settings()
     def settings(self):
         if self.panel_widgets["TornadoCheck"].place_info():
             self.clearPanel()
@@ -418,6 +428,8 @@ class Application(tk.Frame):
     def settingsPanel(self):
         self.panel_widgets["TornadoCheck"].place(x=self.board_width + self.cell_width, y = self.cell_height * self.height * 2 / 5, anchor = tk.CENTER)
         self.panel_widgets["Mode"].place(x=self.board_width + self.cell_width, y = self.cell_height, anchor = tk.CENTER)
+        if self.mode.get() == self.vers_ai_str:
+            self.panel_widgets["Difficulty"].place(x=self.board_width + self.cell_width * 3, y = self.cell_height, anchor = tk.CENTER)
     def drawPanel(self):
         self.clearPanel()
         self.drawScore()
