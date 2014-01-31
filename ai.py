@@ -1,6 +1,7 @@
 import random
 import cell
 import thread
+import copy
 app = None
 # FIXME need to update board
 # cont is a single member array bool (continue)
@@ -66,3 +67,37 @@ def medium(board, team, turn, strat, cont):
             else:
                 break
     thread.exit()
+def probDist(board):
+    #TODO copy cells and land into 2D array
+    board_copy = copy.deepcopy(board.cells)
+    land_copy = copy.deepcopy(board.land)
+    probabilities = dict()
+    tornados = []
+    #TODO tornado rotation
+    for row in range(board_copy.height):
+        for col in range(board_copy.width):
+            probabilities[(row,col)] = beliefs.Beliefs()
+            if board_copy.cells[row][col].team == cell.neutral_str:
+                for (r,c) in board_copy.adj(row,col):
+                    counts[board_copy.cells[r][c].team] += 1
+                    strengths[board_copy.cells[r][c].team] += board_copy.cells[r][c].strength
+                threes = []
+                for c_team, count in counts.items():
+                    if count == 3 and c_team not in cell.neutral_teams:
+                        threes.append(c_team)
+                if len(threes) == 1:
+                    probabiltiies[(row,col)][threes[0]] = 1
+                elif len(threes) == 2:
+                    if strengths[threes[0]] > strengths[threes[1]]:
+                        winner = threes[0]
+                    elif strengths[threes[0]] < strengths[threes[1]]:
+                        winner = threes[1]
+                    else:
+                        winner = threes[self.rand.randint(0,1)]
+                    probabilities[(row,col)][winner] = 1
+            elif board_copy.cells[row][col.team == cell.tornado_str]:
+                tornados.append((row,col))
+    for row,col in tornados:
+        adjacents = board.adj(row,col)
+        for r,c in adjacents:
+            probabilities[(r,c)][cell.tornado_str] = 1/len(adjacents)
