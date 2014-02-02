@@ -1,4 +1,7 @@
 TODO:
+    AI:
+        Takes external things into account
+        Optimize over drawThings
     Volcano:
         1st stage: smoke on cell, weakens land
         2nd stage: smoke on 3x3, lava on cell
@@ -15,6 +18,7 @@ TODO:
         Allowing user to choose starting position
     Clerics:
         Faith Points allow for placement of volcano, scramble, freeze
+
     
 Done:
     Harassment
