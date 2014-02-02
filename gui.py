@@ -122,6 +122,7 @@ class Application(tk.Frame):
         self.panel_widgets["Title"] = tk.Label()
         self.panel_widgets["Strength"] = tk.Label()
         self.panel_widgets["Land"] = tk.Label()
+        self.panel_widgets["Volcano"] = tk.Button(self, text="Volcano", command = self.volcano, width = self.button_width, height = self.button_height, state=tk.DISABLED)
         for row in range(self.height):
             top.rowconfigure(row, weight = 1)
             self.rowconfigure(row, weight = 1)
@@ -260,6 +261,11 @@ class Application(tk.Frame):
             brow,bcol = self.cell_locations[event.widget]
             if self.board.kill(brow,bcol,self.player_team):
                 self.drawThings()
+    def volcano(self):
+        changed = self.board.createVolcano(self.player_team)
+        for row, col in changed:
+            self.drawCell(row,col)
+        self.drawPanel()
     def specialize(self,specialization):
             ret = self.board.specialize(specialization, self.player_team)
             if type(ret) == type(""):
@@ -341,17 +347,17 @@ class Application(tk.Frame):
     def drawScore(self):
          for index, team in enumerate(self.board.teams):
             points = self.board.points[team]
-            if team not in board.neutral_teams:
-                self.panel_widgets[team+"Points"].configure(text = team + ": " + str(points), font = self.cell_font)
-                self.panel_widgets[team+"Points"].place(x = self.board_width, y = self.info_panel.winfo_height() - index * self.cell_height * 4 / 5, anchor = tk.NW)
+            self.panel_widgets[team+"Points"].configure(text = team + ": " + str(points), font = self.cell_font)
+            self.panel_widgets[team+"Points"].place(x = self.board_width, y = self.info_panel.winfo_height() - index * self.cell_height * 4 / 5, anchor = tk.NW)
     def drawSelectedInfo(self):
         # populate info_panel based on selection
         row,col = iter(self.board.selected[self.player_team]).next()
-        img_height = self.cell_height * self.height / 5
+        img_height = self.cell_height * self.height / 8
         img_width = self.cell_width * self.info_panel_span / 4
         txt_width = (self.info_panel_span * self.cell_width - img_width) * 9 / 10
         img_size = min(img_width, img_height)
         self.desc_font = tkFont.Font(size = img_size / 10)
+        self.panel_button_font = tkFont.Font(size = img_height / 8)
         if self.board.cells[row][col].isWarrior():
             self.changePhoto((img_size,img_size), "assets/sword.gif")
             self.panel_widgets["WarriorPic"].configure(image=self.photoimage, height = img_size, width = img_size)
@@ -413,9 +419,16 @@ class Application(tk.Frame):
             description += "\nVastly improves land proportional to level when neighbors die."
             self.panel_widgets["HunterInfo"].configure(text = description, font = self.desc_font, wraplength = txt_width)
             self.panel_widgets["HunterInfo"].place(x=self.board_width + img_size, y=self.cell_height * self.height * 3 / 10 + img_size * 2, anchor = tk.W)
-        self.team_font = tkFont.Font(size = img_size / 2) 
+        can_volcano = self.board.points[self.player_team] >= board.volcano_cost
+        if can_volcano:
+            volc_button_state = tk.NORMAL
+        else:
+            volc_button_state = tk.DISABLED
+        self.panel_widgets["Volcano"].configure(font=self.panel_button_font, state = volc_button_state)
+        self.panel_widgets["Volcano"].place(x=self.board_width, y=self.info_panel.winfo_height() - (len(self.board.teams)-.5) * self.cell_height * 4 / 5, anchor=tk.W)
+        self.team_font = tkFont.Font(size = img_size * 2/3) 
         self.panel_widgets["Title"].configure(text = self.board.cells[row][col].team, font = self.team_font)
-        self.panel_widgets["Title"].place(x=self.board_width + self.cell_width * self.info_panel_span * 2.38 / 5, y = self.cell_height, anchor = tk.CENTER)
+        self.panel_widgets["Title"].place(x=self.board_width + self.cell_width * self.info_panel_span * 2.38 / 5, y = 0, anchor = tk.N)
         self.strength_font = tkFont.Font(size = img_size / 4)
         self.land_font = tkFont.Font(size = img_size / 6)
         self.panel_widgets["Land"].configure(text = "Land Quality: " + self.board.land[row][col].description(), font = self.land_font)
@@ -479,6 +492,5 @@ class Application(tk.Frame):
                 self.cells[row][col].grid(column = col, row = row)
             self.outlineIfSelected(row,col)
 
-       
 #def reportEvent(event):
 #    print 'keysym=%s, keysym_num=%s' % (event.keysym, event.keysym_num)
