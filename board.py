@@ -15,7 +15,7 @@ orderings = {
     (1,-1): lambda x: -x[0],
     (1,0): lambda x: -x[0]
 }
-class Grid:
+class Board:
     def __init__(self, height = 8, width = 8, team1 = "Red", team2 = "Blue"):
         self.cells = [[neutral() for col in range(width)] for row in range(height)]
         self.rand = random.Random()
@@ -32,6 +32,13 @@ class Grid:
                     cat += str(cell) + "\t"
                 cat += "\n"
             return cat
+    def __deepcopy__(self):
+        with self.lock:
+            ret = Grid(self.height, self.width, self.teams[0], self.teams[1])
+            for row in self.height:
+                for col in self.width:
+                    ret.cells[row][col] = copy.deepcopy(self.cells[row][col])   
+            return ret
     def inGrid(self, row, col):
         with self.lock:
             return row >= 0 and col >= 0 and row < self.height and col < self.width
@@ -402,10 +409,10 @@ class Grid:
 extinct = 0
 stable = 0
 for x in range(1000):
-    grid = Grid()
+    board = Board()
     for y in range(40):
-        grid.step()
-        if grid.extinct():
+        board.step()
+        if board.extinct():
             extinct += 1
             break
     else:

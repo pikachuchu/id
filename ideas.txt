@@ -1,96 +1,115 @@
-Harassment
-    Moving opponent pieces costs 2x as much as moving your own
-    Place enemy cells (kill cost?)
-    Praying to tornado (to move)
-Specialization tree
-    Warrior (Maroon)
-        1
-        2 Includes self in survive total
-        Hearty offspring
-        Bonuses to strength
-    Medic (White)
-        1 25%
-        2 75%
-        Neighbors can't die to combat percentage
-    Cleric (Salmon)
-        1 10%
-        2 28%
-        Converts enemy neighbors
-        Divine Favors
-            Small probability based on level
-            Only lasts one turn
-            Can be used to control tornado, etc.
-    Scientist (Purple)
-        1 +1
-        2 +2
-        Increases (?) points
-        Provides global benefit
-    Farmer (Cyan)
-        1 
-        2
-        Unit enriches land
-    Hunter (Orange)
-        x1 All
-        x2
-        Deaths enrich land
-Land and fertility
-    Colors denote level in gui
-    Level comes from land value
-        0 - 5 <BLACK> Dead land can support no cells
-        5 - 25 <RED> Diminished land can suport a cell that has 2 neighbors
-        25 - 75 <LIGHT-GREEN> Starting land can support a cell that has 2 to 3 neighbors
-        75 - 100 <DARK-GREEN> Enriched land can support a cell that has 2 to 4 neighbors
-    Living land regenerates
-    Cells consume land value
-    Specialized cells consume more land value
-Taken Colors:
-    Red (team)
-    Blue (team)
-    Green (land)
-    Brown (land)
-    Black (land)
-    Yellow (selection)
-    Yellow-Green (land)       
-Remaining:
-    Purple
-    Pink
-    Orange
-    Cyan
-    Salmon
-    Maroon
-    Indigo
+TODO:
+    Volcano:
+        1st stage: smoke on cell, weakens land
+        2nd stage: smoke on 3x3, lava on cell
+        3rd stage: lava on 3x3
+    Scramble:
+        can be applied to any area
+    Freeze:
+        Frozen cells do not change state
+        If a natural disaster is adjacent to a frozen cell, that cell unfreezes
+    Placing neutral cells: 
+        Implement in testing mode
+    Increase combat:
+        Test different starting positions
+        Allowing user to choose starting position
+    Clerics:
+        Faith Points allow for placement of volcano, scramble, freeze
     
+Done:
+    Harassment
+        Moving opponent pieces costs 2x as much as moving your own
+        Place enemy cells (kill cost?)
+        Praying to tornado (to move)
+    Specialization tree
+        Warrior (Maroon)
+            1
+            2 Includes self in survive total
+            Hearty offspring
+            Bonuses to strength
+        Medic (White)
+            1 25%
+            2 75%
+            Neighbors can't die to combat percentage
+        Cleric (Salmon)
+            1 10%
+            2 28%
+            Converts enemy neighbors
+            Divine Favors
+                Small probability based on level
+                Only lasts one turn
+                Can be used to control tornado, etc.
+        Scientist (Purple)
+            1 +1
+            2 +2
+            Increases (?) points
+            Provides global benefit
+        Farmer (Cyan)
+            1 
+            2
+            Unit enriches land
+        Hunter (Orange)
+            x1 All
+            x2
+            Deaths enrich land
+    Land and fertility
+        Colors denote level in gui
+        Level comes from land value
+            0 - 5 <BLACK> Dead land can support no cells
+            5 - 25 <RED> Diminished land can suport a cell that has 2 neighbors
+            25 - 75 <LIGHT-GREEN> Starting land can support a cell that has 2 to 3 neighbors
+            75 - 100 <DARK-GREEN> Enriched land can support a cell that has 2 to 4 neighbors
+        Living land regenerates
+        Cells consume land value
+        Specialized cells consume more land value
+    Taken Colors:
+        Red (team)
+        Blue (team)
+        Green (land)
+        Brown (land)
+        Black (land)
+        Yellow (selection)
+        Yellow-Green (land)       
+    Remaining:
+        Purple
+        Pink
+        Orange
+        Cyan
+        Salmon
+        Maroon
+        Indigo
+        
 
-Transferring specializations to offspring:
-    Each cell has three strands of DNA
-    A strand contains a list of genes
-    Each cell is either on or off for a specific phenotype
-    Parents will pass one of their strands of DNA to offspring (equally likely)
-    Therefore each offspring has 3 strands again
-    Two genes may be opposites of each other, in which case the third strand determines the phenotype, for example:
-        S and P are opposites
-        Offspring gets SgP
-        Phenotype would be g
-Special friendly cells:
-    Missionary: converts adjacent enemy cell to friendly with some probability
-    Fertility: can reproduce with fewer than 3 cells
-    Warrior: starts out with more strength
-    Scientist: randomly garners technology points while alive and can help spawn more scientists
-Point systems:
-    Technology: allows for relocation of cells, greater food supply to support more population, in vitro fertilization (add cell anywhere)
-    Evolution: garner points by killing enemies and reproducing, can be used for evolving cells, lose points for killing own cells
-    Can spend points to move your pieces AND ENEMY PIECES
-Random events:
-    Lightning strike: kills cell
-    Tornado: kills cell, rotates adjacent cells ccw
-Special enemies:
-    Predator: harder to kill
-    Virus: can infect a cell and lower strength
-    Vampire: can infect a cell and convert
-    Suicide bomber: can kill self and all adjacent cells
-Infection mechanism:
-    Chance to infect one adjacent enemy cell
-    Evolution points can be spent for resistance
+    Transferring specializations to offspring:
+        Each cell has three strands of DNA
+        A strand contains a list of genes
+        Each cell is either on or off for a specific phenotype
+        Parents will pass one of their strands of DNA to offspring (equally likely)
+        Therefore each offspring has 3 strands again
+        Two genes may be opposites of each other, in which case the third strand determines the phenotype, for example:
+            S and P are opposites
+            Offspring gets SgP
+            Phenotype would be g
+    Special friendly cells:
+        Missionary: converts adjacent enemy cell to friendly with some probability
+        Fertility: can reproduce with fewer than 3 cells
+        Warrior: starts out with more strength
+        Scientist: randomly garners technology points while alive and can help spawn more scientists
+    Point systems:
+        Technology: allows for relocation of cells, greater food supply to support more population, in vitro fertilization (add cell anywhere)
+        Evolution: garner points by killing enemies and reproducing, can be used for evolving cells, lose points for killing own cells
+        Can spend points to move your pieces AND ENEMY PIECES
+    Random events:
+        Lightning strike: kills cell
+        Tornado: kills cell, rotates adjacent cells ccw
+    Special enemies:
+        Predator: harder to kill
+        Virus: can infect a cell and lower strength
+        Vampire: can infect a cell and convert
+        Suicide bomber: can kill self and all adjacent cells
+    Infection mechanism:
+        Chance to infect one adjacent enemy cell
+        Evolution points can be spent for resistance
 
 
 

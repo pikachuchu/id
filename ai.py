@@ -67,37 +67,63 @@ def medium(board, team, turn, strat, cont):
             else:
                 break
     thread.exit()
-def probDist(board):
+def adj(board, row, col):
+        # return list of valid adjacent cell indices (row, col)
+        # counter clockwise
+        ret = []
+        for diff_x, diff_y in [(1,1), (0,1), (-1,1), (-1,0), (-1,-1), (0,-1), (1,-1), (1,0)]:
+            r = row +diff_x
+            c = col + diff_y
+            if r >= 0 and c >= 0 and r < len(board) and c < len(board[r]):
+                ret.append((r,c))
+        return ret
+"""
+def probDist(cells, lands, ai_team):
     #TODO copy cells and land into 2D array
-    board_copy = copy.deepcopy(board.cells)
-    land_copy = copy.deepcopy(board.land)
+    board_copy = copy.deepcopy(cells)
+    land_copy = copy.deepcopy(lands)
     probabilities = dict()
     tornados = []
+    parents = collections.Counter()
     #TODO tornado rotation
-    for row in range(board_copy.height):
-        for col in range(board_copy.width):
+    for row in range(len(board_copy)):
+        for col in range(len(board_copy[row])):
             probabilities[(row,col)] = beliefs.Beliefs()
-            if board_copy.cells[row][col].team == cell.neutral_str:
-                for (r,c) in board_copy.adj(row,col):
-                    counts[board_copy.cells[r][c].team] += 1
-                    strengths[board_copy.cells[r][c].team] += board_copy.cells[r][c].strength
+            adjacents = adj(board_copy, row,col)
+            counts = collections.Counter()
+            strengths = collections.Counter()
+            team = board_copy[row][col].team
+            for (r,c) in adjacents:
+                counts[board_copy[r][c].team] += 1
+                strengths[board_copy[r][c].team] += board_copy[r][c].strength
+            if team == cell.neutral_str:
                 threes = []
                 for c_team, count in counts.items():
                     if count == 3 and c_team not in cell.neutral_teams:
                         threes.append(c_team)
                 if len(threes) == 1:
                     probabiltiies[(row,col)][threes[0]] = 1
+                    for (r,c) in adjacents:
+                        if threes == ai_team and board_copy[r][c].team == threes:
+                            parents[(r,c)] += 1
                 elif len(threes) == 2:
                     if strengths[threes[0]] > strengths[threes[1]]:
-                        winner = threes[0]
+                        probabilities[(row,col)][threes[0]] = 1
                     elif strengths[threes[0]] < strengths[threes[1]]:
-                        winner = threes[1]
+                        probabilities[(row,col)][threes[1]] = 1
                     else:
-                        winner = threes[self.rand.randint(0,1)]
-                    probabilities[(row,col)][winner] = 1
-            elif board_copy.cells[row][col.team == cell.tornado_str]:
+                        probabilities[(row,col)][threes[0]] = .05
+                        probabilities[(row,col)][threes[1]] = .05
+            elif team == cell.tornado_str]:
                 tornados.append((row,col))
+            else:
+                if board_copy[row][col].isWarrior():
+                    strengths[team] += board_copy[row][col].strength
+                if land_copy[row][col].canSupport(counts[team]):
+                    if strengths[team] >  
+                    probabilities[(row,col)][team] = 1
     for row,col in tornados:
         adjacents = board.adj(row,col)
         for r,c in adjacents:
             probabilities[(r,c)][cell.tornado_str] = 1/len(adjacents)
+"""

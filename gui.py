@@ -1,6 +1,6 @@
 import Tkinter as tk
 import tkFont
-import grid
+import board
 import time
 import ai
 import cell
@@ -65,7 +65,7 @@ class Application(tk.Frame):
         self.spec_ids = [[empty() for col in range(self.width)] for row in range(self.height)]
         self.select_ids = [[None for col in range(self.width)] for row in range(self.height)]
         # TODO team prompt
-        self.board = grid.Grid(self.height, self.width);
+        self.board = board.Board(self.height, self.width);
         self.player_team = self.board.teams[0]
         self.ai_team = self.board.teams[1]
         self.cell_height = 50
@@ -341,7 +341,7 @@ class Application(tk.Frame):
     def drawScore(self):
          for index, team in enumerate(self.board.teams):
             points = self.board.points[team]
-            if team not in grid.neutral_teams:
+            if team not in board.neutral_teams:
                 self.panel_widgets[team+"Points"].configure(text = team + ": " + str(points), font = self.cell_font)
                 self.panel_widgets[team+"Points"].place(x = self.board_width, y = self.info_panel.winfo_height() - index * self.cell_height * 4 / 5, anchor = tk.NW)
     def drawSelectedInfo(self):
@@ -449,10 +449,10 @@ class Application(tk.Frame):
                 color = '#FF0000'
             elif team == self.board.teams[1]:
                 color = '#0000FF'
-            elif team in grid.neutral_teams:
+            elif team in board.neutral_teams:
                 color = '#e4e4e4'
-            if team != grid.neutral_str:
-                if team == grid.tornado_str:
+            if team != board.neutral_str:
+                if team == board.tornado_str:
                     self.changePhoto((self.cell_width,self.cell_height),"assets/tornado.gif")
                     self.text_ids[row][col] = self.cells[row][col].create_image(self.cell_width/2,self.cell_height/2,image=self.photoimage)
                 else:
