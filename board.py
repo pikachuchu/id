@@ -16,6 +16,7 @@ orderings = {
     (1,0): lambda x: -x[0]
 }
 volcano_cost = 20
+smoky_cells = set()
 class Board:
     def __init__(self, height = 8, width = 8, team1 = "Red", team2 = "Blue"):
         self.cells = [[neutral() for col in range(width)] for row in range(height)]
@@ -50,9 +51,18 @@ class Board:
             # counter clockwise
             ret = []
             for diff_x, diff_y in [(1,1), (0,1), (-1,1), (-1,0), (-1,-1), (0,-1), (1,-1), (1,0)]:
-                r = row +diff_x
+                r = row + diff_x
                 c = col + diff_y
                 if self.inGrid(r,c):
+                    ret.append((r,c))
+            return ret
+    def friendlyAdj(self, row, col):
+        with self.lock:
+            ret = []
+            for diff_x, diff_y in [(1,1), (0,1), (-1,1), (-1,0), (-1,-1), (0,-1), (1,-1), (1,0)]:
+                r = row + diff_x
+                c = col + diff_y
+                if self.inGrid(r,c) and self.cells[row][col].team == self.cells[r][c].team: 
                     ret.append((r,c))
             return ret
     def reset(self, include_tornado = True, testing = False):
@@ -107,6 +117,7 @@ class Board:
                 self.points[team] -= volcano_cost
                 row,col = iter(self.selected[team]).next()
                 self.volcanoes[(row,col)] = 1
+                smoky_cells.add((row,col))
                 return self.selected[team]
     def volcanoAction(self, row, col):
         with self.lock:
@@ -115,6 +126,8 @@ class Board:
                 if self.cells[row][col].team not in neutral_teams:
                     self.cells[row][col] = neutral()
                 self.land[row][col].decimate(.35)
+                for r,c in self.adj(row,col):
+                    smoky_cells.add((r,c))
                 self.volcanoes[(row,col)] += 1
             elif self.volcanoes[(row,col)] == 2:
                 #kill cells on adj(row,col)
@@ -134,6 +147,7 @@ class Board:
         self.old_tornadoes = []
         self.tornadoes = []
         conversions = []
+        smoky_cells.clear() 
         with self.lock:
             for row in range(self.height):
                 for col in range(self.width):
@@ -230,8 +244,8 @@ class Board:
                                 step[row][col] = self.cells[row][col]
                                 is_dead = False
                             else:
-                                for r,c in adjacents:
-                                    if self.cells[r][c].team == team and self.cells[r][c].isMedic():
+                                for r,c in self.friendlyAdj(row,col):
+                                    if self.cells[r][c].isMedic():
                                         for i in range(self.cells[r][c].medicLevel()):
                                             if self.rand.random() < .25:
                                                 step[row][col] = self.cells[row][col]
