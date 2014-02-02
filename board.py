@@ -359,6 +359,7 @@ class Board:
             self.clearSelection(team)
             if not was_selected:
                 self.selected[team].add((row,col))
+            return old_selected.union(set([(row,col)]))
     def selectAll(self, row, col, team):
         with self.lock:
             self.clearSelection(team)

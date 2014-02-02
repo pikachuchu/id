@@ -284,8 +284,11 @@ class Application(tk.Frame):
             self.specialization_menu.place_forget()
         else:
             brow,bcol = self.cell_locations[event.widget]
-            self.board.select(brow,bcol,self.player_team)
-            self.drawThings()
+            changed = self.board.select(brow,bcol,self.player_team)
+            for row, col in changed:
+                self.outlineIfSelected(row,col)
+            if len(self.board.selected[self.player_team]) == 1:
+                self.drawSelectedInfo()
     def selectAll(self, event):
         if self.specialization_menu.place_info():
             # if exists
