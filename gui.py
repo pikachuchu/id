@@ -475,7 +475,7 @@ class Application(tk.Frame):
                     self.changePhoto((self.cell_width,self.cell_height),"assets/tornado.gif")
                     self.text_ids[row][col] = self.cells[row][col].create_image(self.cell_width/2,self.cell_height/2,image=self.photoimage)
                 else:
-                    text = self.board.cells[row][col].strength
+                    text = str(len(self.board.friendlyAdj(row,col)))
                     self.text_ids[row][col] = self.cells[row][col].create_text(self.cell_width/2,self.cell_height/2,text=text, fill=color, font = self.cell_font)
                     if self.board.cells[row][col].isWarrior():
                         self.changePhoto((self.cell_width/3,self.cell_height/3), "assets/sword.gif")
