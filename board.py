@@ -351,6 +351,7 @@ class Board:
     def select(self, row, col, team):
         with self.lock:
             was_selected = set([(row,col)]) == self.selected[team]
+            old_selected = copy.copy(self.selected[team])
             self.clearSelection(team)
             if not was_selected:
                 self.selected[team].add((row,col))
