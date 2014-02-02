@@ -321,12 +321,16 @@ class Board:
                     for r,c in self.selected[team]:
                         self.cells[r][c] = neutral()
                         ret.add((r,c))
+                        for r1, c1 in self.friendlyAdj(r,c):
+                            ret.add((r1,c1))
             else:
                 if not self.selected[team]:
                     # nothing selected
                     if team == self.cells[row][col].team or self.testing:
                         self.cells[row][col] = neutral()
                         ret.add((row,col))
+                        for r,c in self.friendlyAdj(row,col):
+                            ret.add((r,c))
             ret = ret.union(self.clearSelection(team))
         return ret
     def specialize(self, specialization, team):
