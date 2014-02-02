@@ -437,6 +437,10 @@ class Board:
                     self.clearSelection(team)
                     self.selected[team].add(loc)
                     self.move(displacement,team)
+                elif action == "volcano":
+                    self.clearSelection(team)
+                    self.selected[team].add(loc)
+                    self.createVolcano(team)
             else:
                 return False
         return ret
