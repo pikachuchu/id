@@ -15,6 +15,7 @@ orderings = {
     (1,-1): lambda x: -x[0],
     (1,0): lambda x: -x[0]
 }
+volcano_cost = 20
 class Board:
     def __init__(self, height = 8, width = 8, team1 = "Red", team2 = "Blue"):
         self.cells = [[neutral() for col in range(width)] for row in range(height)]
@@ -22,6 +23,7 @@ class Board:
         self.width = width
         self.height = height 
         self.teams = [team1,team2]
+        self.volcanoes = dict()
         self.lock = threading.RLock()
         self.reset()
     def __str__(self):
@@ -94,6 +96,34 @@ class Board:
     def color(self, row, col):
         with self.lock:
             return self.land[row][col].color()
+    def createVolcano(self, team):
+        with self.lock:
+            #cost will change
+            if volcano_cost > self.points[team]:
+                return "Not enough points"
+            elif len(self.selected[team]) != 1:
+                return "Must select one cell"
+            else:
+                row,col = iter(self.selected[team]).next()
+                volcanoes[(row,col)] = 1
+                return self.selected[team]
+    def volcanoAction(self, row, col):
+        with self.lock:
+            if volcanoes[(row,col)] == 1:
+                volcanoes[(row,col)] += 1
+            elif volcanoes[(row,col)] == 2:
+                #kill cell on row,col, show smoke on adj(row,col)
+                if self.cells[row][col].team not in neutral_teams:
+                    self.cells[row][col] = neutral()
+                volcanoes[(row,col)] += 1
+            elif volcanoes[(row,col)] == 3:
+                #kill cells on adj(row,col)
+                for r,c in self.adj(row,col):
+                    if self.cells[r][c].team not in neutral_teams:
+                        self.cells[r][c] = neutral()
+                volcanoes[(row,col)] += 1
+            else:
+                del volcanoes[(row,col)]
     def step(self):
         with self.lock:
             self.external()
@@ -107,6 +137,11 @@ class Board:
             for row in range(self.height):
                 for col in range(self.width):
                     adjacents = self.adj(row, col)
+                    #volcano actions
+                    if (row,col) in self.volcanoes:
+                        self.volcanoAction(row,col)
+                        ret = True
+                    # tornado actions
                     if self.cells[row][col].team == tornado_str:
                         self.land[row][col].decimate(.65)
                         for i in range(len(adjacents)):
