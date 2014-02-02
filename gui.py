@@ -251,7 +251,7 @@ class Application(tk.Frame):
             self.info = ""
             for r,c in ret:
                 self.drawCell(r,c)
-            self.drawPanel()
+            self.drawScore()
     def kill(self, event):
         if self.specialization_menu.place_info():
             # if exists
@@ -259,22 +259,25 @@ class Application(tk.Frame):
         else:
             self.specialization_menu.place_info()
             brow,bcol = self.cell_locations[event.widget]
-            if self.board.kill(brow,bcol,self.player_team):
-                self.drawThings()
+            changed = self.board.kill(brow,bcol,self.player_team)
+            for row, col in changed:
+                self.drawCell(row,col)
+            self.clearPanel()
+            self.drawScore()
     def volcano(self):
         changed = self.board.createVolcano(self.player_team)
         for row, col in changed:
             self.drawCell(row,col)
         self.drawPanel()
     def specialize(self,specialization):
-            ret = self.board.specialize(specialization, self.player_team)
-            if type(ret) == type(""):
-                self.info = ret
-            else:
-                for r,c in ret:
-                    self.drawCell(r,c)
-            self.specialization_menu.place_forget()
-            self.drawPanel()
+        ret = self.board.specialize(specialization, self.player_team)
+        if type(ret) == type(""):
+            self.info = ret
+        else:
+            for r,c in ret:
+                self.drawCell(r,c)
+        self.specialization_menu.place_forget()
+        self.drawPanel()
     def select(self, event):
         if self.specialization_menu.place_info():
             # if exists
