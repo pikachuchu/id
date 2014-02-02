@@ -104,26 +104,27 @@ class Board:
             elif len(self.selected[team]) != 1:
                 return "Must select one cell"
             else:
+                self.points[team] -= volcano_cost
                 row,col = iter(self.selected[team]).next()
-                volcanoes[(row,col)] = 1
+                self.volcanoes[(row,col)] = 1
                 return self.selected[team]
     def volcanoAction(self, row, col):
         with self.lock:
-            if volcanoes[(row,col)] == 1:
-                volcanoes[(row,col)] += 1
-            elif volcanoes[(row,col)] == 2:
+            if self.volcanoes[(row,col)] == 1:
                 #kill cell on row,col, show smoke on adj(row,col)
                 if self.cells[row][col].team not in neutral_teams:
                     self.cells[row][col] = neutral()
-                volcanoes[(row,col)] += 1
-            elif volcanoes[(row,col)] == 3:
+                self.land[row][col].decimate(.35)
+                self.volcanoes[(row,col)] += 1
+            elif self.volcanoes[(row,col)] == 2:
                 #kill cells on adj(row,col)
                 for r,c in self.adj(row,col):
                     if self.cells[r][c].team not in neutral_teams:
                         self.cells[r][c] = neutral()
-                volcanoes[(row,col)] += 1
+                    self.land[r][c].decimate(.35)
+                self.volcanoes[(row,col)] += 1
             else:
-                del volcanoes[(row,col)]
+                del self.volcanoes[(row,col)]
     def step(self):
         with self.lock:
             self.external()
