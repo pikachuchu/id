@@ -170,6 +170,7 @@ class Application(tk.Frame):
         self.specialize('Hunter')
     def stepBoard(self):
         with self.board.lock:
+            self.endFlash()
             if self.board.external():
                 self.drawThings()
                 self.update()
@@ -177,6 +178,8 @@ class Application(tk.Frame):
             else:
                 self.endStep()
     def endStep(self):
+        if board.smoky_cells:
+            self.startFlash('#CCCC00')
         self.board.internal()
         self.drawThings()
         self.updateAI()
@@ -275,6 +278,8 @@ class Application(tk.Frame):
             self.drawScore()
     def volcano(self):
         changed = self.board.createVolcano(self.player_team)
+        for row, col in board.smoky_cells:
+            self.startFlash('#CCCC00')
         for row, col in changed:
             self.drawCell(row,col)
         self.drawPanel()
@@ -342,6 +347,20 @@ class Application(tk.Frame):
             self.clearPanel()
             self.settingsPanel()
             self.settings_button.configure(text="Hide")
+    def startFlash(self, color):
+        self.doFlash = True
+        for row,col in board.smoky_cells:
+            self.flash(self.cells[row][col]["background"], color, row, col)
+    def endFlash(self):
+        self.doFlash = False
+    def flash(self, color1, color2, row, col):
+        if self.doFlash:
+            if(self.cells[row][col]["background"] == color1):
+                self.cells[row][col].configure(bg = color2)
+            else:
+                self.cells[row][col].configure(bg = color1)
+            self.drawCell(row,col)
+            self.after(300, self.flash, color1, color2, row, col)
     def outlineIfSelected(self, row,col):
         if self.select_ids[row][col] != None:
             self.cells[row][col].delete(self.select_ids[row][col])
@@ -481,12 +500,10 @@ class Application(tk.Frame):
             for spec_id in self.spec_ids[row][col]:
                 self.cells[row][col].delete(spec_id)
             self.spec_ids[row][col] = []
-            if (row,col) in board.smoky_cells:
-                self.cells[row][col].configure(bg = '#D3D3D3')
-            elif (row,col) in board.lava_cells:
+            if (row,col) in board.lava_cells:
                 self.cells[row][col].configure(bg = '#FF0000')
                 board.lava_cells.remove((row,col))
-            else:
+            elif (row,col) not in board.smoky_cells:
                 self.cells[row][col].configure(bg = self.board.color(row, col))
             team = self.board.cells[row][col].team
             strength = self.board.cells[row][col].strength
