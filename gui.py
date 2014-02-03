@@ -413,6 +413,7 @@ class Application(tk.Frame):
             approx_odds = 1 - .9 ** cleric_level
             approx_odds *= 100
             approx_odds = int(round(approx_odds))
+            description += "\nGains a point for every enemy in a " + str(cleric_level) + "-cell radius."
             description += "\nHas " + str(approx_odds) + "% chance to convert enemy neighboring cells."
             description += "\nCannot be converted by enemy Clerics."
             self.panel_widgets["ClericInfo"].configure(text = description, font = self.desc_font, wraplength = txt_width)
@@ -466,8 +467,8 @@ class Application(tk.Frame):
         self.panel_widgets["Mode"].place(x=self.board_width + self.cell_width, y = self.cell_height, anchor = tk.N)
         if self.mode.get() == self.vers_ai_str:
             self.panel_widgets["Difficulty"].place(x=self.board_width + self.cell_width * 3, y = self.cell_height, anchor = tk.N)
-        self.panel_widgets["Confirm"].place(x = self.board_width + self.cell_width * self.info_panel_span / 3 * .95, y = self.info_panel.winfo_height(), anchor = tk.S)
-        self.panel_widgets["Cancel"].place(x = self.board_width + self.cell_width * 2 * self.info_panel_span / 3 * .95, y = self.info_panel.winfo_height(), anchor = tk.S)
+        self.panel_widgets["Confirm"].place(x = self.board_width + self.cell_width * self.info_panel_span / 3 * .95, y = self.info_panel.winfo_height() - self.cell_height, anchor = tk.S)
+        self.panel_widgets["Cancel"].place(x = self.board_width + self.cell_width * 2 * self.info_panel_span / 3 * .95, y = self.info_panel.winfo_height() - self.cell_height, anchor = tk.S)
     def drawPanel(self):
         self.clearPanel()
         self.drawScore()
