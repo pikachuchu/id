@@ -30,6 +30,9 @@ class Cell:
             return (2,-1)
         else:
             raise Exception("Unknown specialization")
+    def costOfSpecialize(self, specialization):
+        to_change, change_by = self.modFromString(specialization)
+        return abs(self.pheno[to_change] + 3 * change_by) / 3
     def __str__(self):
         ret = str(self.strength)
         if self.isWarrior():
