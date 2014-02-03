@@ -355,8 +355,11 @@ class Application(tk.Frame):
                 for col in range(self.width):
                     self.drawCell(row,col)
             self.drawPanel()
-            for index, team in enumerate(self.board.teams):
-                self.score_widgets[team+"Points"].place(x = self.board_width, y = self.info_panel.winfo_height() - index * self.cell_height * 4 / 5 + self.cell_height, anchor = tk.SW)
+            if self.board_width > self.width:
+                # avoid drawing score alone before board
+                for index, team in enumerate(self.board.teams):
+                    self.score_widgets[team+"Points"].configure(font = self.cell_font)
+                    self.score_widgets[team+"Points"].place(x = self.board_width, y = self.info_panel.winfo_height() - index * self.cell_height * 4 / 5 + self.cell_height, anchor = tk.SW)
     def clearPanel(self):
         for widget in self.panel_widgets:
             self.panel_widgets[widget].place_forget()
@@ -364,7 +367,7 @@ class Application(tk.Frame):
          for index, team in enumerate(self.board.teams):
             points = self.board.points[team]
             if points is not self.last_score[team]:
-                self.score_widgets[team+"Points"].configure(text = team + ": " + str(points), font = self.cell_font)
+                self.score_widgets[team+"Points"].configure(text = team + ": " + str(points))
                 self.last_score[team] = points
     def drawSelectedInfo(self):
         # populate info_panel based on selection
