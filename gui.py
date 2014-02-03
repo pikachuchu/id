@@ -130,6 +130,10 @@ class Application(tk.Frame):
             top.columnconfigure(col, weight = 1)
             self.columnconfigure(col, weight = 1)
         # settingsPanel
+        # TODO reset doesn't apply changes to settings until confirm
+        self.panel_widgets["Confirm"] = tk.Button(self, text="Confirm", command = self.resetBoard, width = self.button_width, height = self.button_height)
+        # TODO cancel undoes changes to settings since opening panel
+        self.panel_widgets["Cancel"] = tk.Button(self, text="Cancel", command = self.settings, width = self.button_width, height = self.button_height)
         self.include_tornado = tk.IntVar()
         self.panel_widgets["TornadoCheck"] = tk.Checkbutton(text="Tornado", variable=self.include_tornado)
         self.panel_widgets["TornadoCheck"].select()
@@ -449,6 +453,8 @@ class Application(tk.Frame):
         self.panel_widgets["Mode"].place(x=self.board_width + self.cell_width, y = self.cell_height, anchor = tk.N)
         if self.mode.get() == self.vers_ai_str:
             self.panel_widgets["Difficulty"].place(x=self.board_width + self.cell_width * 3, y = self.cell_height, anchor = tk.N)
+        self.panel_widgets["Confirm"].place(x = self.board_width + self.cell_width * self.info_panel_span / 3 * .95, y = self.info_panel.winfo_height(), anchor = tk.S)
+        self.panel_widgets["Cancel"].place(x = self.board_width + self.cell_width * 2 * self.info_panel_span / 3 * .95, y = self.info_panel.winfo_height(), anchor = tk.S)
     def drawPanel(self):
         self.clearPanel()
         self.drawScore()
