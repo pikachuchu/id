@@ -173,10 +173,13 @@ class Application(tk.Frame):
             if self.board.external():
                 self.drawThings()
                 self.update()
-                time.sleep(0.3)
-            self.board.internal()
-            self.drawThings()
-            self.updateAI()
+                self.after(300,self.endStep)
+            else:
+                self.endStep()
+    def endStep(self):
+        self.board.internal()
+        self.drawThings()
+        self.updateAI()
     def resetBoard(self):
         self.testing = self.mode.get() == self.testing_str
         self.board.reset(self.include_tornado.get() > 0, testing = self.testing)
