@@ -6,6 +6,9 @@ TODO:
         1st stage: smoke on cell, weakens land
         2nd stage: smoke on 3x3, lava on cell
         3rd stage: lava on 3x3
+        Flashing red or gray for smoke warning
+        Red in external for lava 
+        Display cell has volcano on it in info_panel
     Scramble:
         can be applied to any area
     Freeze:
@@ -18,8 +21,14 @@ TODO:
         Allowing user to choose starting position
     Clerics:
         Faith Points allow for placement of volcano, scramble, freeze
-
-    
+        Different way of accumulating points?
+    Help Text: More info links to help manual
+        Volcano
+        Tornado
+    Help Manual 
+        Explains everything
+    Settings Panel:
+        Confirm or Cancel buttons
 Done:
     Harassment
         Moving opponent pieces costs 2x as much as moving your own
