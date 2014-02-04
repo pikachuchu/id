@@ -66,6 +66,21 @@ class Board:
                 if self.inGrid(r,c) and self.cells[row][col].team == self.cells[r][c].team: 
                     ret.append((r,c))
             return ret
+    def enemiesNear(self, row, col, radius):
+        frontier = collections.deque([(row,col,0)])
+        visited = set([(row,col)])
+        team = self.cells[row][col].team
+        enemies = set([oteam for oteam in self.teams if oteam is not team])
+        count = 0
+        while frontier:
+            r,c,distance = frontier.popleft()
+            for erow, ecol in self.adj(r,c):
+                if (erow, ecol) not in visited and distance + 1 < radius:
+                    visited.add((erow, ecol))
+                    frontier.append((erow,ecol,distance + 1))
+                    if self.cells[erow][ecol].team in enemies:
+                        count += 1
+        return count
     def reset(self, include_tornado = True, testing = False):
         with self.lock:
             self.testing = testing
@@ -200,14 +215,18 @@ class Board:
                         for (r,c), color in zip(adjacents, colors):
                             ret = ret or self.land[r][c].color() == color
                     if self.cells[row][col].isCleric():
+                        cleric_level = self.cells[row][col].clericLevel()
                         for r,c in adjacents:
                             if self.cells[r][c].team not in neutral_teams and not self.cells[r][c].isCleric():
                                 if self.cells[r][c].team != self.cells[row][col].team:
-                                    for i in range(self.cells[row][col].clericLevel()):
+                                    for i in range(cleric_level):
                                         if self.rand.random() < .10:
                                             conversions.append((self.cells[row][col].team, r, c))
                                             ret = True
                                             break
+                        for i in range(self.enemiesNear(row,col,cleric_level)):
+                            if self.rand.random() < 1: # TODO set proportion ?
+                                self.points[self.cells[row][col].team] += 1
                     elif self.cells[row][col].isScientist():
                         self.points[self.cells[row][col].team] += self.cells[row][col].scientistLevel()
                     if self.cells[row][col].isWarrior():

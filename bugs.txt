@@ -1,1 +1,2 @@
-No known bugs.
+Volcanoes don't appear correctly when made in sequential turns.
+
