@@ -244,7 +244,7 @@ class Application(tk.Frame):
             else:
                 if self.board.selected[self.player_team]:
                     r,c = iter(self.board.selected[self.player_team]).next()
-                    if self.board.cells[r][c].team == self.player_team or self.testing:
+                    if self.board.cells[r][c].team == self.player_team or self.testing and self.board.cells[r][c].team not in cell.neutral_teams:
                         top = self.winfo_toplevel()
                         if self.specialization_menu.winfo_width() == 1:
                             # only once
