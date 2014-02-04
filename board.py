@@ -146,6 +146,7 @@ class Board:
             self.external()
             self.internal()
     def external(self):
+        self.turn += 1
         ret = False # return whether anything was effected
         self.old_tornadoes = []
         self.tornadoes = []
@@ -220,7 +221,6 @@ class Board:
                 self.cells[r][c].team = dteam
             return ret
     def internal(self):
-        self.turn += 1
         step = [[neutral() for col in range(self.width)] for row in range(self.height)]
         with self.lock:
             for row in range(self.height):
