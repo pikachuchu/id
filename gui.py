@@ -179,8 +179,8 @@ class Application(tk.Frame):
             else:
                 self.endStep()
     def endStep(self):
-        if self.board.smoky_cells:
-            self.startFlash('#CCCC00')
+        if self.board.warning_cells:
+            self.startFlash()
         self.board.internal()
         self.drawThings()
         self.updateAI()
@@ -191,6 +191,7 @@ class Application(tk.Frame):
         self.createAI()
         self.drawThings()
     def step300(self):
+        self.endFlash()
         for i in range(300):
             self.board.step()
         self.drawThings()
@@ -281,7 +282,7 @@ class Application(tk.Frame):
     def volcano(self):
         changed = self.board.createVolcano(self.player_team)
         if self.doFlash == False:
-            self.startFlash('#CCCC00')
+            self.startFlash()
         for row, col in changed:
             self.drawCell(row,col)
         self.drawPanel()
@@ -349,22 +350,21 @@ class Application(tk.Frame):
             self.clearPanel()
             self.settingsPanel()
             self.settings_button.configure(text="Hide")
-    def startFlash(self, color):
+    def startFlash(self):
         self.doFlash = True
-        self.flash('#D3D3D3', color)
+        self.flash()
     def endFlash(self):
         self.doFlash = False
-    #FIXME background color change to match land 
-    def flash(self, color1, color2):
+    def flash(self):
         if self.doFlash:
-            r,c = iter(self.board.smoky_cells).next()
-            if self.cells[r][c]["background"] == color1:
-                color = color2
+            row, col = self.board.warning_cells.keys()[0]
+            if self.cells[row][col]["background"] == self.board.color(row,col):
+                for (r,c), color in self.board.warning_cells.iteritems():
+                    self.cells[r][c].configure(bg = color)
             else:
-                color = color1
-            for (row,col) in self.board.smoky_cells:
-                self.cells[row][col].configure(bg = color)
-            self.after(300, self.flash, color1, color2)
+                for r,c in self.board.warning_cells.iterkeys():
+                    self.cells[r][c].configure(bg = self.board.color(r,c))
+            self.after(300, self.flash)
     def outlineIfSelected(self, row,col):
         if self.select_ids[row][col] != None:
             self.cells[row][col].delete(self.select_ids[row][col])
@@ -507,7 +507,7 @@ class Application(tk.Frame):
             if (row,col) in self.board.lava_cells:
                 self.cells[row][col].configure(bg = '#FF0000')
                 self.board.lava_cells.remove((row,col))
-            elif (row,col) not in self.board.smoky_cells:
+            elif (row,col) not in self.board.warning_cells:
                 self.cells[row][col].configure(bg = self.board.color(row, col))
             team = self.board.cells[row][col].team
             strength = self.board.cells[row][col].strength

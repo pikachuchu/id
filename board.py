@@ -24,7 +24,7 @@ class Board:
         self.height = height 
         self.teams = [team1,team2]
         self.volcanoes = dict()
-        self.smoky_cells = set()
+        self.warning_cells = dict()
         self.lava_cells = set()
         self.lock = threading.RLock()
         self.reset()
@@ -119,8 +119,9 @@ class Board:
                         self.cells[row][self.width - col - 1] = neutral()
             if include_tornado:
                 self.cells[self.width / 2][self.height / 2] = tornado()
-            self.smoky_cells.clear()
+            self.warning_cells.clear()
             self.lava_cells.clear()
+            self.volcanoes.clear()
     def color(self, row, col):
         with self.lock:
             return self.land[row][col].color()
@@ -135,7 +136,7 @@ class Board:
                 self.points[team] -= volcano_cost
                 row,col = iter(self.selected[team]).next()
                 self.volcanoes[(row,col)] = 1
-                self.smoky_cells.add((row,col))
+                self.warning_cells[(row,col)] = '#CCCC00'
                 return self.selected[team]
     def volcanoAction(self, row, col):
         with self.lock:
@@ -145,7 +146,7 @@ class Board:
                     self.cells[row][col] = neutral()
                 self.land[row][col].decimate(.35)
                 for r,c in self.adj(row,col):
-                    self.smoky_cells.add((r,c))
+                    self.warning_cells[(r,c)] = '#E59400'
                 self.lava_cells.add((row,col))
                 self.volcanoes[(row,col)] += 1
             elif self.volcanoes[(row,col)] == 2:
@@ -168,7 +169,7 @@ class Board:
         self.old_tornadoes = []
         self.tornadoes = []
         conversions = []
-        self.smoky_cells.clear() 
+        self.warning_cells.clear()
         self.lava_cells.clear()
         with self.lock:
             for row in range(self.height):
