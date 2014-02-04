@@ -135,29 +135,37 @@ class Board:
             else:
                 self.points[team] -= volcano_cost
                 row,col = iter(self.selected[team]).next()
-                self.volcanoes[(row,col)] = 1
+                if (row,col) not in self.volcanoes:
+                    self.volcanoes[(row,col)] = [1]
+                else:
+                    self.volcanoes[(row,col)].append(1)
                 self.warning_cells[(row,col)] = '#CCCC00'
                 return self.selected[team]
     def volcanoAction(self, row, col):
         with self.lock:
-            if self.volcanoes[(row,col)] == 1:
-                #kill cell on row,col, show smoke on adj(row,col), show lava on row,col
-                if self.cells[row][col].team not in neutral_teams:
-                    self.cells[row][col] = neutral()
-                self.land[row][col].decimate(.35)
-                for r,c in self.adj(row,col):
-                    self.warning_cells[(r,c)] = '#E59400'
-                self.lava_cells.add((row,col))
-                self.volcanoes[(row,col)] += 1
-            elif self.volcanoes[(row,col)] == 2:
-                #kill cells on adj(row,col)
-                for r,c in self.adj(row,col):
-                    self.lava_cells.add((r,c))
-                    if self.cells[r][c].team not in neutral_teams:
-                        self.cells[r][c] = neutral()
-                    self.land[r][c].decimate(.35)
-                self.volcanoes[(row,col)] += 1
-            else:
+            for i in range(len(self.volcanoes[(row,col)])):
+                if self.volcanoes[(row,col)][i] == 1:
+                    #kill cell on row,col, show smoke on adj(row,col), show lava on row,col
+                    if self.cells[row][col].team not in neutral_teams:
+                        self.cells[row][col] = neutral()
+                    self.land[row][col].decimate(.35)
+                    for r,c in self.adj(row,col):
+                        self.warning_cells[(r,c)] = '#E59400'
+                    self.lava_cells.add((row,col))
+                    self.volcanoes[(row,col)][i] += 1
+                elif self.volcanoes[(row,col)][i] == 2:
+                    #kill cells on adj(row,col)
+                    for r,c in self.adj(row,col):
+                        self.lava_cells.add((r,c))
+                        if self.cells[r][c].team not in neutral_teams:
+                            self.cells[r][c] = neutral()
+                        self.land[r][c].decimate(.35)
+                    self.volcanoes[(row,col)][i] += 1
+            for i in range(len(self.volcanoes[(row,col)])):
+                if self.volcanoes[(row,col)] == 3:
+                    self.volcanoes[(row,col)].remove(3)
+                    break
+            if not self.volcanoes[(row,col)]:
                 del self.volcanoes[(row,col)]
     def step(self):
         with self.lock:
@@ -452,7 +460,7 @@ class Board:
                 else:
                     #move is valid
                     if self.testing:
-                        self.points[self[r][c].team] -= cost
+                        self.points[team] -= cost
                     else:
                         self.points[team] -= cost
                     ordered = sorted(self.selected[team], key = orderings[displacement])
