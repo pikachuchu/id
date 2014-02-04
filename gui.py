@@ -34,6 +34,7 @@ class Application(tk.Frame):
         ai.app = self
         self.images = dict()
         self.photos = dict()
+        self.doFlash = False
         self.changePhoto((300,300),"assets/tornado.gif")
         self.info = ""
         # TODO reset back to "" on successful user actions
@@ -178,7 +179,7 @@ class Application(tk.Frame):
             else:
                 self.endStep()
     def endStep(self):
-        if board.smoky_cells:
+        if self.board.smoky_cells:
             self.startFlash('#CCCC00')
         self.board.internal()
         self.drawThings()
@@ -186,6 +187,7 @@ class Application(tk.Frame):
     def resetBoard(self):
         self.testing = self.mode.get() == self.testing_str
         self.board.reset(self.include_tornado.get() > 0, testing = self.testing)
+        self.endFlash()
         self.createAI()
         self.drawThings()
     def step300(self):
@@ -278,7 +280,7 @@ class Application(tk.Frame):
             self.drawScore()
     def volcano(self):
         changed = self.board.createVolcano(self.player_team)
-        for row, col in board.smoky_cells:
+        if self.doFlash == False:
             self.startFlash('#CCCC00')
         for row, col in changed:
             self.drawCell(row,col)
@@ -352,14 +354,15 @@ class Application(tk.Frame):
         self.flash('#D3D3D3', color)
     def endFlash(self):
         self.doFlash = False
+    #FIXME background color change to match land 
     def flash(self, color1, color2):
         if self.doFlash:
-            r,c = iter(board.smoky_cells).next()
+            r,c = iter(self.board.smoky_cells).next()
             if self.cells[r][c]["background"] == color1:
                 color = color2
             else:
                 color = color1
-            for (row,col) in board.smoky_cells:
+            for (row,col) in self.board.smoky_cells:
                 self.cells[row][col].configure(bg = color)
             self.after(300, self.flash, color1, color2)
     def outlineIfSelected(self, row,col):
@@ -501,10 +504,10 @@ class Application(tk.Frame):
             for spec_id in self.spec_ids[row][col]:
                 self.cells[row][col].delete(spec_id)
             self.spec_ids[row][col] = []
-            if (row,col) in board.lava_cells:
+            if (row,col) in self.board.lava_cells:
                 self.cells[row][col].configure(bg = '#FF0000')
-                board.lava_cells.remove((row,col))
-            elif (row,col) not in board.smoky_cells:
+                self.board.lava_cells.remove((row,col))
+            elif (row,col) not in self.board.smoky_cells:
                 self.cells[row][col].configure(bg = self.board.color(row, col))
             team = self.board.cells[row][col].team
             strength = self.board.cells[row][col].strength

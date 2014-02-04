@@ -16,8 +16,6 @@ orderings = {
     (1,0): lambda x: -x[0]
 }
 volcano_cost = 20
-smoky_cells = set()
-lava_cells = set()
 class Board:
     def __init__(self, height = 8, width = 8, team1 = "Red", team2 = "Blue"):
         self.cells = [[neutral() for col in range(width)] for row in range(height)]
@@ -26,6 +24,8 @@ class Board:
         self.height = height 
         self.teams = [team1,team2]
         self.volcanoes = dict()
+        self.smoky_cells = set()
+        self.lava_cells = set()
         self.lock = threading.RLock()
         self.reset()
     def __str__(self):
@@ -119,21 +119,23 @@ class Board:
                         self.cells[row][self.width - col - 1] = neutral()
             if include_tornado:
                 self.cells[self.width / 2][self.height / 2] = tornado()
+            self.smoky_cells.clear()
+            self.lava_cells.clear()
     def color(self, row, col):
         with self.lock:
             return self.land[row][col].color()
     def createVolcano(self, team):
         with self.lock:
             #cost will change
-            if volcano_cost > self.points[team]:
+            if volcano_cost > self.points[team] and not self.testing:
                 return "Not enough points"
-            elif len(self.selected[team]) != 1:
+            elif len(self.selected[team]) != 1 and not self.testing:
                 return "Must select one cell"
             else:
                 self.points[team] -= volcano_cost
                 row,col = iter(self.selected[team]).next()
                 self.volcanoes[(row,col)] = 1
-                smoky_cells.add((row,col))
+                self.smoky_cells.add((row,col))
                 return self.selected[team]
     def volcanoAction(self, row, col):
         with self.lock:
@@ -143,13 +145,13 @@ class Board:
                     self.cells[row][col] = neutral()
                 self.land[row][col].decimate(.35)
                 for r,c in self.adj(row,col):
-                    smoky_cells.add((r,c))
-                lava_cells.add((row,col))
+                    self.smoky_cells.add((r,c))
+                self.lava_cells.add((row,col))
                 self.volcanoes[(row,col)] += 1
             elif self.volcanoes[(row,col)] == 2:
                 #kill cells on adj(row,col)
                 for r,c in self.adj(row,col):
-                    lava_cells.add((r,c))
+                    self.lava_cells.add((r,c))
                     if self.cells[r][c].team not in neutral_teams:
                         self.cells[r][c] = neutral()
                     self.land[r][c].decimate(.35)
@@ -166,8 +168,8 @@ class Board:
         self.old_tornadoes = []
         self.tornadoes = []
         conversions = []
-        smoky_cells.clear() 
-        lava_cells.clear()
+        self.smoky_cells.clear() 
+        self.lava_cells.clear()
         with self.lock:
             for row in range(self.height):
                 for col in range(self.width):
