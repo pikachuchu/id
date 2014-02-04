@@ -349,18 +349,19 @@ class Application(tk.Frame):
             self.settings_button.configure(text="Hide")
     def startFlash(self, color):
         self.doFlash = True
-        for row,col in board.smoky_cells:
-            self.flash(self.cells[row][col]["background"], color, row, col)
+        self.flash('#D3D3D3', color)
     def endFlash(self):
         self.doFlash = False
-    def flash(self, color1, color2, row, col):
+    def flash(self, color1, color2):
         if self.doFlash:
-            if(self.cells[row][col]["background"] == color1):
-                self.cells[row][col].configure(bg = color2)
+            r,c = iter(board.smoky_cells).next()
+            if self.cells[r][c]["background"] == color1:
+                color = color2
             else:
-                self.cells[row][col].configure(bg = color1)
-            self.drawCell(row,col)
-            self.after(300, self.flash, color1, color2, row, col)
+                color = color1
+            for (row,col) in board.smoky_cells:
+                self.cells[row][col].configure(bg = color)
+            self.after(300, self.flash, color1, color2)
     def outlineIfSelected(self, row,col):
         if self.select_ids[row][col] != None:
             self.cells[row][col].delete(self.select_ids[row][col])
