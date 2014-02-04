@@ -17,6 +17,7 @@ orderings = {
 }
 volcano_cost = 20
 smoky_cells = set()
+lava_cells = set()
 class Board:
     def __init__(self, height = 8, width = 8, team1 = "Red", team2 = "Blue"):
         self.cells = [[neutral() for col in range(width)] for row in range(height)]
@@ -122,16 +123,18 @@ class Board:
     def volcanoAction(self, row, col):
         with self.lock:
             if self.volcanoes[(row,col)] == 1:
-                #kill cell on row,col, show smoke on adj(row,col)
+                #kill cell on row,col, show smoke on adj(row,col), show lava on row,col
                 if self.cells[row][col].team not in neutral_teams:
                     self.cells[row][col] = neutral()
                 self.land[row][col].decimate(.35)
                 for r,c in self.adj(row,col):
                     smoky_cells.add((r,c))
+                lava_cells.add((row,col))
                 self.volcanoes[(row,col)] += 1
             elif self.volcanoes[(row,col)] == 2:
                 #kill cells on adj(row,col)
                 for r,c in self.adj(row,col):
+                    lava_cells.add((r,c))
                     if self.cells[r][c].team not in neutral_teams:
                         self.cells[r][c] = neutral()
                     self.land[r][c].decimate(.35)
@@ -148,6 +151,7 @@ class Board:
         self.tornadoes = []
         conversions = []
         smoky_cells.clear() 
+        lava_cells.clear()
         with self.lock:
             for row in range(self.height):
                 for col in range(self.width):

@@ -20,8 +20,10 @@ TODO:
         Test different starting positions
         Allowing user to choose starting position
     Clerics:
-        Faith Points allow for placement of volcano, scramble, freeze
-        Different way of accumulating points?
+        Steal points based on number of enemies
+        Range is higher for higher levels
+    Specialization cost:
+        min of 1, equal to level of next specialization 
     Help Text: More info links to help manual
         Volcano
         Tornado

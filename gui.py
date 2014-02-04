@@ -461,7 +461,13 @@ class Application(tk.Frame):
             for spec_id in self.spec_ids[row][col]:
                 self.cells[row][col].delete(spec_id)
             self.spec_ids[row][col] = []
-            self.cells[row][col].configure(bg = self.board.color(row, col))
+            if (row,col) in board.smoky_cells:
+                self.cells[row][col].configure(bg = '#D3D3D3')
+            elif (row,col) in board.lava_cells:
+                self.cells[row][col].configure(bg = '#FF0000')
+                board.lava_cells.remove((row,col))
+            else:
+                self.cells[row][col].configure(bg = self.board.color(row, col))
             team = self.board.cells[row][col].team
             strength = self.board.cells[row][col].strength
             if team == self.board.teams[0]:
