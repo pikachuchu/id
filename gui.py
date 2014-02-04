@@ -39,7 +39,6 @@ class Application(tk.Frame):
         # TODO reset back to "" on successful user actions
         self.createWidgets()
         self.board_width = sum([self.cells[i][i].winfo_width() for i in range(self.width)])
-        self.drawThings()
         self.grid(sticky=tk.N+tk.S+tk.E+tk.W)
         self.eventq = Queue.Queue()
         self.createAI()
@@ -113,9 +112,12 @@ class Application(tk.Frame):
         self.info_panel_span = 7
         self.info_panel = tk.Frame(self, width = self.cell_width * self.info_panel_span, height = self.cell_height * (self.height - len(self.buttons)))
         self.info_panel.grid(row = 0, column = self.width, rowspan = (self.height - len(self.buttons)), columnspan = self.info_panel_span)
-        self.panel_widgets = dict()
+        self.score_widgets = dict()
+        self.last_score = dict()
         for team in self.board.teams:
-            self.panel_widgets[team+"Points"] = tk.Label()
+            self.last_score[team] = -1
+            self.score_widgets[team+"Points"] = tk.Label()
+        self.panel_widgets = dict()
         for spec in cell.specializations:
             self.panel_widgets[spec+"Info"] = tk.Label(justify=tk.LEFT)
             self.panel_widgets[spec+"Pic"] = tk.Label()
@@ -172,12 +174,15 @@ class Application(tk.Frame):
             if self.board.external():
                 self.drawThings()
                 self.update()
-                time.sleep(0.3)
-            if board.smoky_cells:
-                self.startFlash('#CCCC00')
-            self.board.internal()
-            self.drawThings()
-            self.updateAI()
+                self.after(300,self.endStep)
+            else:
+                self.endStep()
+    def endStep(self):
+        if board.smoky_cells:
+            self.startFlash('#CCCC00')
+        self.board.internal()
+        self.drawThings()
+        self.updateAI()
     def resetBoard(self):
         self.testing = self.mode.get() == self.testing_str
         self.board.reset(self.include_tornado.get() > 0, testing = self.testing)
@@ -296,6 +301,8 @@ class Application(tk.Frame):
             changed = self.board.select(brow,bcol,self.player_team)
             for row, col in changed:
                 self.outlineIfSelected(row,col)
+            self.clearPanel()
+            self.drawScore()
             if len(self.board.selected[self.player_team]) == 1:
                 self.drawSelectedInfo()
     def selectAll(self, event):
@@ -370,14 +377,20 @@ class Application(tk.Frame):
                 for col in range(self.width):
                     self.drawCell(row,col)
             self.drawPanel()
+            if self.board_width > self.width:
+                # avoid drawing score alone before board
+                for index, team in enumerate(self.board.teams):
+                    self.score_widgets[team+"Points"].configure(font = self.cell_font)
+                    self.score_widgets[team+"Points"].place(x = self.board_width, y = self.info_panel.winfo_height() - index * self.cell_height * 4 / 5 + self.cell_height, anchor = tk.SW)
     def clearPanel(self):
         for widget in self.panel_widgets:
             self.panel_widgets[widget].place_forget()
     def drawScore(self):
          for index, team in enumerate(self.board.teams):
             points = self.board.points[team]
-            self.panel_widgets[team+"Points"].configure(text = team + ": " + str(points), font = self.cell_font)
-            self.panel_widgets[team+"Points"].place(x = self.board_width, y = self.info_panel.winfo_height() - index * self.cell_height * 4 / 5, anchor = tk.NW)
+            if points is not self.last_score[team]:
+                self.score_widgets[team+"Points"].configure(text = team + ": " + str(points))
+                self.last_score[team] = points
     def drawSelectedInfo(self):
         # populate info_panel based on selection
         row,col = iter(self.board.selected[self.player_team]).next()

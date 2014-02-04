@@ -342,7 +342,9 @@ class Board:
             if self.selected[team]:
                 r,c = iter(self.selected[team]).next()
                 if self.cells[r][c].team == team or self.testing:
-                    cost = len(self.selected[team]) * 2
+                    cost = 0
+                    for row,col in self.selected[team]:
+                        cost += self.cells[row][col].costOfSpecialize(specialization)
                     if cost > self.points[team] and not self.testing:
                         # TODO response
                         return "Mutation requires " + str(cost) + " points."
