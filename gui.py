@@ -138,6 +138,7 @@ class Application(tk.Frame):
         self.panel_widgets["Strength"] = tk.Label()
         self.panel_widgets["Land"] = tk.Label()
         self.panel_widgets["Volcano"] = tk.Button(self, text="Volcano", command = self.volcano, width = self.button_width, height = self.button_height, state=tk.DISABLED)
+        self.panel_widgets["Tornado"] = tk.Button(self, text="Tornado", command = self.tornado, width = self.button_width, height = self.button_height, state=tk.DISABLED)
         for row in range(self.height):
             top.rowconfigure(row, weight = 1)
             self.rowconfigure(row, weight = 1)
@@ -291,6 +292,11 @@ class Application(tk.Frame):
                 self.drawCell(row,col)
             self.clearPanel()
             self.drawScore()
+    def tornado(self):
+        changed = self.board.createTornado(self.player_team)
+        for row, col in changed:
+            self.drawCell(row,col)
+        self.drawPanel()
     def volcano(self):
         changed = self.board.createVolcano(self.player_team)
         if self.doFlash == False:
@@ -478,13 +484,20 @@ class Application(tk.Frame):
             description += "\nVastly improves land proportional to level when neighbors die."
             self.panel_widgets["HunterInfo"].configure(text = description, font = self.desc_font, wraplength = txt_width)
             self.panel_widgets["HunterInfo"].place(x=self.board_width + img_size, y=self.cell_height * self.height * 3 / 10 + img_size * 2, anchor = tk.W)
-        can_volcano = self.board.points[self.player_team] >= board.volcano_cost or self.testing
+        can_volcano = (self.board.points[self.player_team] >= board.volcano_cost or self.testing) and (row,col not in self.board.volcanoes or self.board.volcanoes[(row,col)][0] != 1)
         if can_volcano:
             volc_button_state = tk.NORMAL
         else:
             volc_button_state = tk.DISABLED
+        can_tornado = (self.board.points[self.player_team] >= board.tornado_cost and self.board.cells[row][col].team is cell.neutral_str) or self.testing
+        if can_tornado:
+            tornado_button_state = tk.NORMAL
+        else:
+            tornado_button_state = tk.DISABLED
         self.panel_widgets["Volcano"].configure(font=self.panel_button_font, state = volc_button_state)
         self.panel_widgets["Volcano"].place(x=self.board_width, y=self.info_panel.winfo_height() - (len(self.board.teams)-.5) * self.cell_height * 4 / 5, anchor=tk.W)
+        self.panel_widgets["Tornado"].configure(font=self.panel_button_font, state = tornado_button_state)
+        self.panel_widgets["Tornado"].place(x=self.board_width + self.cell_width * self.info_panel_span / 2, y=self.info_panel.winfo_height() - (len(self.board.teams)-.5) * self.cell_height * 4 / 5, anchor=tk.CENTER)
         self.team_font = tkFont.Font(size = img_size * 2/3) 
         self.panel_widgets["Title"].configure(text = self.board.cells[row][col].team, font = self.team_font)
         self.panel_widgets["Title"].place(x=self.board_width + self.cell_width * self.info_panel_span * 2.38 / 5, y = 0, anchor = tk.N)
