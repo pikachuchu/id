@@ -14,6 +14,18 @@ class Application(tk.Frame):
     def runTODO(self):
         while self.eventq.qsize():
             func, args = self.eventq.get()
+            if func == self.drawThings:
+                try:
+                    while True:
+                        func2, arg2 = self.eventq.get_nowait()
+                        if func2 == func:
+                            func,args = func2, arg2
+                        else:
+                            func(*args)
+                            func,args = func2, arg2
+                            break
+                except Queue.Empty:
+                    pass
             func(*args)
         self.update()
         self.after(100,self.runTODO)
