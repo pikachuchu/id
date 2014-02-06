@@ -484,7 +484,7 @@ class Application(tk.Frame):
             description += "\nVastly improves land proportional to level when neighbors die."
             self.panel_widgets["HunterInfo"].configure(text = description, font = self.desc_font, wraplength = txt_width)
             self.panel_widgets["HunterInfo"].place(x=self.board_width + img_size, y=self.cell_height * self.height * 3 / 10 + img_size * 2, anchor = tk.W)
-        can_volcano = (self.board.points[self.player_team] >= board.volcano_cost or self.testing) and (row,col not in self.board.volcanoes or self.board.volcanoes[(row,col)][0] != 1)
+        can_volcano = (self.board.points[self.player_team] >= board.volcano_cost or self.testing) and ((row,col) not in self.board.volcanoes or 1 not in self.board.volcanoes[(row,col)])
         if can_volcano:
             volc_button_state = tk.NORMAL
         else:
