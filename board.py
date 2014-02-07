@@ -136,8 +136,9 @@ class Board:
             row, col = iter(self.selected[team]).next()
             if self.cells[row][col].team != neutral_str and not self.testing:
                 return "Illegal tornado placement"
+            old_team = self.cells[row][col].team
             self.cells[row][col] = tornado()
-            if self.cells[row][col].team not in neutral_teams:
+            if old_team not in neutral_teams:
                 ret = set(self.adj(row,col))
                 ret = ret.union(self.selected[team])
                 return ret
