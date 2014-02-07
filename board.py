@@ -134,7 +134,7 @@ class Board:
                 return "Must select one cell"
             self.points[team] -= tornado_cost
             row, col = iter(self.selected[team]).next()
-            if self.cells[row][col].team != cell.neutral_str:
+            if self.cells[row][col].team != neutral_str:
                 return "Illegal tornado placement"
             self.cells[row][col] = cell.tornado() 
     def createVolcano(self, team):
@@ -142,17 +142,18 @@ class Board:
             #cost will change
             if volcano_cost > self.points[team] and not self.testing:
                 return "Not enough points"
-            elif len(self.selected[team]) != 1 and not self.testing:
+            if len(self.selected[team]) != 1 and not self.testing:
                 return "Must select one cell"
+            row,col = iter(self.selected[team]).next()
+            if (row,col) in self.volcanoes and 1 in self.volcanoes[(row,col)]:
+                return "Cannot create volcano on existing volcano"
+            self.points[team] -= volcano_cost
+            if (row,col) not in self.volcanoes:
+                self.volcanoes[(row,col)] = [1]
             else:
-                self.points[team] -= volcano_cost
-                row,col = iter(self.selected[team]).next()
-                if (row,col) not in self.volcanoes:
-                    self.volcanoes[(row,col)] = [1]
-                else:
-                    self.volcanoes[(row,col)].append(1)
-                self.warning_cells[(row,col)] = '#CCCC00'
-                return self.selected[team]
+                self.volcanoes[(row,col)].append(1)
+            self.warning_cells[(row,col)] = '#CCCC00'
+            return self.selected[team]
     def volcanoAction(self, row, col):
         with self.lock:
             for i in range(len(self.volcanoes[(row,col)])):
