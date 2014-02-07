@@ -134,9 +134,14 @@ class Board:
                 return "Must select one cell"
             self.points[team] -= tornado_cost
             row, col = iter(self.selected[team]).next()
-            if self.cells[row][col].team != neutral_str:
+            if self.cells[row][col].team != neutral_str and not self.testing:
                 return "Illegal tornado placement"
-            self.cells[row][col] = cell.tornado() 
+            self.cells[row][col] = tornado()
+            if self.cells[row][col].team not in neutral_teams:
+                ret = set(self.adj(row,col))
+                ret = ret.union(self.selected[team])
+                return ret
+            return self.selected[team]
     def createVolcano(self, team):
         with self.lock:
             #cost will change

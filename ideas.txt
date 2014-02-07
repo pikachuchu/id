@@ -2,28 +2,16 @@ TODO:
     AI:
         Takes external things into account
         Optimize over drawThings
-    Volcano:
-        1st stage: smoke on cell, weakens land
-        2nd stage: smoke on 3x3, lava on cell
-        3rd stage: lava on 3x3
-        Flashing red or gray for smoke warning
-        Red in external for lava 
-        Display cell has volcano on it in info_panel
     Scramble:
         can be applied to any area
     Freeze:
         Frozen cells do not change state
         If a natural disaster is adjacent to a frozen cell, that cell unfreezes
-    Placing neutral cells: 
+    Placing base cells: 
         Implement in testing mode
     Increase combat:
         Test different starting positions
         Allowing user to choose starting position
-    Clerics:
-        Steal points based on number of enemies
-        Range is higher for higher levels
-    Specialization cost:
-        min of 1, equal to level of next specialization 
     Help Text: More info links to help manual
         Volcano
         Tornado
@@ -32,10 +20,22 @@ TODO:
     Settings Panel:
         Confirm or Cancel buttons
 Done:
+    Specialization cost:
+        min of 1, equal to level of next specialization 
+    Clerics:
+        Steal points based on number of enemies
+        Range is higher for higher levels
     Harassment
         Moving opponent pieces costs 2x as much as moving your own
         Place enemy cells (kill cost?)
         Praying to tornado (to move)
+    Volcano:
+        1st stage: smoke on cell, weakens land
+        2nd stage: smoke on 3x3, lava on cell
+        3rd stage: lava on 3x3
+        Flashing red or gray for smoke warning
+        Red in external for lava 
+        Display cell has volcano on it in info_panel
     Specialization tree
         Warrior (Maroon)
             1
