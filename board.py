@@ -16,6 +16,7 @@ orderings = {
     (1,0): lambda x: -x[0]
 }
 volcano_cost = 20
+tornado_cost = 20
 class Board:
     def __init__(self, height = 8, width = 8, team1 = "Red", team2 = "Blue"):
         self.cells = [[neutral() for col in range(width)] for row in range(height)]
@@ -125,6 +126,17 @@ class Board:
     def color(self, row, col):
         with self.lock:
             return self.land[row][col].color()
+    def createTornado(self, team):
+        with self.lock:
+            if tornado_cost > self.points[team] and not self.testing:
+                return "Not enough points"
+            if len(self.selected[team]) != 1 and not self.testing:
+                return "Must select one cell"
+            self.points[team] -= tornado_cost
+            row, col = iter(self.selected[team]).next()
+            if self.cells[row][col].team != cell.neutral_str:
+                return "Illegal tornado placement"
+            self.cells[row][col] = cell.tornado() 
     def createVolcano(self, team):
         with self.lock:
             #cost will change
