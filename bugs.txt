@@ -1,2 +1,1 @@
-Volcanoes don't appear correctly when made in sequential turns.
-
+Tornadoes can spawn others by rotating them earlier to later in the iteration.
