@@ -516,7 +516,7 @@ class Application(tk.Frame):
             self.panel_widgets["FarmerPic"].place(x=self.board_width + self.img_size / 2, y=self.cell_height * self.height * 3 / 10 + self.img_size * 2, anchor = tk.CENTER)
             description = "Level " + str(self.board.cells[row][col].farmerLevel()) + " Farmer"
             description += "\nImproves adjacent land proportional to level."
-            self.panel_widgets["HunterInfo"].configure(text=description)
+            self.panel_widgets["FarmerInfo"].configure(text=description)
             self.panel_widgets["FarmerInfo"].place(x=self.board_width + self.img_size, y=self.cell_height * self.height * 3 / 10 + self.img_size * 2, anchor = tk.W)
         elif self.board.cells[row][col].isHunter():
             self.panel_widgets["HunterPic"].place(x=self.board_width + self.img_size / 2, y=self.cell_height * self.height * 3 / 10 + self.img_size * 2, anchor = tk.CENTER)
