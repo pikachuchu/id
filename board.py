@@ -201,6 +201,7 @@ class Board:
         with self.lock:
             for row in range(self.height):
                 for col in range(self.width):
+                    adjacents = self.adj(row,col)
                     if (row,col) in self.volcanoes:
                         self.volcanoAction(row,col)
                         ret = True
