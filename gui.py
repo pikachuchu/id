@@ -379,6 +379,16 @@ class Application(tk.Frame):
         self.txt_width = (self.info_panel_span * self.cell_width - self.img_width) * 9 / 10
         self.img_size = min(self.img_width, self.img_height)
         self.desc_font = tkFont.Font(size = self.img_size / 10)
+        self.team_font = tkFont.Font(size = self.img_size * 2/3) 
+        self.panel_button_font = tkFont.Font(size = self.img_height / 8)
+        self.strength_font = tkFont.Font(size = self.img_size / 4)
+        self.land_font = tkFont.Font(size = self.img_size / 6)
+        self.panel_widgets["Volcano"].configure(font=self.panel_button_font)
+        self.panel_widgets["Tornado"].configure(font=self.panel_button_font)
+        self.panel_widgets["Land"].configure(font = self.land_font)
+        self.panel_widgets["Title"].configure(font = self.team_font)
+        self.panel_widgets["Strength"].configure(font = self.strength_font)
+        # Pictures and info
         self.changePhoto((self.img_size,self.img_size), "assets/sword.gif")
         self.panel_widgets["WarriorPic"].configure(image=self.photoimage, height = self.img_size, width = self.img_size)
         self.panel_widgets["WarriorInfo"].configure(font = self.desc_font, wraplength = self.txt_width)
@@ -397,6 +407,7 @@ class Application(tk.Frame):
         self.changePhoto((self.img_size,self.img_size), "assets/bow.gif")
         self.panel_widgets["HunterPic"].configure(image=self.photoimage, height = self.img_size, width = self.img_size)
         self.panel_widgets["HunterInfo"].configure(font = self.desc_font, wraplength = self.txt_width)
+
         self.drawThings()
     def changeMode(self, mode):
         self.clearPanel()
@@ -471,7 +482,6 @@ class Application(tk.Frame):
     def drawSelectedInfo(self):
         # populate info_panel based on selection
         row,col = iter(self.board.selected[self.player_team]).next()
-        self.panel_button_font = tkFont.Font(size = self.img_height / 8)
         if self.board.cells[row][col].isWarrior():
             self.panel_widgets["WarriorPic"].place(x=self.board_width + self.img_size / 2, y=self.cell_height * self.height * 3 / 10, anchor = tk.CENTER)
             warrior_level = self.board.cells[row][col].warriorLevel()
@@ -526,32 +536,33 @@ class Application(tk.Frame):
             self.panel_widgets["HunterInfo"].place(x=self.board_width + self.img_size, y=self.cell_height * self.height * 3 / 10 + self.img_size * 2, anchor = tk.W)
         elif self.testing and self.board.cells[row][col].team is cell.neutral_str:
             self.drawAddRight()
-        can_volcano = (self.board.points[self.player_team] >= board.volcano_cost or self.testing) and ((row,col) not in self.board.volcanoes or 1 not in self.board.volcanoes[(row,col)])
-        if can_volcano:
-            volc_button_state = tk.NORMAL
-        else:
-            volc_button_state = tk.DISABLED
-        can_tornado = (self.board.points[self.player_team] >= board.tornado_cost and self.board.cells[row][col].team is cell.neutral_str) or self.testing
-        if can_tornado:
-            tornado_button_state = tk.NORMAL
-        else:
-            tornado_button_state = tk.DISABLED
-        self.panel_widgets["Volcano"].configure(font=self.panel_button_font, state = volc_button_state)
-        self.panel_widgets["Volcano"].place(x=self.board_width, y=self.info_panel.winfo_height() - (len(self.board.teams)-.5) * self.cell_height * 4 / 5, anchor=tk.W)
-        self.panel_widgets["Tornado"].configure(font=self.panel_button_font, state = tornado_button_state)
-        self.panel_widgets["Tornado"].place(x=self.board_width + self.cell_width * self.info_panel_span / 2, y=self.info_panel.winfo_height() - (len(self.board.teams)-.5) * self.cell_height * 4 / 5, anchor=tk.CENTER)
-        self.team_font = tkFont.Font(size = self.img_size * 2/3) 
-        self.panel_widgets["Title"].configure(text = self.board.cells[row][col].team, font = self.team_font)
+        self.drawPanelButtons()
+        self.panel_widgets["Title"].configure(text = self.board.cells[row][col].team)
         self.panel_widgets["Title"].place(x=self.board_width + self.cell_width * self.info_panel_span * 2.38 / 5, y = 0, anchor = tk.N)
-        self.strength_font = tkFont.Font(size = self.img_size / 4)
-        self.land_font = tkFont.Font(size = self.img_size / 6)
-        self.panel_widgets["Land"].configure(text = "Land Quality: " + self.board.land[row][col].description(), font = self.land_font)
+        self.panel_widgets["Land"].configure(text = "Land Quality: " + self.board.land[row][col].description())
         if self.board.cells[row][col].team not in cell.neutral_teams:
-            self.panel_widgets["Strength"].configure(text = "Strength: " + str(self.board.cells[row][col].strength), font = self.strength_font)
+            self.panel_widgets["Strength"].configure(text = "Strength: " + str(self.board.cells[row][col].strength))
             self.panel_widgets["Strength"].place(x=self.board_width + self.cell_width * self.info_panel_span * 2.38 / 5, y = self.cell_height * 2, anchor = tk.CENTER)
             self.panel_widgets["Land"].place(x=self.board_width + self.cell_width * self.info_panel_span * 2.38 / 5, y = self.cell_height * 2.75, anchor = tk.CENTER)
         else:
             self.panel_widgets["Land"].place(x=self.board_width + self.cell_width * self.info_panel_span * 2.38 / 5, y = self.cell_height * 2, anchor = tk.CENTER)
+    def drawPanelButtons(self):
+        can_volcano = (self.board.points[self.player_team] >= board.volcano_cost or self.testing)
+        for (row,col) in self.board.selected[self.player_team]:
+            can_volcano = can_volcano and ((row,col) not in self.board.volcanoes or 1 not in self.board.volcanoes[(row,col)])
+        if can_volcano:
+            volc_button_state = tk.NORMAL
+        else:
+            volc_button_state = tk.DISABLED
+        can_tornado = self.testing or (self.board.points[self.player_team] >= board.tornado_cost and self.board.cells[row][col].team is cell.neutral_str)
+        if can_tornado:
+            tornado_button_state = tk.NORMAL
+        else:
+            tornado_button_state = tk.DISABLED
+        self.panel_widgets["Volcano"].configure(state = volc_button_state)
+        self.panel_widgets["Volcano"].place(x=self.board_width, y=self.info_panel.winfo_height() - (len(self.board.teams)-.5) * self.cell_height * 4 / 5, anchor=tk.W)
+        self.panel_widgets["Tornado"].configure(state = tornado_button_state)
+        self.panel_widgets["Tornado"].place(x=self.board_width + self.cell_width * self.info_panel_span / 2, y=self.info_panel.winfo_height() - (len(self.board.teams)-.5) * self.cell_height * 4 / 5, anchor=tk.CENTER)
     def drawAddLeft(self):
         self.panel_widgets["AddLeft"].configure(text="Add Red")
         self.panel_widgets["AddLeft"].place(x=self.board_width + self.img_size, y=self.cell_height * self.height * 3 / 10 + self.img_size, anchor = tk.W)
@@ -574,6 +585,7 @@ class Application(tk.Frame):
             if self.board.cells[r][c].team is cell.neutral_str:
                 self.drawAddLeft()
                 self.drawAddRight()
+            self.drawPanelButtons()
         self.settings_button.configure(text="Settings")
     def drawCells(self):
         with self.board.lock:
