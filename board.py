@@ -76,7 +76,7 @@ class Board:
         while frontier:
             r,c,distance = frontier.popleft()
             for erow, ecol in self.adj(r,c):
-                if (erow, ecol) not in visited and distance + 1 < radius:
+                if (erow, ecol) not in visited and distance < radius:
                     visited.add((erow, ecol))
                     frontier.append((erow,ecol,distance + 1))
                     if self.cells[erow][ecol].team in enemies:
