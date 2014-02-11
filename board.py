@@ -506,16 +506,11 @@ class Board:
                 for row, col in self.selected[team]:
                     brow = row + displacement[0]
                     bcol = col + displacement[1]
-                    if self.inGrid(brow, bcol) and (self.cells[brow][bcol] == neutral() or (brow,bcol) in self.selected[team]):
-                        continue
-                    else:
+                    if not (self.cells[row][col].team != neutral_str and self.inGrid(brow, bcol) and (self.cells[brow][bcol] == neutral() or (brow,bcol) in self.selected[team])):
                         break
                 else:
                     #move is valid
-                    if self.testing:
-                        self.points[team] -= cost
-                    else:
-                        self.points[team] -= cost
+                    self.points[team] -= cost
                     ordered = sorted(self.selected[team], key = orderings[displacement])
                     for row, col in ordered:
                         brow = row + displacement[0]
