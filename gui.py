@@ -177,6 +177,7 @@ class Application(tk.Frame):
         self.panel_widgets["Mode"] = tk.OptionMenu(self, self.mode, *self.modes, command=self.changeMode)
         self.panel_widgets["Difficulty"] = tk.OptionMenu(self, self.difficulty, *self.ai_levels)
         self.updateSettingsVals()
+        self.configure()
     def specWarrior(self):
         self.specialize('Warrior')
     def specMedic(self):
@@ -369,7 +370,7 @@ class Application(tk.Frame):
             brow,bcol = self.cell_locations[event.widget]
             self.board.addAll(brow,bcol,self.player_team)
             self.drawThings()
-    def configure(self, event):
+    def configure(self, event=None):
         self.update() # set winfo stuff
         self.cell_height=self.cells[0][0].winfo_height()
         self.cell_width=self.cells[0][0].winfo_width()
@@ -383,11 +384,17 @@ class Application(tk.Frame):
         self.panel_button_font = tkFont.Font(size = self.img_height / 8)
         self.strength_font = tkFont.Font(size = self.img_size / 4)
         self.land_font = tkFont.Font(size = self.img_size / 6)
+        self.cell_font = tkFont.Font(size=2 * min(self.cell_height,self.cell_width) / 5)
         self.panel_widgets["Volcano"].configure(font=self.panel_button_font)
         self.panel_widgets["Tornado"].configure(font=self.panel_button_font)
         self.panel_widgets["Land"].configure(font = self.land_font)
         self.panel_widgets["Title"].configure(font = self.team_font)
         self.panel_widgets["Strength"].configure(font = self.strength_font)
+        if self.board_width > self.width:
+            # avoid drawing score alone before board
+            for index, team in enumerate(self.board.teams):
+                self.score_widgets[team+"Points"].configure(font = self.cell_font)
+                self.score_widgets[team+"Points"].place(x = self.board_width, y = self.info_panel.winfo_height() - index * self.cell_height * 4 / 5 + self.cell_height, anchor = tk.SW)
         # Pictures and info
         self.changePhoto((self.img_size,self.img_size), "assets/sword.gif")
         self.panel_widgets["WarriorPic"].configure(image=self.photoimage, height = self.img_size, width = self.img_size)
@@ -461,15 +468,9 @@ class Application(tk.Frame):
             self.select_ids[row][col] = self.cells[row][col].create_rectangle(1,1,width-2,height-2,outline=color,width=1)
     def drawThings(self):
         with self.board.lock:
-            self.cell_font = tkFont.Font(size=2 * min(self.cell_height,self.cell_width) / 5)
             self.drawCells();
             self.drawScore()
             self.drawPanel()
-            if self.board_width > self.width:
-                # avoid drawing score alone before board
-                for index, team in enumerate(self.board.teams):
-                    self.score_widgets[team+"Points"].configure(font = self.cell_font)
-                    self.score_widgets[team+"Points"].place(x = self.board_width, y = self.info_panel.winfo_height() - index * self.cell_height * 4 / 5 + self.cell_height, anchor = tk.SW)
     def clearPanel(self):
         for widget in self.panel_widgets:
             self.panel_widgets[widget].place_forget()
