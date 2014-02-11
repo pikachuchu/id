@@ -145,6 +145,8 @@ class Application(tk.Frame):
         for col in range(self.width + self.info_panel_span):
             top.columnconfigure(col, weight = 1)
             self.columnconfigure(col, weight = 1)
+        self.panel_widgets["AddLeft"] = tk.Button(self, command = self.addLeft)
+        self.panel_widgets["AddRight"] = tk.Button(self, command = self.addRight)
         # settingsPanel
         self.settings_vars = []
         # TODO reset doesn't apply changes to settings until confirm
@@ -297,6 +299,16 @@ class Application(tk.Frame):
             for row, col in changed:
                 self.drawCell(row,col)
             self.clearPanel()
+    def addLeft(self):
+        self.add(self.player_team)
+    def addRight(self):
+        self.add(self.ai_team)
+    def add(self, team):
+        changed = self.board.addCell(self.player_team, team)
+        if type(changed) == type(set()):
+            for row,col in changed:
+                self.drawCell(row,col)
+            self.drawPanel()
     def tornado(self):
         changed = self.board.createTornado(self.player_team)
         for row, col in changed:
@@ -362,6 +374,11 @@ class Application(tk.Frame):
         self.cell_height=self.cells[0][0].winfo_height()
         self.cell_width=self.cells[0][0].winfo_width()
         self.board_width = sum([self.cells[i][i].winfo_width() for i in range(self.width)])
+        self.img_height = self.cell_height * self.height / 8
+        self.img_width = self.cell_width * self.info_panel_span / 4
+        self.txt_width = (self.info_panel_span * self.cell_width - self.img_width) * 9 / 10
+        self.img_size = min(self.img_width, self.img_height)
+        self.desc_font = tkFont.Font(size = self.img_size / 10)
         self.drawThings()
     def changeMode(self, mode):
         self.clearPanel()
@@ -376,7 +393,6 @@ class Application(tk.Frame):
     def settings(self):
         if self.panel_widgets["TornadoCheck"].place_info():
             # if already exists
-            self.clearPanel()
             self.drawPanel()
         else:
             self.clearPanel()
@@ -437,39 +453,34 @@ class Application(tk.Frame):
     def drawSelectedInfo(self):
         # populate info_panel based on selection
         row,col = iter(self.board.selected[self.player_team]).next()
-        img_height = self.cell_height * self.height / 8
-        img_width = self.cell_width * self.info_panel_span / 4
-        txt_width = (self.info_panel_span * self.cell_width - img_width) * 9 / 10
-        img_size = min(img_width, img_height)
-        self.desc_font = tkFont.Font(size = img_size / 10)
-        self.panel_button_font = tkFont.Font(size = img_height / 8)
+        self.panel_button_font = tkFont.Font(size = self.img_height / 8)
         if self.board.cells[row][col].isWarrior():
-            self.changePhoto((img_size,img_size), "assets/sword.gif")
-            self.panel_widgets["WarriorPic"].configure(image=self.photoimage, height = img_size, width = img_size)
-            self.panel_widgets["WarriorPic"].place(x=self.board_width + img_size / 2, y=self.cell_height * self.height * 3 / 10, anchor = tk.CENTER)
+            self.changePhoto((self.img_size,self.img_size), "assets/sword.gif")
+            self.panel_widgets["WarriorPic"].configure(image=self.photoimage, height = self.img_size, width = self.img_size)
+            self.panel_widgets["WarriorPic"].place(x=self.board_width + self.img_size / 2, y=self.cell_height * self.height * 3 / 10, anchor = tk.CENTER)
             warrior_level = self.board.cells[row][col].warriorLevel()
             description = "Level " + str(warrior_level) + " Warrior"
             description += "\nGrants " + str(warrior_level) + " permanent bonus strength distributed among random allied neighbors."
             if warrior_level >= 2:
                 description += "\nIncludes its own strength in combat survival."
-            self.panel_widgets["WarriorInfo"].configure(text = description, font = self.desc_font, wraplength = txt_width)
-            self.panel_widgets["WarriorInfo"].place(x=self.board_width + img_size, y=self.cell_height * self.height * 3 / 10, anchor = tk.W)
+            self.panel_widgets["WarriorInfo"].configure(text = description, font = self.desc_font, wraplength = self.txt_width)
+            self.panel_widgets["WarriorInfo"].place(x=self.board_width + self.img_size, y=self.cell_height * self.height * 3 / 10, anchor = tk.W)
         elif self.board.cells[row][col].isMedic():
-            self.changePhoto((img_size,img_size), "assets/bandage.gif")
-            self.panel_widgets["MedicPic"].configure(image=self.photoimage, height = img_size, width = img_size)
-            self.panel_widgets["MedicPic"].place(x=self.board_width + img_size / 2, y=self.cell_height * self.height * 3 / 10, anchor = tk.CENTER)
+            self.changePhoto((self.img_size,self.img_size), "assets/bandage.gif")
+            self.panel_widgets["MedicPic"].configure(image=self.photoimage, height = self.img_size, width = self.img_size)
+            self.panel_widgets["MedicPic"].place(x=self.board_width + self.img_size / 2, y=self.cell_height * self.height * 3 / 10, anchor = tk.CENTER)
             medic_level = self.board.cells[row][col].medicLevel()
             description = "Level " + str(medic_level) + " Medic"
             approx_odds = 1 - .75 ** medic_level
             approx_odds *= 100
             approx_odds = int(round(approx_odds))
             description += "\n" + "Has " + str(approx_odds) + "% chance to save allied neighbors from combat."
-            self.panel_widgets["MedicInfo"].configure(text = description, font = self.desc_font, wraplength = txt_width)
-            self.panel_widgets["MedicInfo"].place(x=self.board_width + img_size, y=self.cell_height * self.height * 3 / 10, anchor = tk.W)
+            self.panel_widgets["MedicInfo"].configure(text = description, font = self.desc_font, wraplength = self.txt_width)
+            self.panel_widgets["MedicInfo"].place(x=self.board_width + self.img_size, y=self.cell_height * self.height * 3 / 10, anchor = tk.W)
         if self.board.cells[row][col].isCleric():
-            self.changePhoto((img_size,img_size), "assets/candle.gif")
-            self.panel_widgets["ClericPic"].configure(image=self.photoimage, height = img_size, width = img_size)
-            self.panel_widgets["ClericPic"].place(x=self.board_width + img_size / 2, y=self.cell_height * self.height * 3 / 10 + img_size, anchor = tk.CENTER)
+            self.changePhoto((self.img_size,self.img_size), "assets/candle.gif")
+            self.panel_widgets["ClericPic"].configure(image=self.photoimage, height = self.img_size, width = self.img_size)
+            self.panel_widgets["ClericPic"].place(x=self.board_width + self.img_size / 2, y=self.cell_height * self.height * 3 / 10 + self.img_size, anchor = tk.CENTER)
             cleric_level = self.board.cells[row][col].clericLevel()
             description = "Level " + str(cleric_level) + " Cleric"
             approx_odds = 1 - .9 ** cleric_level
@@ -478,33 +489,37 @@ class Application(tk.Frame):
             description += "\nGains a point for every enemy in a " + str(cleric_level) + "-cell radius."
             description += "\nHas " + str(approx_odds) + "% chance to convert enemy neighboring cells."
             description += "\nCannot be converted by enemy Clerics."
-            self.panel_widgets["ClericInfo"].configure(text = description, font = self.desc_font, wraplength = txt_width)
-            self.panel_widgets["ClericInfo"].place(x=self.board_width + img_size, y=self.cell_height * self.height * 3 / 10 + img_size, anchor = tk.W)
+            self.panel_widgets["ClericInfo"].configure(text = description, font = self.desc_font, wraplength = self.txt_width)
+            self.panel_widgets["ClericInfo"].place(x=self.board_width + self.img_size, y=self.cell_height * self.height * 3 / 10 + self.img_size, anchor = tk.W)
         elif self.board.cells[row][col].isScientist():
-            self.changePhoto((img_size,img_size), "assets/testTube.gif")
-            self.panel_widgets["ScientistPic"].configure(image=self.photoimage, height = img_size, width = img_size)
-            self.panel_widgets["ScientistPic"].place(x=self.board_width + img_size / 2, y=self.cell_height * self.height * 3 / 10 + img_size, anchor = tk.CENTER)
+            self.changePhoto((self.img_size,self.img_size), "assets/testTube.gif")
+            self.panel_widgets["ScientistPic"].configure(image=self.photoimage, height = self.img_size, width = self.img_size)
+            self.panel_widgets["ScientistPic"].place(x=self.board_width + self.img_size / 2, y=self.cell_height * self.height * 3 / 10 + self.img_size, anchor = tk.CENTER)
             scientist_level = self.board.cells[row][col].scientistLevel()
             description = "Level " + str(scientist_level) + " Scientist"
             description += "\nGrants " + str(scientist_level) + " points per turn."
-            self.panel_widgets["ScientistInfo"].configure(text = description, font = self.desc_font, wraplength = txt_width)
-            self.panel_widgets["ScientistInfo"].place(x=self.board_width + img_size, y=self.cell_height * self.height * 3 / 10 + img_size, anchor = tk.W)
+            self.panel_widgets["ScientistInfo"].configure(text = description, font = self.desc_font, wraplength = self.txt_width)
+            self.panel_widgets["ScientistInfo"].place(x=self.board_width + self.img_size, y=self.cell_height * self.height * 3 / 10 + self.img_size, anchor = tk.W)
+        elif self.testing and self.board.cells[row][col].team is cell.neutral_str:
+            self.drawAddLeft()
         if self.board.cells[row][col].isFarmer():
-            self.changePhoto((img_size,img_size), "assets/pitchfork.gif")
-            self.panel_widgets["FarmerPic"].configure(image=self.photoimage, height = img_size, width = img_size)
-            self.panel_widgets["FarmerPic"].place(x=self.board_width + img_size / 2, y=self.cell_height * self.height * 3 / 10 + img_size * 2, anchor = tk.CENTER)
+            self.changePhoto((self.img_size,self.img_size), "assets/pitchfork.gif")
+            self.panel_widgets["FarmerPic"].configure(image=self.photoimage, height = self.img_size, width = self.img_size)
+            self.panel_widgets["FarmerPic"].place(x=self.board_width + self.img_size / 2, y=self.cell_height * self.height * 3 / 10 + self.img_size * 2, anchor = tk.CENTER)
             description = "Level " + str(self.board.cells[row][col].farmerLevel()) + " Farmer"
             description += "\nImproves adjacent land proportional to level."
-            self.panel_widgets["FarmerInfo"].configure(text = description, font = self.desc_font, wraplength = txt_width)
-            self.panel_widgets["FarmerInfo"].place(x=self.board_width + img_size, y=self.cell_height * self.height * 3 / 10 + img_size * 2, anchor = tk.W)
+            self.panel_widgets["FarmerInfo"].configure(text = description, font = self.desc_font, wraplength = self.txt_width)
+            self.panel_widgets["FarmerInfo"].place(x=self.board_width + self.img_size, y=self.cell_height * self.height * 3 / 10 + self.img_size * 2, anchor = tk.W)
         elif self.board.cells[row][col].isHunter():
-            self.changePhoto((img_size,img_size), "assets/bow.gif")
-            self.panel_widgets["HunterPic"].configure(image=self.photoimage, height = img_size, width = img_size)
-            self.panel_widgets["HunterPic"].place(x=self.board_width + img_size / 2, y=self.cell_height * self.height * 3 / 10 + img_size * 2, anchor = tk.CENTER)
+            self.changePhoto((self.img_size,self.img_size), "assets/bow.gif")
+            self.panel_widgets["HunterPic"].configure(image=self.photoimage, height = self.img_size, width = self.img_size)
+            self.panel_widgets["HunterPic"].place(x=self.board_width + self.img_size / 2, y=self.cell_height * self.height * 3 / 10 + self.img_size * 2, anchor = tk.CENTER)
             description = "Level " + str(self.board.cells[row][col].hunterLevel()) + " Hunter"
             description += "\nVastly improves land proportional to level when neighbors die."
-            self.panel_widgets["HunterInfo"].configure(text = description, font = self.desc_font, wraplength = txt_width)
-            self.panel_widgets["HunterInfo"].place(x=self.board_width + img_size, y=self.cell_height * self.height * 3 / 10 + img_size * 2, anchor = tk.W)
+            self.panel_widgets["HunterInfo"].configure(text = description, font = self.desc_font, wraplength = self.txt_width)
+            self.panel_widgets["HunterInfo"].place(x=self.board_width + self.img_size, y=self.cell_height * self.height * 3 / 10 + self.img_size * 2, anchor = tk.W)
+        elif self.testing and self.board.cells[row][col].team is cell.neutral_str:
+            self.drawAddRight()
         can_volcano = (self.board.points[self.player_team] >= board.volcano_cost or self.testing) and ((row,col) not in self.board.volcanoes or 1 not in self.board.volcanoes[(row,col)])
         if can_volcano:
             volc_button_state = tk.NORMAL
@@ -519,11 +534,11 @@ class Application(tk.Frame):
         self.panel_widgets["Volcano"].place(x=self.board_width, y=self.info_panel.winfo_height() - (len(self.board.teams)-.5) * self.cell_height * 4 / 5, anchor=tk.W)
         self.panel_widgets["Tornado"].configure(font=self.panel_button_font, state = tornado_button_state)
         self.panel_widgets["Tornado"].place(x=self.board_width + self.cell_width * self.info_panel_span / 2, y=self.info_panel.winfo_height() - (len(self.board.teams)-.5) * self.cell_height * 4 / 5, anchor=tk.CENTER)
-        self.team_font = tkFont.Font(size = img_size * 2/3) 
+        self.team_font = tkFont.Font(size = self.img_size * 2/3) 
         self.panel_widgets["Title"].configure(text = self.board.cells[row][col].team, font = self.team_font)
         self.panel_widgets["Title"].place(x=self.board_width + self.cell_width * self.info_panel_span * 2.38 / 5, y = 0, anchor = tk.N)
-        self.strength_font = tkFont.Font(size = img_size / 4)
-        self.land_font = tkFont.Font(size = img_size / 6)
+        self.strength_font = tkFont.Font(size = self.img_size / 4)
+        self.land_font = tkFont.Font(size = self.img_size / 6)
         self.panel_widgets["Land"].configure(text = "Land Quality: " + self.board.land[row][col].description(), font = self.land_font)
         if self.board.cells[row][col].team not in cell.neutral_teams:
             self.panel_widgets["Strength"].configure(text = "Strength: " + str(self.board.cells[row][col].strength), font = self.strength_font)
@@ -531,6 +546,12 @@ class Application(tk.Frame):
             self.panel_widgets["Land"].place(x=self.board_width + self.cell_width * self.info_panel_span * 2.38 / 5, y = self.cell_height * 2.75, anchor = tk.CENTER)
         else:
             self.panel_widgets["Land"].place(x=self.board_width + self.cell_width * self.info_panel_span * 2.38 / 5, y = self.cell_height * 2, anchor = tk.CENTER)
+    def drawAddLeft(self):
+        self.panel_widgets["AddLeft"].configure(text="Add Red")
+        self.panel_widgets["AddLeft"].place(x=self.board_width + self.img_size, y=self.cell_height * self.height * 3 / 10 + self.img_size, anchor = tk.W)
+    def drawAddRight(self):
+        self.panel_widgets["AddRight"].configure(text="Add Blue")
+        self.panel_widgets["AddRight"].place(x=self.board_width + self.img_size, y = self.cell_height * self.height * 3 / 10 + self.img_size * 2, anchor = tk.W)
     def settingsPanel(self):
         self.panel_widgets["TornadoCheck"].place(x=self.board_width + self.cell_width, y = self.cell_height / 2, anchor = tk.CENTER)
         self.panel_widgets["Mode"].place(x=self.board_width + self.cell_width, y = self.cell_height, anchor = tk.N)
@@ -542,6 +563,11 @@ class Application(tk.Frame):
         self.clearPanel()
         if len(self.board.selected[self.player_team]) == 1:
             self.drawSelectedInfo()
+        elif self.testing and len(self.board.selected[self.player_team]) >= 2:
+            r,c = iter(self.board.selected[self.player_team]).next()
+            if self.board.cells[r][c].team is cell.neutral_str:
+                self.drawAddLeft()
+                self.drawAddRight()
         self.settings_button.configure(text="Settings")
     def drawCells(self):
         with self.board.lock:
