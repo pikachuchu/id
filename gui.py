@@ -146,16 +146,19 @@ class Application(tk.Frame):
             top.columnconfigure(col, weight = 1)
             self.columnconfigure(col, weight = 1)
         # settingsPanel
+        self.settings_vars = []
         # TODO reset doesn't apply changes to settings until confirm
-        self.panel_widgets["Confirm"] = tk.Button(self, text="Confirm", command = self.resetBoard, width = self.button_width, height = self.button_height)
+        self.panel_widgets["Confirm"] = tk.Button(self, text="Confirm", command = self.confirm, width = self.button_width, height = self.button_height)
         # TODO cancel undoes changes to settings since opening panel
-        self.panel_widgets["Cancel"] = tk.Button(self, text="Cancel", command = self.settings, width = self.button_width, height = self.button_height)
+        self.panel_widgets["Cancel"] = tk.Button(self, text="Cancel", command = self.cancel, width = self.button_width, height = self.button_height)
         self.include_tornado = tk.IntVar()
+        self.settings_vars.append(self.include_tornado)
         self.panel_widgets["TornadoCheck"] = tk.Checkbutton(text="Tornado", variable=self.include_tornado)
         self.panel_widgets["TornadoCheck"].select()
         self.vers_ai_str = "Versus AI"
         self.testing_str = "Testing"
         self.mode = tk.StringVar()
+        self.settings_vars.append(self.mode)
         self.modes = (
             self.vers_ai_str,
             self.testing_str,
@@ -167,9 +170,11 @@ class Application(tk.Frame):
             "Medium" : ai.medium
         }
         self.difficulty = tk.StringVar()
+        self.settings_vars.append(self.difficulty)
         self.difficulty.set("Medium")
         self.panel_widgets["Mode"] = tk.OptionMenu(self, self.mode, *self.modes, command=self.changeMode)
         self.panel_widgets["Difficulty"] = tk.OptionMenu(self, self.difficulty, *self.ai_levels)
+        self.updateSettingsVals()
     def specWarrior(self):
         self.specialize('Warrior')
     def specMedic(self):
@@ -198,6 +203,7 @@ class Application(tk.Frame):
         self.drawThings()
         self.updateAI()
     def resetBoard(self):
+        self.undoSettingsVals()
         self.testing = self.mode.get() == self.testing_str
         self.board.reset(self.include_tornado.get() > 0, testing = self.testing)
         self.endFlash()
@@ -359,6 +365,13 @@ class Application(tk.Frame):
     def changeMode(self, mode):
         self.clearPanel()
         self.settings()
+    def updateSettingsVals(self):
+        self.settings_vals = []
+        for var in self.settings_vars:
+            self.settings_vals.append((var, var.get()))
+    def undoSettingsVals(self):
+        for (var, val) in self.settings_vals:
+            var.set(val)
     def settings(self):
         if self.panel_widgets["TornadoCheck"].place_info():
             # if already exists
@@ -368,6 +381,14 @@ class Application(tk.Frame):
             self.clearPanel()
             self.settingsPanel()
             self.settings_button.configure(text="Hide")
+    def confirm(self):
+        self.updateSettingsVals()
+        self.resetBoard()
+        pass
+    def cancel(self):
+        self.undoSettingsVals()
+        self.settings()
+        pass
     def startFlash(self):
         self.doFlash = True
         self.flash()
@@ -395,9 +416,7 @@ class Application(tk.Frame):
     def drawThings(self):
         with self.board.lock:
             self.cell_font = tkFont.Font(size=2 * min(self.cell_height,self.cell_width) / 5)
-            for row in range(self.height):
-                for col in range(self.width):
-                    self.drawCell(row,col)
+            self.drawCells();
             self.drawPanel()
             if self.board_width > self.width:
                 # avoid drawing score alone before board
@@ -523,6 +542,11 @@ class Application(tk.Frame):
         if len(self.board.selected[self.player_team]) == 1:
             self.drawSelectedInfo()
         self.settings_button.configure(text="Settings")
+    def drawCells(self):
+        with self.board.lock:
+            for row in range(self.height):
+                for col in range(self.width):
+                    self.drawCell(row,col)
     def drawCell(self, row, col):
         with self.board.lock:
             self.cells[row][col].delete(self.text_ids[row][col])
