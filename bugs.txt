@@ -1,1 +1,0 @@
-Tornadoes can spawn others by rotating them earlier to later in the iteration.
