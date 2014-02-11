@@ -177,7 +177,7 @@ class Application(tk.Frame):
         self.panel_widgets["Mode"] = tk.OptionMenu(self, self.mode, *self.modes, command=self.changeMode)
         self.panel_widgets["Difficulty"] = tk.OptionMenu(self, self.difficulty, *self.ai_levels)
         self.updateSettingsVals()
-        self.configure()
+        self.configure(update=False)
     def specWarrior(self):
         self.specialize('Warrior')
     def specMedic(self):
@@ -370,8 +370,9 @@ class Application(tk.Frame):
             brow,bcol = self.cell_locations[event.widget]
             self.board.addAll(brow,bcol,self.player_team)
             self.drawThings()
-    def configure(self, event=None):
-        self.update() # set winfo stuff
+    def configure(self, event=None, update=True):
+        if update:
+            self.update() # set winfo stuff
         self.cell_height=self.cells[0][0].winfo_height()
         self.cell_width=self.cells[0][0].winfo_width()
         self.board_width = sum([self.cells[i][i].winfo_width() for i in range(self.width)])
