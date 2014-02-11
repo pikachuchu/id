@@ -198,7 +198,11 @@ class Board:
         conversions = []
         self.warning_cells.clear()
         self.lava_cells.clear()
+        colors = dict()
         with self.lock:
+            for row in range(self.height):
+                for col in range(self.width):
+                    colors[(row,col)] = self.color(row,col)
             for row in range(self.height):
                 for col in range(self.width):
                     self.land[row][col].deplete(self.cells[row][col])
@@ -210,14 +214,9 @@ class Board:
                     if self.cells[row][col].team == tornado_str:
                         self.old_tornadoes.append((row,col))
                     elif self.cells[row][col].isFarmer():
-                        colors = []
-                        for r,c in adjacents:
-                            colors.append(self.land[r][c].color())
                         for i in range(self.cells[row][col].farmerLevel()):
                             for r,c in adjacents:
                                 self.land[r][c].regen()
-                        for (r,c), color in zip(adjacents, colors):
-                            ret = ret or self.land[r][c].color() == color
                     if self.cells[row][col].isCleric():
                         cleric_level = self.cells[row][col].clericLevel()
                         for r,c in adjacents:
@@ -273,7 +272,13 @@ class Board:
                 self.tornadoes.append((r,c))
             for dteam, r, c in conversions:
                 self.cells[r][c].team = dteam
-            return ret
+            if not ret:
+                for row in range(self.height):
+                    for col in range(self.width):
+                        if colors[(row,col)] != self.color(row,col):
+                            return True
+                return False
+            return True
     def internal(self):
         step = [[neutral() for col in range(self.width)] for row in range(self.height)]
         with self.lock:
