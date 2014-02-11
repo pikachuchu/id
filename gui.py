@@ -297,11 +297,11 @@ class Application(tk.Frame):
             for row, col in changed:
                 self.drawCell(row,col)
             self.clearPanel()
-            self.drawScore()
     def tornado(self):
         changed = self.board.createTornado(self.player_team)
         for row, col in changed:
             self.drawCell(row,col)
+        self.drawScore()
         self.drawPanel()
     def volcano(self):
         changed = self.board.createVolcano(self.player_team)
@@ -309,6 +309,7 @@ class Application(tk.Frame):
             self.startFlash()
         for row, col in changed:
             self.drawCell(row,col)
+        self.drawScore()
         self.drawPanel()
     def specialize(self,specialization):
         ret = self.board.specialize(specialization, self.player_team)
@@ -318,6 +319,7 @@ class Application(tk.Frame):
             for r,c in ret:
                 self.drawCell(r,c)
         self.specialization_menu.place_forget()
+        self.drawScore()
         self.drawPanel()
     def select(self, event):
         if self.specialization_menu.place_info():
@@ -329,7 +331,6 @@ class Application(tk.Frame):
             for row, col in changed:
                 self.outlineIfSelected(row,col)
             self.clearPanel()
-            self.drawScore()
             if len(self.board.selected[self.player_team]) == 1:
                 self.drawSelectedInfo()
     def selectAll(self, event):
@@ -417,6 +418,7 @@ class Application(tk.Frame):
         with self.board.lock:
             self.cell_font = tkFont.Font(size=2 * min(self.cell_height,self.cell_width) / 5)
             self.drawCells();
+            self.drawScore()
             self.drawPanel()
             if self.board_width > self.width:
                 # avoid drawing score alone before board
@@ -538,7 +540,6 @@ class Application(tk.Frame):
         self.panel_widgets["Cancel"].place(x = self.board_width + self.cell_width * 2 * self.info_panel_span / 3 * .95, y = self.info_panel.winfo_height() - self.cell_height, anchor = tk.S)
     def drawPanel(self):
         self.clearPanel()
-        self.drawScore()
         if len(self.board.selected[self.player_team]) == 1:
             self.drawSelectedInfo()
         self.settings_button.configure(text="Settings")
