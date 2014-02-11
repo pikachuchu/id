@@ -201,40 +201,11 @@ class Board:
         with self.lock:
             for row in range(self.height):
                 for col in range(self.width):
-                    adjacents = self.adj(row, col)
-                    #volcano actions
                     if (row,col) in self.volcanoes:
                         self.volcanoAction(row,col)
                         ret = True
-                    # tornado actions
                     if self.cells[row][col].team == tornado_str:
-                        self.land[row][col].decimate(.65)
-                        for i in range(len(adjacents)):
-                            r,c = adjacents[i]
-                            self.land[r][c].decimate(.85)
-                        for i in reversed(range(len(adjacents) - 1)):
-                            r1,c1 = adjacents[i]
-                            r2,c2 = adjacents[(i + 1) % len(adjacents)]
-                            if self.cells[r2][c2].team != neutral_str:
-                                ret = True
-                            if self.cells[r1][c1].team != neutral_str:
-                                ret = True
-                            self.cells[r1][c1], self.cells[r2][c2] = self.cells[r2][c2], self.cells[r1][c1]
-                            for team in self.teams:
-                                temp1 = (r1,c1) in self.selected[team]
-                                temp2 = (r2,c2) in self.selected[team]
-                                if temp2:
-                                    self.selected[team].add((r1,c1))
-                                elif temp1:
-                                    self.selected[team].remove((r1,c1))
-                                if temp1:
-                                    self.selected[team].add((r2,c2))
-                                elif temp2:
-                                    self.selected[team].remove((r2,c2))
                         self.old_tornadoes.append((row,col))
-                        # set new location
-                        r, c = random.choice(adjacents)
-                        self.tornadoes.append((r,c))
                     elif self.cells[row][col].isFarmer():
                         colors = []
                         for r,c in adjacents:
@@ -266,6 +237,37 @@ class Board:
                                 r,c = self.rand.choice(allies)
                                 self.cells[r][c].strength += 1 #max at 9?
                                 ret = True
+            random_tornadoes = sorted(self.old_tornadoes, key = lambda x : self.rand.randint(1, len(self.old_tornadoes)))
+            for row,col in random_tornadoes:
+                adjacents = self.adj(row,col)
+                without_tornadoes = [] 
+                self.land[row][col].decimate(.65)
+                for i in range(len(adjacents)):
+                    r,c = adjacents[i] 
+                    self.land[r][c].decimate(.85)
+                    if self.cells[r][c].team != tornado_str:
+                        without_tornadoes.append((r,c))
+                for i in reversed(range(len(without_tornadoes) - 1)):
+                    r1,c1 = without_tornadoes[i]
+                    r2,c2 = without_tornadoes[(i + 1) % len(without_tornadoes)]
+                    if self.cells[r2][c2].team != neutral_str:
+                        ret = True
+                    if self.cells[r1][c1].team != neutral_str:
+                        ret = True
+                    self.cells[r1][c1], self.cells[r2][c2] = self.cells[r2][c2], self.cells[r1][c1]
+                    for team in self.teams:
+                        temp1 = (r1,c1) in self.selected[team]
+                        temp2 = (r2,c2) in self.selected[team]
+                        if temp2:
+                            self.selected[team].add((r1,c1))
+                        elif temp1:
+                            self.selected[team].remove((r1,c1))
+                        if temp1:
+                            self.selected[team].add((r2,c2))
+                        elif temp2:
+                            self.selected[team].remove((r2,c2))
+                r, c = random.choice(adjacents)
+                self.tornadoes.append((r,c))
             for dteam, r, c in conversions:
                 self.cells[r][c].team = dteam
             return ret
