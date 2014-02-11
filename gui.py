@@ -379,6 +379,24 @@ class Application(tk.Frame):
         self.txt_width = (self.info_panel_span * self.cell_width - self.img_width) * 9 / 10
         self.img_size = min(self.img_width, self.img_height)
         self.desc_font = tkFont.Font(size = self.img_size / 10)
+        self.changePhoto((self.img_size,self.img_size), "assets/sword.gif")
+        self.panel_widgets["WarriorPic"].configure(image=self.photoimage, height = self.img_size, width = self.img_size)
+        self.panel_widgets["WarriorInfo"].configure(font = self.desc_font, wraplength = self.txt_width)
+        self.changePhoto((self.img_size,self.img_size), "assets/bandage.gif")
+        self.panel_widgets["MedicPic"].configure(image=self.photoimage, height = self.img_size, width = self.img_size)
+        self.panel_widgets["MedicInfo"].configure(font = self.desc_font, wraplength = self.txt_width)
+        self.changePhoto((self.img_size,self.img_size), "assets/candle.gif")
+        self.panel_widgets["ClericPic"].configure(image=self.photoimage, height = self.img_size, width = self.img_size)
+        self.panel_widgets["ClericInfo"].configure(font = self.desc_font, wraplength = self.txt_width)
+        self.changePhoto((self.img_size,self.img_size), "assets/testTube.gif")
+        self.panel_widgets["ScientistPic"].configure(image=self.photoimage, height = self.img_size, width = self.img_size)
+        self.panel_widgets["ScientistInfo"].configure(font = self.desc_font, wraplength = self.txt_width)
+        self.changePhoto((self.img_size,self.img_size), "assets/pitchfork.gif")
+        self.panel_widgets["FarmerPic"].configure(image=self.photoimage, height = self.img_size, width = self.img_size)
+        self.panel_widgets["FarmerInfo"].configure(font = self.desc_font, wraplength = self.txt_width)
+        self.changePhoto((self.img_size,self.img_size), "assets/bow.gif")
+        self.panel_widgets["HunterPic"].configure(image=self.photoimage, height = self.img_size, width = self.img_size)
+        self.panel_widgets["HunterInfo"].configure(font = self.desc_font, wraplength = self.txt_width)
         self.drawThings()
     def changeMode(self, mode):
         self.clearPanel()
@@ -455,19 +473,15 @@ class Application(tk.Frame):
         row,col = iter(self.board.selected[self.player_team]).next()
         self.panel_button_font = tkFont.Font(size = self.img_height / 8)
         if self.board.cells[row][col].isWarrior():
-            self.changePhoto((self.img_size,self.img_size), "assets/sword.gif")
-            self.panel_widgets["WarriorPic"].configure(image=self.photoimage, height = self.img_size, width = self.img_size)
             self.panel_widgets["WarriorPic"].place(x=self.board_width + self.img_size / 2, y=self.cell_height * self.height * 3 / 10, anchor = tk.CENTER)
             warrior_level = self.board.cells[row][col].warriorLevel()
             description = "Level " + str(warrior_level) + " Warrior"
             description += "\nGrants " + str(warrior_level) + " permanent bonus strength distributed among random allied neighbors."
             if warrior_level >= 2:
                 description += "\nIncludes its own strength in combat survival."
-            self.panel_widgets["WarriorInfo"].configure(text = description, font = self.desc_font, wraplength = self.txt_width)
+            self.panel_widgets["WarriorInfo"].configure(text = description)
             self.panel_widgets["WarriorInfo"].place(x=self.board_width + self.img_size, y=self.cell_height * self.height * 3 / 10, anchor = tk.W)
         elif self.board.cells[row][col].isMedic():
-            self.changePhoto((self.img_size,self.img_size), "assets/bandage.gif")
-            self.panel_widgets["MedicPic"].configure(image=self.photoimage, height = self.img_size, width = self.img_size)
             self.panel_widgets["MedicPic"].place(x=self.board_width + self.img_size / 2, y=self.cell_height * self.height * 3 / 10, anchor = tk.CENTER)
             medic_level = self.board.cells[row][col].medicLevel()
             description = "Level " + str(medic_level) + " Medic"
@@ -475,11 +489,9 @@ class Application(tk.Frame):
             approx_odds *= 100
             approx_odds = int(round(approx_odds))
             description += "\n" + "Has " + str(approx_odds) + "% chance to save allied neighbors from combat."
-            self.panel_widgets["MedicInfo"].configure(text = description, font = self.desc_font, wraplength = self.txt_width)
+            self.panel_widgets["MedicInfo"].configure(text = description)
             self.panel_widgets["MedicInfo"].place(x=self.board_width + self.img_size, y=self.cell_height * self.height * 3 / 10, anchor = tk.W)
         if self.board.cells[row][col].isCleric():
-            self.changePhoto((self.img_size,self.img_size), "assets/candle.gif")
-            self.panel_widgets["ClericPic"].configure(image=self.photoimage, height = self.img_size, width = self.img_size)
             self.panel_widgets["ClericPic"].place(x=self.board_width + self.img_size / 2, y=self.cell_height * self.height * 3 / 10 + self.img_size, anchor = tk.CENTER)
             cleric_level = self.board.cells[row][col].clericLevel()
             description = "Level " + str(cleric_level) + " Cleric"
@@ -489,34 +501,28 @@ class Application(tk.Frame):
             description += "\nGains a point for every enemy in a " + str(cleric_level) + "-cell radius."
             description += "\nHas " + str(approx_odds) + "% chance to convert enemy neighboring cells."
             description += "\nCannot be converted by enemy Clerics."
-            self.panel_widgets["ClericInfo"].configure(text = description, font = self.desc_font, wraplength = self.txt_width)
+            self.panel_widgets["ClericInfo"].configure(text = description)
             self.panel_widgets["ClericInfo"].place(x=self.board_width + self.img_size, y=self.cell_height * self.height * 3 / 10 + self.img_size, anchor = tk.W)
         elif self.board.cells[row][col].isScientist():
-            self.changePhoto((self.img_size,self.img_size), "assets/testTube.gif")
-            self.panel_widgets["ScientistPic"].configure(image=self.photoimage, height = self.img_size, width = self.img_size)
             self.panel_widgets["ScientistPic"].place(x=self.board_width + self.img_size / 2, y=self.cell_height * self.height * 3 / 10 + self.img_size, anchor = tk.CENTER)
             scientist_level = self.board.cells[row][col].scientistLevel()
             description = "Level " + str(scientist_level) + " Scientist"
             description += "\nGrants " + str(scientist_level) + " points per turn."
-            self.panel_widgets["ScientistInfo"].configure(text = description, font = self.desc_font, wraplength = self.txt_width)
+            self.panel_widgets["ScientistInfo"].configure(text = description)
             self.panel_widgets["ScientistInfo"].place(x=self.board_width + self.img_size, y=self.cell_height * self.height * 3 / 10 + self.img_size, anchor = tk.W)
         elif self.testing and self.board.cells[row][col].team is cell.neutral_str:
             self.drawAddLeft()
         if self.board.cells[row][col].isFarmer():
-            self.changePhoto((self.img_size,self.img_size), "assets/pitchfork.gif")
-            self.panel_widgets["FarmerPic"].configure(image=self.photoimage, height = self.img_size, width = self.img_size)
             self.panel_widgets["FarmerPic"].place(x=self.board_width + self.img_size / 2, y=self.cell_height * self.height * 3 / 10 + self.img_size * 2, anchor = tk.CENTER)
             description = "Level " + str(self.board.cells[row][col].farmerLevel()) + " Farmer"
             description += "\nImproves adjacent land proportional to level."
-            self.panel_widgets["FarmerInfo"].configure(text = description, font = self.desc_font, wraplength = self.txt_width)
+            self.panel_widgets["HunterInfo"].configure(text=description)
             self.panel_widgets["FarmerInfo"].place(x=self.board_width + self.img_size, y=self.cell_height * self.height * 3 / 10 + self.img_size * 2, anchor = tk.W)
         elif self.board.cells[row][col].isHunter():
-            self.changePhoto((self.img_size,self.img_size), "assets/bow.gif")
-            self.panel_widgets["HunterPic"].configure(image=self.photoimage, height = self.img_size, width = self.img_size)
             self.panel_widgets["HunterPic"].place(x=self.board_width + self.img_size / 2, y=self.cell_height * self.height * 3 / 10 + self.img_size * 2, anchor = tk.CENTER)
             description = "Level " + str(self.board.cells[row][col].hunterLevel()) + " Hunter"
             description += "\nVastly improves land proportional to level when neighbors die."
-            self.panel_widgets["HunterInfo"].configure(text = description, font = self.desc_font, wraplength = self.txt_width)
+            self.panel_widgets["HunterInfo"].configure(text=description)
             self.panel_widgets["HunterInfo"].place(x=self.board_width + self.img_size, y=self.cell_height * self.height * 3 / 10 + self.img_size * 2, anchor = tk.W)
         elif self.testing and self.board.cells[row][col].team is cell.neutral_str:
             self.drawAddRight()
