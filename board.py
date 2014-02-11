@@ -201,6 +201,8 @@ class Board:
         with self.lock:
             for row in range(self.height):
                 for col in range(self.width):
+                    self.land[row][col].deplete(self.cells[row][col])
+                    self.land[row][col].regen()
                     adjacents = self.adj(row,col)
                     if (row,col) in self.volcanoes:
                         self.volcanoAction(row,col)
@@ -277,8 +279,6 @@ class Board:
         with self.lock:
             for row in range(self.height):
                 for col in range(self.width):
-                    self.land[row][col].deplete(self.cells[row][col])
-                    self.land[row][col].regen()
                     counts = collections.Counter() 
                     strengths = collections.Counter()
                     adjacents = self.adj(row, col)
