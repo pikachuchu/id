@@ -394,6 +394,17 @@ class Board:
                         ret.add((row,col))
             ret = ret.union(self.clearSelection(team))
         return ret
+    def addCell(self, select_team, add_team):
+        with self.lock:
+            if self.testing:
+                ret = set()
+                for (row,col) in self.selected[select_team]:
+                    if self.cells[row][col].add_team != neutral_str:
+                        return "Can only add to neutral cells"
+                    self.cells[row][col] = Cell(add_team, 3, initDna())
+                    ret.add((row,col))
+                    ret = ret.union(set(self.adj(row,col)))
+                return ret
     def specialize(self, specialization, team):
         with self.lock:
             if self.selected[team]:
