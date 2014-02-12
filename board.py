@@ -399,7 +399,7 @@ class Board:
             if self.testing:
                 ret = set()
                 for (row,col) in self.selected[select_team]:
-                    if self.cells[row][col].add_team != neutral_str:
+                    if self.cells[row][col].team != neutral_str:
                         return "Can only add to neutral cells"
                     self.cells[row][col] = Cell(add_team, 3, initDna())
                     ret.add((row,col))
