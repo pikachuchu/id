@@ -246,9 +246,8 @@ class Board:
                         for i in range(len(enemy_cells)):
                             if self.rand.random() < 1: # TODO set proportion ?
                                 r,c = enemy_cells[i]
-                                if self.points[self.cells[r][c].team] > 0: 
-                                    self.points[self.cells[r][c].team] -= 1
-                                    self.points[self.cells[row][col].team] += 1
+                                self.points[self.cells[r][c].team] -= 1
+                                self.points[self.cells[row][col].team] += 1
                     elif self.cells[row][col].isScientist():
                         self.points[self.cells[row][col].team] += self.cells[row][col].scientistLevel()
                     if self.cells[row][col].isWarrior():
@@ -291,6 +290,8 @@ class Board:
                 self.tornadoes.append((r,c))
             for dteam, r, c in conversions:
                 self.cells[r][c].team = dteam
+            for pteam in self.teams:
+                self.points[pteam] = max(self.points[pteam], 0)
             if not ret:
                 for row in range(self.height):
                     for col in range(self.width):
