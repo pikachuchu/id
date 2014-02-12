@@ -517,7 +517,7 @@ class Application(tk.Frame):
             approx_odds = 1 - .9 ** cleric_level
             approx_odds *= 100
             approx_odds = int(round(approx_odds))
-            description += "\nGains a point for every enemy in a " + str(cleric_level) + "-cell radius."
+            description += "\nSteals a point from the enemy for every enemy in a " + str(cleric_level) + "-cell radius."
             description += "\nHas " + str(approx_odds) + "% chance to convert enemy neighboring cells."
             description += "\nCannot be converted by enemy Clerics."
             self.panel_widgets["ClericInfo"].configure(text = description)
