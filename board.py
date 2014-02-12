@@ -72,7 +72,7 @@ class Board:
         visited = set([(row,col)])
         team = self.cells[row][col].team
         enemies = set([oteam for oteam in self.teams if oteam is not team])
-        count = 0
+        enemy_cells = []
         while frontier:
             r,c,distance = frontier.popleft()
             for erow, ecol in self.adj(r,c):
@@ -80,8 +80,8 @@ class Board:
                     visited.add((erow, ecol))
                     frontier.append((erow,ecol,distance + 1))
                     if self.cells[erow][ecol].team in enemies:
-                        count += 1
-        return count
+                        enemy_cells.append((erow,ecol))
+        return enemy_cells 
     def reset(self, include_tornado = True, testing = False):
         with self.lock:
             self.testing = testing
@@ -242,9 +242,13 @@ class Board:
                                             conversions.append((self.cells[row][col].team, r, c))
                                             ret = True
                                             break
-                        for i in range(self.enemiesNear(row,col,cleric_level)):
+                        enemy_cells = self.enemiesNear(row,col,cleric_level)
+                        for i in range(len(enemy_cells)):
                             if self.rand.random() < 1: # TODO set proportion ?
-                                self.points[self.cells[row][col].team] += 1
+                                r,c = enemy_cells[i]
+                                if self.points[self.cells[r][c].team] > 0: 
+                                    self.points[self.cells[r][c].team] -= 1
+                                    self.points[self.cells[row][col].team] += 1
                     elif self.cells[row][col].isScientist():
                         self.points[self.cells[row][col].team] += self.cells[row][col].scientistLevel()
                     if self.cells[row][col].isWarrior():
