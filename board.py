@@ -128,37 +128,52 @@ class Board:
             return self.land[row][col].color()
     def createTornado(self, team):
         with self.lock:
-            if tornado_cost > self.points[team] and not self.testing:
-                return "Not enough points"
-            if len(self.selected[team]) != 1 and not self.testing:
-                return "Must select one cell"
-            self.points[team] -= tornado_cost
-            row, col = iter(self.selected[team]).next()
-            if self.cells[row][col].team != neutral_str and not self.testing:
-                return "Illegal tornado placement"
-            old_team = self.cells[row][col].team
-            self.cells[row][col] = tornado()
-            if old_team not in neutral_teams:
-                ret = set(self.adj(row,col))
-                ret = ret.union(self.selected[team])
+            if not self.testing:
+                if tornado_cost > self.points[team]:
+                    return "Not enough points"
+                if len(self.selected[team]) != 1:
+                    return "Must select one cell"
+                self.points[team] -= tornado_cost
+                row, col = iter(self.selected[team]).next()
+                if self.cells[row][col].team != neutral_str:
+                    return "Illegal tornado placement"
+                self.cells[row][col] = tornado()
+                return self.selected[team]
+            else:
+                ret = self.selected[team]
+                for (row,col) in self.selected[team]:
+                    self.points[team] -= tornado_cost
+                    old_team = self.cells[row][col].team
+                    self.cells[row][col] = tornado()
+                    if old_team not in neutral_teams:
+                        ret = ret.union(set(self.adj(row,col)))
                 return ret
-            return self.selected[team]
     def createVolcano(self, team):
         with self.lock:
-            #cost will change
-            if volcano_cost > self.points[team] and not self.testing:
-                return "Not enough points"
-            if len(self.selected[team]) != 1 and not self.testing:
-                return "Must select one cell"
-            row,col = iter(self.selected[team]).next()
-            if (row,col) in self.volcanoes and 1 in self.volcanoes[(row,col)]:
-                return "Cannot create volcano on existing volcano"
-            self.points[team] -= volcano_cost
-            if (row,col) not in self.volcanoes:
-                self.volcanoes[(row,col)] = [1]
+            if not self.testing:
+                if volcano_cost > self.points[team]:
+                    return "Not enough points"
+                if len(self.selected[team]) != 1:
+                    return "Must select one cell"
+                row,col = iter(self.selected[team]).next()
+                if (row,col) in self.volcanoes and 1 in self.volcanoes[(row,col)]:
+                    return "Cannot create volcano on existing volcano"
+                self.points[team] -= volcano_cost
+                if (row,col) not in self.volcanoes:
+                    self.volcanoes[(row,col)] = [1]
+                else:
+                    self.volcanoes[(row,col)].append(1)
+                self.warning_cells[(row,col)] = '#CCCC00'
             else:
-                self.volcanoes[(row,col)].append(1)
-            self.warning_cells[(row,col)] = '#CCCC00'
+                for (row,col) in self.selected[team]:
+                    if (row,col) in self.volcanoes and 1 in self.volcanoes[(row,col)]:
+                        return "Cannot create volcano on existing volcano"
+                    self.points[team] -= volcano_cost
+                    if (row,col) not in self.volcanoes:
+                        self.volcanoes[(row,col)] = [1]
+                    else:
+                        self.volcanoes[(row,col)].append(1)
+                    self.warning_cells[(row,col)] = '#CCCC00'
             return self.selected[team]
     def volcanoAction(self, row, col):
         with self.lock:
