@@ -4,10 +4,11 @@ import board
 import time
 import ai
 import cell
+import Queue
 import random
+import sys
 import thread
 import threading
-import Queue
 from PIL import Image
 from PIL import ImageTk
 class Application(tk.Frame):
@@ -91,7 +92,10 @@ class Application(tk.Frame):
                 self.cell_locations[self.cells[row][col]] = (row,col)
                 self.cells[row][col].board_row = row
                 self.cells[row][col].board_col = col
-                self.cells[row][col].bind('<Button-3>', self.kill)
+                if sys.platform == 'darwin':
+                    self.cells[row][col].bind('<Button-2>', self.kill)
+                else:
+                    self.cells[row][col].bind('<Button-3>', self.kill)
                 self.cells[row][col].bind('<Button-1>', self.select)
                 self.cells[row][col].bind('<Double-Button-1>', self.selectAll)
                 self.cells[row][col].bind('<Control-Button-1>', self.toggle)
