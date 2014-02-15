@@ -52,7 +52,7 @@ class Application(tk.Frame):
         self.info = ""
         # TODO reset back to "" on successful user actions
         self.createWidgets()
-        self.board_width = sum([self.cells[i][i].winfo_width() for i in range(self.width)])
+        #self.board_width = sum([self.cells[i][i].winfo_width() for i in range(self.width)])
         self.grid(sticky=tk.N+tk.S+tk.E+tk.W)
         self.eventq = Queue.Queue()
         self.createAI()
@@ -70,8 +70,12 @@ class Application(tk.Frame):
         top = self.winfo_toplevel()
         self.height = 15
         self.width = 15
-        self.cells = [[None for col in range(self.width)] for row in range(self.height)]
-        self.cell_locations = dict()
+        self.cell_height = 52
+        self.cell_width = 52
+        self.board_width = self.cell_width * self.width
+        self.board_height = self.cell_height * self.height
+        self.cells = tk.Canvas(self, height = self.board_height, width = self.board_width, bg = '#000000', bd=0)
+        self.rect_ids = [[1 for col in range(self.width)] for row in range(self.height)]
         self.text_ids = [[1 for col in range(self.width)] for row in range(self.height)]
         def empty():
             return []
@@ -81,26 +85,20 @@ class Application(tk.Frame):
         self.board = board.Board(self.height, self.width);
         self.player_team = self.board.teams[0]
         self.ai_team = self.board.teams[1]
-        self.cell_height = 50
-        self.cell_width = 50
         self.master.bind('<Key>', self.key)
         self.bind('<Configure>', self.configure)
         for row in range(self.height):
             for col in range(self.width):
-                bg = '#000000'
-                self.cells[row][col] = tk.Canvas(self, height = self.cell_height, width = self.cell_width, bg = bg, bd = 0)
-                self.cell_locations[self.cells[row][col]] = (row,col)
-                self.cells[row][col].board_row = row
-                self.cells[row][col].board_col = col
-                if sys.platform == 'darwin':
-                    self.cells[row][col].bind('<Button-2>', self.kill)
-                else:
-                    self.cells[row][col].bind('<Button-3>', self.kill)
-                self.cells[row][col].bind('<Button-1>', self.select)
-                self.cells[row][col].bind('<Double-Button-1>', self.selectAll)
-                self.cells[row][col].bind('<Control-Button-1>', self.toggle)
-                self.cells[row][col].bind('<Control-Double-Button-1>', self.addAll)
-                self.cells[row][col].grid(sticky = tk.N+tk.S+tk.E+tk.W, column = col, row = row)
+                self.rect_ids[row][col] = self.cells.create_rectangle(col * self.cell_width, row * self.cell_height, (col + 1) * self.cell_width, (row + 1) * self.cell_height, width = 1)
+        if sys.platform == 'darwin':
+            self.cells.bind('<Button-2>', self.kill)
+        else:
+            self.cells.bind('<Button-3>', self.kill)
+        self.cells.bind('<Button-1>', self.select)
+        self.cells.bind('<Double-Button-1>', self.selectAll)
+        self.cells.bind('<Control-Button-1>', self.toggle)
+        self.cells.bind('<Control-Double-Button-1>', self.addAll)
+        self.cells.grid(sticky = tk.W, column = 0, row = 0, columnspan = self.width, rowspan = self.height)
         self.master.title("Intelligent Design")
         self.specialization_menu = tk.LabelFrame(self, text='Specialize', bg = '#000000', fg = '#FFFFFF')
         hotkeys = ['Q','E','A','D','Z','C']
@@ -281,7 +279,7 @@ class Application(tk.Frame):
                         x = min(x, self.board_width - self.specialization_menu.winfo_width() / 2)
                         y = max(event.y, self.specialization_menu.winfo_height() / 2)
                         y = min(y, top.winfo_height() - self.specialization_menu.winfo_height() / 2)
-                        board_height = sum([self.cells[i][0].winfo_height() for i in range(self.height)])
+                        board_height = self.height * self.cell_height
                         y = min(y, board_height - self.specialization_menu.winfo_height() / 2)
                         self.specialization_menu.place(x=x, y=y,anchor='center')
                 else:
@@ -293,13 +291,16 @@ class Application(tk.Frame):
             for r,c in ret:
                 self.drawCell(r,c)
             self.drawScore()
+    def cellOf(self, x,y):
+        # return the (row,col) of this x,y
+        return (y / self.cell_height, x / self.cell_width)
     def kill(self, event):
         if self.specialization_menu.place_info():
             # if exists
             self.specialization_menu.place_forget()
         else:
             self.specialization_menu.place_info()
-            brow,bcol = self.cell_locations[event.widget]
+            brow,bcol = self.cellOf(event.x,event,y)
             changed = self.board.kill(brow,bcol,self.player_team)
             for row, col in changed:
                 self.drawCell(row,col)
@@ -343,7 +344,7 @@ class Application(tk.Frame):
             # if exists
             self.specialization_menu.place_forget()
         else:
-            brow,bcol = self.cell_locations[event.widget]
+            brow,bcol = self.cellOf(event.x,event.y)
             changed = self.board.select(brow,bcol,self.player_team)
             for row, col in changed:
                 self.outlineIfSelected(row,col)
@@ -355,7 +356,7 @@ class Application(tk.Frame):
             # if exists
             self.specialization_menu.place_forget()
         else:
-            brow,bcol = self.cell_locations[event.widget]
+            brow,bcol = self.cellOf(event.x,event.y)
             self.board.selectAll(brow,bcol,self.player_team)
             self.drawThings()
     def toggle(self, event):
@@ -363,7 +364,7 @@ class Application(tk.Frame):
             # if exists
             self.specialization_menu.place_forget()
         else:
-            brow,bcol = self.cell_locations[event.widget]
+            brow,bcol = self.cellOf(event.x, event.y)
             self.board.toggle(brow,bcol,self.player_team)
             self.drawThings()
     def addAll(self, event):
@@ -371,15 +372,16 @@ class Application(tk.Frame):
             # if exists
             self.specialization_menu.place_forget()
         else:
-            brow,bcol = self.cell_locations[event.widget]
+            brow,bcol = self.cellOf(event.x, event.y)
             self.board.addAll(brow,bcol,self.player_team)
             self.drawThings()
     def configure(self, event=None, update=True):
         if update:
             self.update() # set winfo stuff
-        self.cell_height=self.cells[0][0].winfo_height()
-        self.cell_width=self.cells[0][0].winfo_width()
-        self.board_width = sum([self.cells[i][i].winfo_width() for i in range(self.width)])
+        # TODO
+        #self.cell_height=self.cells[0][0].winfo_height()
+        #self.cell_width=self.cells[0][0].winfo_width()
+        #self.board_width = sum([self.cells[i][i].winfo_width() for i in range(self.width)])
         self.img_height = self.cell_height * self.height / 8
         self.img_width = self.cell_width * self.info_panel_span / 4
         self.txt_width = (self.info_panel_span * self.cell_width - self.img_width) * 9 / 10
@@ -419,7 +421,6 @@ class Application(tk.Frame):
         self.changePhoto((self.img_size,self.img_size), "assets/bow.gif")
         self.panel_widgets["HunterPic"].configure(image=self.photoimage, height = self.img_size, width = self.img_size)
         self.panel_widgets["HunterInfo"].configure(font = self.desc_font, wraplength = self.txt_width)
-
         self.drawThings()
     def changeMode(self, mode):
         self.clearPanel()
@@ -455,25 +456,24 @@ class Application(tk.Frame):
     def flash(self):
         if self.doFlash:
             row, col = self.board.warning_cells.keys()[0]
-            if self.cells[row][col]["background"] == self.board.color(row,col):
+            if self.cells.itemcget(self.rect_ids[row][col],"fill") == self.board.color(row,col):
                 for (r,c), color in self.board.warning_cells.iteritems():
-                    self.cells[r][c].configure(bg = color)
+                    self.cells.itemconfigure(self.rect_ids[r][c],fill = color)
             else:
                 for r,c in self.board.warning_cells.iterkeys():
-                    self.cells[r][c].configure(bg = self.board.color(r,c))
+                    self.cells.itemconfigure(self.rect_ids[r][c],fill = self.board.color(r,c))
             self.after(300, self.flash)
     def outlineIfSelected(self, row,col):
+        """ TODO
         if self.select_ids[row][col] != None:
             self.cells[row][col].delete(self.select_ids[row][col])
             self.select_ids[row][col] = None
+        """
         if (row,col) in self.board.selected[self.player_team]:
-            width = self.cells[row][col].winfo_width()
-            height = self.cells[row][col].winfo_height()
             color = self.board.land[row][col].outlineColor()
-            if sys.platform == 'darwin':
-                self.select_ids[row][col] = self.cells[row][col].create_rectangle(1,1,width-2,height-2,outline=color,width=5)
-            else:
-                self.select_ids[row][col] = self.cells[row][col].create_rectangle(1,1,width-2,height-2,outline=color,width=1)
+            self.cells.itemconfigure(self.rect_ids[row][col], outline=color)
+        else:
+            self.cells.itemconfigure(self.rect_ids[row][col],outline='#FFFFFF')
     def drawThings(self):
         with self.board.lock:
             self.drawCells();
@@ -603,15 +603,15 @@ class Application(tk.Frame):
                     self.drawCell(row,col)
     def drawCell(self, row, col):
         with self.board.lock:
-            self.cells[row][col].delete(self.text_ids[row][col])
+            self.cells.delete(self.text_ids[row][col])
             for spec_id in self.spec_ids[row][col]:
-                self.cells[row][col].delete(spec_id)
+                self.cells.delete(spec_id)
             self.spec_ids[row][col] = []
             if (row,col) in self.board.lava_cells:
-                self.cells[row][col].configure(bg = '#FF0000')
+                self.cells.itemconfigure(self.rect_ids[row][col],fill = '#FF0000')
                 self.board.lava_cells.remove((row,col))
             elif (row,col) not in self.board.warning_cells:
-                self.cells[row][col].configure(bg = self.board.color(row, col))
+                self.cells.itemconfigure(self.rect_ids[row][col],fill = self.board.color(row,col))
             team = self.board.cells[row][col].team
             strength = self.board.cells[row][col].strength
             if team == self.board.teams[0]:
@@ -623,29 +623,28 @@ class Application(tk.Frame):
             if team != board.neutral_str:
                 if team == board.tornado_str:
                     self.changePhoto((self.cell_width,self.cell_height),"assets/tornado.gif")
-                    self.text_ids[row][col] = self.cells[row][col].create_image(self.cell_width/2,self.cell_height/2,image=self.photoimage)
+                    self.text_ids[row][col] = self.cells.create_image(self.cell_width * col + self.cell_width/2, self.cell_height * row + self.cell_height/2,image=self.photoimage)
                 else:
                     text = str(len(self.board.friendlyAdj(row,col)))
-                    self.text_ids[row][col] = self.cells[row][col].create_text(self.cell_width/2,self.cell_height/2,text=text, fill=color, font = self.cell_font)
+                    self.text_ids[row][col] = self.cells.create_text(self.cell_width * col + self.cell_width/2,self.cell_height * row + self.cell_height/2,text=text, fill=color, font = self.cell_font)
                     if self.board.cells[row][col].isWarrior():
                         self.changePhoto((self.cell_width/3,self.cell_height/3), "assets/sword.gif")
-                        self.spec_ids[row][col].append(self.cells[row][col].create_image(self.cell_width/6,self.cell_height/6,image=self.photoimage))
+                        self.spec_ids[row][col].append(self.cells.create_image(self.cell_width * col + self.cell_width/6,self.cell_height * row + self.cell_height/6,image=self.photoimage))
                     elif self.board.cells[row][col].isMedic():
                         self.changePhoto((self.cell_width/3,self.cell_height/3), "assets/bandage.gif")
-                        self.spec_ids[row][col].append(self.cells[row][col].create_image(5*self.cell_width/6,self.cell_height/6,image=self.photoimage))
+                        self.spec_ids[row][col].append(self.cells.create_image(self.cell_width * row + 5*self.cell_width/6,self.cell_height * row + self.cell_height/6,image=self.photoimage))
                     if self.board.cells[row][col].isCleric():
                         self.changePhoto((self.cell_width/3,self.cell_height/3), "assets/candle.gif")
-                        self.spec_ids[row][col].append(self.cells[row][col].create_image(self.cell_width/6,self.cell_height / 3 + self.cell_height / 6,image=self.photoimage))
+                        self.spec_ids[row][col].append(self.cells.create_image(self.cell_width * row + self.cell_width/6,self.cell_height * row +self.cell_height / 3 + self.cell_height / 6,image=self.photoimage))
                     elif self.board.cells[row][col].isScientist():
                         self.changePhoto((self.cell_width/3,self.cell_height/3), "assets/testTube.gif")
-                        self.spec_ids[row][col].append(self.cells[row][col].create_image(5*self.cell_width/6,self.cell_height / 3 + self.cell_height / 6,image=self.photoimage))
+                        self.spec_ids[row][col].append(self.cells.create_image(self.cell_width * row + 5*self.cell_width/6,self.cell_height * row +self.cell_height / 3 + self.cell_height / 6,image=self.photoimage))
                     if self.board.cells[row][col].isFarmer():
                         self.changePhoto((self.cell_width/3,self.cell_height - 2 * self.cell_height/3), "assets/pitchfork.gif")
-                        self.spec_ids[row][col].append(self.cells[row][col].create_image(self.cell_width/6,self.cell_height - (self.cell_height - 2 * self.cell_height/3) / 2,image=self.photoimage))
+                        self.spec_ids[row][col].append(self.cells.create_image(self.cell_width * row + self.cell_width/6,self.cell_height * row + self.cell_height - (self.cell_height - 2 * self.cell_height/3) / 2,image=self.photoimage))
                     elif self.board.cells[row][col].isHunter():
                         self.changePhoto((self.cell_width/3,self.cell_height - 2 * self.cell_height/3), "assets/bow.gif")
-                        self.spec_ids[row][col].append(self.cells[row][col].create_image(5*self.cell_width/6,self.cell_height - (self.cell_height - 2 * self.cell_height/3) / 2,image=self.photoimage))
-                self.cells[row][col].grid(column = col, row = row)
+                        self.spec_ids[row][col].append(self.cells.create_image(self.cell_width * row + 5*self.cell_width/6,self.cell_height * row + self.cell_height - (self.cell_height - 2 * self.cell_height/3) / 2,image=self.photoimage))
             self.outlineIfSelected(row,col)
 
 #def reportEvent(event):
