@@ -74,13 +74,12 @@ class Application(tk.Frame):
         self.cell_width = 52
         self.board_width = self.cell_width * self.width
         self.board_height = self.cell_height * self.height
-        self.cells = tk.Canvas(self, height = self.board_height, width = self.board_width, bg = '#000000', bd=0)
+        self.cells = tk.Canvas(self, height = self.board_height, width = self.board_width, bg = '#FFFFFF', bd=0)
         self.rect_ids = [[-1 for col in range(self.width)] for row in range(self.height)]
         self.text_ids = [[-1 for col in range(self.width)] for row in range(self.height)]
         def empty():
             return []
         self.spec_ids = [[empty() for col in range(self.width)] for row in range(self.height)]
-        self.select_ids = [[None for col in range(self.width)] for row in range(self.height)]
         # TODO team prompt
         self.board = board.Board(self.height, self.width);
         self.player_team = self.board.teams[0]
@@ -89,7 +88,7 @@ class Application(tk.Frame):
         self.bind('<Configure>', self.configure)
         for row in range(self.height):
             for col in range(self.width):
-                self.rect_ids[row][col] = self.cells.create_rectangle(col * self.cell_width, row * self.cell_height, (col + 1) * self.cell_width, (row + 1) * self.cell_height, width = 1)
+                self.rect_ids[row][col] = self.cells.create_rectangle(col * self.cell_width, row * self.cell_height, (col + 1) * self.cell_width - 3, (row + 1) * self.cell_height - 3, width = 1)
         if sys.platform == 'darwin':
             self.cells.bind('<Button-2>', self.kill)
         else:
@@ -376,9 +375,9 @@ class Application(tk.Frame):
             self.board.addAll(brow,bcol,self.player_team)
             self.drawThings()
     def configure(self, event=None, update=True):
+        # TODO
         if update:
             self.update() # set winfo stuff
-        # TODO
         #self.cell_height=self.cells[0][0].winfo_height()
         #self.cell_width=self.cells[0][0].winfo_width()
         #self.board_width = sum([self.cells[i][i].winfo_width() for i in range(self.width)])
@@ -400,8 +399,8 @@ class Application(tk.Frame):
         if self.board_width > self.width:
             # avoid drawing score alone before board
             for index, team in enumerate(self.board.teams):
-                self.score_widgets[team+"Points"].configure(font = self.cell_font)
-                self.score_widgets[team+"Points"].place(x = self.board_width, y = self.info_panel.winfo_height() - index * self.cell_height * 4 / 5 + self.cell_height, anchor = tk.SW)
+                self.score_widgets[team+"Points"].configure(font = self.land_font)
+                self.score_widgets[team+"Points"].place(x = self.board_width, y = self.info_panel.winfo_height() - (index + 1) * self.cell_height * 3 / 5 + self.cell_height, anchor = tk.SW)
         # Pictures and info
         self.changePhoto((self.img_size,self.img_size), "assets/sword.gif")
         self.panel_widgets["WarriorPic"].configure(image=self.photoimage, height = self.img_size, width = self.img_size)
@@ -464,11 +463,6 @@ class Application(tk.Frame):
                     self.cells.itemconfigure(self.rect_ids[r][c],fill = self.board.color(r,c))
             self.after(300, self.flash)
     def outlineIfSelected(self, row,col):
-        """ TODO
-        if self.select_ids[row][col] != None:
-            self.cells[row][col].delete(self.select_ids[row][col])
-            self.select_ids[row][col] = None
-        """
         if (row,col) in self.board.selected[self.player_team]:
             color = self.board.land[row][col].outlineColor()
             self.cells.itemconfigure(self.rect_ids[row][col], outline=color)
@@ -623,10 +617,10 @@ class Application(tk.Frame):
             if team != board.neutral_str:
                 if team == board.tornado_str:
                     self.changePhoto((self.cell_width,self.cell_height),"assets/tornado.gif")
-                    self.text_ids[row][col] = self.cells.create_image(self.cell_width * col + self.cell_width/2, self.cell_height * row + self.cell_height/2,image=self.photoimage)
+                    self.text_ids[row][col] = self.cells.create_image(self.cell_width * col + self.cell_width/2 - 1, self.cell_height * row + self.cell_height/2 - 1,image=self.photoimage)
                 else:
                     text = str(len(self.board.friendlyAdj(row,col)))
-                    self.text_ids[row][col] = self.cells.create_text(self.cell_width * col + self.cell_width/2,self.cell_height * row + self.cell_height/2,text=text, fill=color, font = self.cell_font)
+                    self.text_ids[row][col] = self.cells.create_text(self.cell_width * col + self.cell_width/2 - 1,self.cell_height * row + self.cell_height/2 - 1,text=text, fill=color, font = self.cell_font)
                     if self.board.cells[row][col].isWarrior():
                         self.changePhoto((self.cell_width/3,self.cell_height/3), "assets/sword.gif")
                         self.spec_ids[row][col].append(self.cells.create_image(self.cell_width * col + self.cell_width/6,self.cell_height * row + self.cell_height/6,image=self.photoimage))
