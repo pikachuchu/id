@@ -75,8 +75,8 @@ class Application(tk.Frame):
         self.board_width = self.cell_width * self.width
         self.board_height = self.cell_height * self.height
         self.cells = tk.Canvas(self, height = self.board_height, width = self.board_width, bg = '#000000', bd=0)
-        self.rect_ids = [[1 for col in range(self.width)] for row in range(self.height)]
-        self.text_ids = [[1 for col in range(self.width)] for row in range(self.height)]
+        self.rect_ids = [[-1 for col in range(self.width)] for row in range(self.height)]
+        self.text_ids = [[-1 for col in range(self.width)] for row in range(self.height)]
         def empty():
             return []
         self.spec_ids = [[empty() for col in range(self.width)] for row in range(self.height)]
