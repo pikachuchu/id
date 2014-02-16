@@ -299,7 +299,7 @@ class Application(tk.Frame):
             self.specialization_menu.place_forget()
         else:
             self.specialization_menu.place_info()
-            brow,bcol = self.cellOf(event.x,event,y)
+            brow,bcol = self.cellOf(event.x,event.y)
             changed = self.board.kill(brow,bcol,self.player_team)
             for row, col in changed:
                 self.drawCell(row,col)
