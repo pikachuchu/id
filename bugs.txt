@@ -1,0 +1,3 @@
+sizing of rectangle, buffer between
+size of image and text
+double clicking on something else if another cell is selected
