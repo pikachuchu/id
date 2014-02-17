@@ -150,6 +150,7 @@ class Application(tk.Frame):
             self.columnconfigure(col, weight = 1)
         self.panel_widgets["AddLeft"] = tk.Button(self, command = self.addLeft)
         self.panel_widgets["AddRight"] = tk.Button(self, command = self.addRight)
+        self.win_width = self.info_panel_span + self.width
         # settingsPanel
         self.settings_vars = []
         # TODO reset doesn't apply changes to settings until confirm
@@ -280,8 +281,7 @@ class Application(tk.Frame):
                         x = min(x, self.board_width - self.specialization_menu.winfo_width() / 2)
                         y = max(event.y, self.specialization_menu.winfo_height() / 2)
                         y = min(y, top.winfo_height() - self.specialization_menu.winfo_height() / 2)
-                        board_height = self.height * self.cell_height
-                        y = min(y, board_height - self.specialization_menu.winfo_height() / 2)
+                        y = min(y, self.board_height - self.specialization_menu.winfo_height() / 2)
                         self.specialization_menu.place(x=x, y=y,anchor='center')
                 else:
                     return
@@ -380,9 +380,17 @@ class Application(tk.Frame):
         # TODO
         if update:
             self.update() # set winfo stuff
-        #self.cell_height=self.cells[0][0].winfo_height()
-        #self.cell_width=self.cells[0][0].winfo_width()
-        #self.board_width = sum([self.cells[i][i].winfo_width() for i in range(self.width)])
+        if event:
+            old_width = self.cell_width
+            old_height = self.cell_height
+            self.board_width = self.cells.winfo_width()
+            self.cell_width = self.board_width / self.width
+            self.board_height = self.cells.winfo_height()
+            self.cell_height = self.board_height / self.height
+            for row in range(self.height):
+                for col in range(self.width):
+                    self.cells.delete(self.rect_ids[row][col])
+                    self.rect_ids[row][col] = self.cells.create_rectangle(col * self.cell_width + 1, row * self.cell_height + 1, (col + 1) * self.cell_width - 2, (row + 1) * self.cell_height - 2, width = 1)
         self.img_height = self.cell_height * self.height / 8
         self.img_width = self.cell_width * self.info_panel_span / 4
         self.txt_width = (self.info_panel_span * self.cell_width - self.img_width) * 9 / 10
