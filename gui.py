@@ -633,23 +633,23 @@ class Application(tk.Frame):
                     text = str(len(self.board.friendlyAdj(row,col)))
                     self.text_ids[row][col] = self.cells.create_text(self.cell_width * col + self.cell_width/2 - 1,self.cell_height * row + self.cell_height/2 - 1,text=text, fill=color, font = self.cell_font)
                     if self.board.cells[row][col].isWarrior():
-                        self.changePhoto((self.cell_width/3,self.cell_height/3), "assets/sword.gif")
-                        self.spec_ids[row][col].append(self.cells.create_image(self.cell_width * col + self.cell_width/6,self.cell_height * row + self.cell_height/6,image=self.photoimage))
+                        self.changePhoto((self.cell_width/3 - 1,self.cell_height/3), "assets/sword.gif")
+                        self.spec_ids[row][col].append(self.cells.create_image(self.cell_width * col + 2,self.cell_height * row + 2,image=self.photoimage, anchor=tk.NW))
                     elif self.board.cells[row][col].isMedic():
-                        self.changePhoto((self.cell_width/3,self.cell_height/3), "assets/bandage.gif")
-                        self.spec_ids[row][col].append(self.cells.create_image(self.cell_width * col + 5*self.cell_width/6,self.cell_height * row + self.cell_height/6,image=self.photoimage))
+                        self.changePhoto((self.cell_width/3 - 1,self.cell_height/3), "assets/bandage.gif")
+                        self.spec_ids[row][col].append(self.cells.create_image(self.cell_width * (col + 1) - 2,self.cell_height * row + 2,image=self.photoimage, anchor=tk.NE))
                     if self.board.cells[row][col].isCleric():
-                        self.changePhoto((self.cell_width/3,self.cell_height/3), "assets/candle.gif")
-                        self.spec_ids[row][col].append(self.cells.create_image(self.cell_width * col + self.cell_width/6,self.cell_height * row +self.cell_height / 3 + self.cell_height / 6,image=self.photoimage))
+                        self.changePhoto((self.cell_width/3 - 1,self.cell_height/3), "assets/candle.gif")
+                        self.spec_ids[row][col].append(self.cells.create_image(self.cell_width * col + 2,self.cell_height * row + 1 + self.cell_height / 3,image=self.photoimage, anchor=tk.NW))
                     elif self.board.cells[row][col].isScientist():
-                        self.changePhoto((self.cell_width/3,self.cell_height/3), "assets/testTube.gif")
-                        self.spec_ids[row][col].append(self.cells.create_image(self.cell_width * col + 5*self.cell_width/6,self.cell_height * row +self.cell_height / 3 + self.cell_height / 6,image=self.photoimage))
+                        self.changePhoto((self.cell_width/3 - 1,self.cell_height/3), "assets/testTube.gif")
+                        self.spec_ids[row][col].append(self.cells.create_image(self.cell_width * (col + 1) - 2,self.cell_height * row + 1 + self.cell_height / 3,image=self.photoimage, anchor=tk.NE))
                     if self.board.cells[row][col].isFarmer():
-                        self.changePhoto((self.cell_width/3,self.cell_height - 2 * self.cell_height/3), "assets/pitchfork.gif")
-                        self.spec_ids[row][col].append(self.cells.create_image(self.cell_width * col + self.cell_width/6,self.cell_height * row + self.cell_height - (self.cell_height - 2 * self.cell_height/3) / 2,image=self.photoimage))
+                        self.changePhoto((self.cell_width/3 - 1,self.cell_height - 2 * self.cell_height/3 - 1), "assets/pitchfork.gif")
+                        self.spec_ids[row][col].append(self.cells.create_image(self.cell_width * col + 2,self.cell_height * (row + 1) - 2,image=self.photoimage, anchor=tk.SW))
                     elif self.board.cells[row][col].isHunter():
-                        self.changePhoto((self.cell_width/3,self.cell_height - 2 * self.cell_height/3), "assets/bow.gif")
-                        self.spec_ids[row][col].append(self.cells.create_image(self.cell_width * col + 5*self.cell_width/6,self.cell_height * row + self.cell_height - (self.cell_height - 2 * self.cell_height/3) / 2,image=self.photoimage))
+                        self.changePhoto((self.cell_width/3 - 1,self.cell_height - 2 * self.cell_height/3 - 1), "assets/bow.gif")
+                        self.spec_ids[row][col].append(self.cells.create_image(self.cell_width * (col + 1) - 2,self.cell_height * (row + 1) - 2,image=self.photoimage, anchor=tk.SE))
             self.outlineIfSelected(row,col)
 
 #def reportEvent(event):
