@@ -475,7 +475,8 @@ class Application(tk.Frame):
             self.drawPanel()
     def clearPanel(self):
         for widget in self.panel_widgets:
-            self.panel_widgets[widget].place_forget()
+            if self.panel_widgets[widget].place_info():
+                self.panel_widgets[widget].place_forget()
     def drawScore(self):
          for index, team in enumerate(self.board.teams):
             points = self.board.points[team]
