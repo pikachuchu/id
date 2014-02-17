@@ -88,7 +88,7 @@ class Application(tk.Frame):
         self.bind('<Configure>', self.configure)
         for row in range(self.height):
             for col in range(self.width):
-                self.rect_ids[row][col] = self.cells.create_rectangle(col * self.cell_width, row * self.cell_height, (col + 1) * self.cell_width - 3, (row + 1) * self.cell_height - 3, width = 1)
+                self.rect_ids[row][col] = self.cells.create_rectangle(col * self.cell_width + 1, row * self.cell_height + 1, (col + 1) * self.cell_width - 2, (row + 1) * self.cell_height - 2, width = 1)
         if sys.platform == 'darwin':
             self.cells.bind('<Button-2>', self.kill)
         else:
@@ -616,7 +616,7 @@ class Application(tk.Frame):
                 color = '#e4e4e4'
             if team != board.neutral_str:
                 if team == board.tornado_str:
-                    self.changePhoto((self.cell_width,self.cell_height),"assets/tornado.gif")
+                    self.changePhoto((self.cell_width - 3,self.cell_height - 3),"assets/tornado.gif")
                     self.text_ids[row][col] = self.cells.create_image(self.cell_width * col + self.cell_width/2 - 1, self.cell_height * row + self.cell_height/2 - 1,image=self.photoimage)
                 else:
                     text = str(len(self.board.friendlyAdj(row,col)))

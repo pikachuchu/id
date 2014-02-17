@@ -1,3 +1,2 @@
-sizing of rectangle, buffer between
-size of image and text
+resizing
 double clicking on something else if another cell is selected
