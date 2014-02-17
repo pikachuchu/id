@@ -1,2 +1,2 @@
-resizing
 double clicking on something else if another cell is selected
+volcano white with resize
