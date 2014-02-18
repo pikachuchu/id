@@ -36,15 +36,15 @@ class Application(tk.Frame):
             self.image = self.images[(size,loc)]
             self.photoimage = self.photos[(size,loc)]
         else:
+            for dim in size:
+                if dim <= 0:
+                    return False
             self.image = Image.open(loc)
             # TODO distort
-            try:
-                self.image.thumbnail(size, Image.ANTIALIAS)
-                self.photoimage = ImageTk.PhotoImage(self.image)
-                self.images[(size,loc)] = self.image
-                self.photos[(size,loc)] = self.photoimage
-            except (AttributeError, SystemError):
-                return False
+            self.image.thumbnail(size, Image.ANTIALIAS)
+            self.photoimage = ImageTk.PhotoImage(self.image)
+            self.images[(size,loc)] = self.image
+            self.photos[(size,loc)] = self.photoimage
         return True 
     def __init__(self, master=None):
         tk.Frame.__init__(self,master)
@@ -637,23 +637,23 @@ class Application(tk.Frame):
                     text = str(len(self.board.friendlyAdj(row,col)))
                     self.text_ids[row][col] = self.cells.create_text(self.cell_width * col + self.cell_width/2 - 1,self.cell_height * row + self.cell_height/2 - 1,text=text, fill=color, font = self.cell_font)
                     if self.board.cells[row][col].isWarrior():
-                        self.changePhoto((self.cell_width/3 - 1,self.cell_height/3), "assets/sword.gif")
-                        self.spec_ids[row][col].append(self.cells.create_image(self.cell_width * col + 2,self.cell_height * row + 2,image=self.photoimage, anchor=tk.NW))
+                        if self.changePhoto((self.cell_width/3 - 1,self.cell_height/3), "assets/sword.gif"):
+                            self.spec_ids[row][col].append(self.cells.create_image(self.cell_width * col + 2,self.cell_height * row + 2,image=self.photoimage, anchor=tk.NW))
                     elif self.board.cells[row][col].isMedic():
-                        self.changePhoto((self.cell_width/3 - 1,self.cell_height/3), "assets/bandage.gif")
-                        self.spec_ids[row][col].append(self.cells.create_image(self.cell_width * (col + 1) - 2,self.cell_height * row + 2,image=self.photoimage, anchor=tk.NE))
+                        if self.changePhoto((self.cell_width/3 - 1,self.cell_height/3), "assets/bandage.gif"):
+                            self.spec_ids[row][col].append(self.cells.create_image(self.cell_width * (col + 1) - 2,self.cell_height * row + 2,image=self.photoimage, anchor=tk.NE))
                     if self.board.cells[row][col].isCleric():
-                        self.changePhoto((self.cell_width/3 - 1,self.cell_height/3), "assets/candle.gif")
-                        self.spec_ids[row][col].append(self.cells.create_image(self.cell_width * col + 2,self.cell_height * row + 1 + self.cell_height / 3,image=self.photoimage, anchor=tk.NW))
+                        if self.changePhoto((self.cell_width/3 - 1,self.cell_height/3), "assets/candle.gif"):
+                            self.spec_ids[row][col].append(self.cells.create_image(self.cell_width * col + 2,self.cell_height * row + 1 + self.cell_height / 3,image=self.photoimage, anchor=tk.NW))
                     elif self.board.cells[row][col].isScientist():
-                        self.changePhoto((self.cell_width/3 - 1,self.cell_height/3), "assets/testTube.gif")
-                        self.spec_ids[row][col].append(self.cells.create_image(self.cell_width * (col + 1) - 2,self.cell_height * row + 1 + self.cell_height / 3,image=self.photoimage, anchor=tk.NE))
+                        if self.changePhoto((self.cell_width/3 - 1,self.cell_height/3), "assets/testTube.gif"):
+                            self.spec_ids[row][col].append(self.cells.create_image(self.cell_width * (col + 1) - 2,self.cell_height * row + 1 + self.cell_height / 3,image=self.photoimage, anchor=tk.NE))
                     if self.board.cells[row][col].isFarmer():
-                        self.changePhoto((self.cell_width/3 - 1,self.cell_height - 2 * self.cell_height/3 - 1), "assets/pitchfork.gif")
-                        self.spec_ids[row][col].append(self.cells.create_image(self.cell_width * col + 2,self.cell_height * (row + 1) - 2,image=self.photoimage, anchor=tk.SW))
+                        if self.changePhoto((self.cell_width/3 - 1,self.cell_height - 2 * self.cell_height/3 - 1), "assets/pitchfork.gif"):
+                            self.spec_ids[row][col].append(self.cells.create_image(self.cell_width * col + 2,self.cell_height * (row + 1) - 2,image=self.photoimage, anchor=tk.SW))
                     elif self.board.cells[row][col].isHunter():
-                        self.changePhoto((self.cell_width/3 - 1,self.cell_height - 2 * self.cell_height/3 - 1), "assets/bow.gif")
-                        self.spec_ids[row][col].append(self.cells.create_image(self.cell_width * (col + 1) - 2,self.cell_height * (row + 1) - 2,image=self.photoimage, anchor=tk.SE))
+                        if self.changePhoto((self.cell_width/3 - 1,self.cell_height - 2 * self.cell_height/3 - 1), "assets/bow.gif"):
+                            self.spec_ids[row][col].append(self.cells.create_image(self.cell_width * (col + 1) - 2,self.cell_height * (row + 1) - 2,image=self.photoimage, anchor=tk.SE))
             self.outlineIfSelected(row,col)
 
 #def reportEvent(event):
