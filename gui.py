@@ -621,6 +621,8 @@ class Application(tk.Frame):
                 self.board.lava_cells.remove((row,col))
             elif (row,col) not in self.board.warning_cells:
                 self.cells.itemconfigure(self.rect_ids[row][col],fill = self.board.color(row,col))
+            else:
+                self.cells.itemconfigure(self.rect_ids[row][col], fill = self.board.warning_cells[(row,col)])
             team = self.board.cells[row][col].team
             strength = self.board.cells[row][col].strength
             if team == self.board.teams[0]:
