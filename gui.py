@@ -38,10 +38,14 @@ class Application(tk.Frame):
         else:
             self.image = Image.open(loc)
             # TODO distort
-            self.image.thumbnail(size, Image.ANTIALIAS)
-            self.photoimage = ImageTk.PhotoImage(self.image)
-            self.images[(size,loc)] = self.image
-            self.photos[(size,loc)] = self.photoimage
+            try:
+                self.image.thumbnail(size, Image.ANTIALIAS)
+                self.photoimage = ImageTk.PhotoImage(self.image)
+                self.images[(size,loc)] = self.image
+                self.photos[(size,loc)] = self.photoimage
+            except (AttributeError, SystemError):
+                return False
+        return True 
     def __init__(self, master=None):
         tk.Frame.__init__(self,master)
         ai.app = self
@@ -412,23 +416,23 @@ class Application(tk.Frame):
                 self.score_widgets[team+"Points"].configure(font = self.land_font)
                 self.score_widgets[team+"Points"].place(x = self.board_width, y = self.info_panel.winfo_height() - (index + 1) * self.cell_height * 3 / 5 + self.cell_height, anchor = tk.SW)
         # Pictures and info
-        self.changePhoto((self.img_size,self.img_size), "assets/sword.gif")
-        self.panel_widgets["WarriorPic"].configure(image=self.photoimage, height = self.img_size, width = self.img_size)
+        if self.changePhoto((self.img_size,self.img_size), "assets/sword.gif"):
+            self.panel_widgets["WarriorPic"].configure(image=self.photoimage, height = self.img_size, width = self.img_size)
         self.panel_widgets["WarriorInfo"].configure(font = self.desc_font, wraplength = self.txt_width)
-        self.changePhoto((self.img_size,self.img_size), "assets/bandage.gif")
-        self.panel_widgets["MedicPic"].configure(image=self.photoimage, height = self.img_size, width = self.img_size)
+        if self.changePhoto((self.img_size,self.img_size), "assets/bandage.gif"):
+            self.panel_widgets["MedicPic"].configure(image=self.photoimage, height = self.img_size, width = self.img_size)
         self.panel_widgets["MedicInfo"].configure(font = self.desc_font, wraplength = self.txt_width)
-        self.changePhoto((self.img_size,self.img_size), "assets/candle.gif")
-        self.panel_widgets["ClericPic"].configure(image=self.photoimage, height = self.img_size, width = self.img_size)
+        if self.changePhoto((self.img_size,self.img_size), "assets/candle.gif"):
+            self.panel_widgets["ClericPic"].configure(image=self.photoimage, height = self.img_size, width = self.img_size)
         self.panel_widgets["ClericInfo"].configure(font = self.desc_font, wraplength = self.txt_width)
-        self.changePhoto((self.img_size,self.img_size), "assets/testTube.gif")
-        self.panel_widgets["ScientistPic"].configure(image=self.photoimage, height = self.img_size, width = self.img_size)
+        if self.changePhoto((self.img_size,self.img_size), "assets/testTube.gif"):
+            self.panel_widgets["ScientistPic"].configure(image=self.photoimage, height = self.img_size, width = self.img_size)
         self.panel_widgets["ScientistInfo"].configure(font = self.desc_font, wraplength = self.txt_width)
-        self.changePhoto((self.img_size,self.img_size), "assets/pitchfork.gif")
-        self.panel_widgets["FarmerPic"].configure(image=self.photoimage, height = self.img_size, width = self.img_size)
+        if self.changePhoto((self.img_size,self.img_size), "assets/pitchfork.gif"):
+            self.panel_widgets["FarmerPic"].configure(image=self.photoimage, height = self.img_size, width = self.img_size)
         self.panel_widgets["FarmerInfo"].configure(font = self.desc_font, wraplength = self.txt_width)
-        self.changePhoto((self.img_size,self.img_size), "assets/bow.gif")
-        self.panel_widgets["HunterPic"].configure(image=self.photoimage, height = self.img_size, width = self.img_size)
+        if self.changePhoto((self.img_size,self.img_size), "assets/bow.gif"):
+            self.panel_widgets["HunterPic"].configure(image=self.photoimage, height = self.img_size, width = self.img_size)
         self.panel_widgets["HunterInfo"].configure(font = self.desc_font, wraplength = self.txt_width)
         self.drawThings()
     def changeMode(self, mode):
@@ -627,8 +631,8 @@ class Application(tk.Frame):
                 color = '#e4e4e4'
             if team != board.neutral_str:
                 if team == board.tornado_str:
-                    self.changePhoto((self.cell_width - 3,self.cell_height - 3),"assets/tornado.gif")
-                    self.text_ids[row][col] = self.cells.create_image(self.cell_width * col + self.cell_width/2 - 1, self.cell_height * row + self.cell_height/2 - 1,image=self.photoimage)
+                    if self.changePhoto((self.cell_width - 3,self.cell_height - 3),"assets/tornado.gif"):
+                        self.text_ids[row][col] = self.cells.create_image(self.cell_width * col + self.cell_width/2 - 1, self.cell_height * row + self.cell_height/2 - 1,image=self.photoimage)
                 else:
                     text = str(len(self.board.friendlyAdj(row,col)))
                     self.text_ids[row][col] = self.cells.create_text(self.cell_width * col + self.cell_width/2 - 1,self.cell_height * row + self.cell_height/2 - 1,text=text, fill=color, font = self.cell_font)
