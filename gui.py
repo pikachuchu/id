@@ -94,9 +94,11 @@ class Application(tk.Frame):
         else:
             self.cells.bind('<Button-3>', self.kill)
         self.cells.bind('<Button-1>', self.select)
+        self.cells.bind('<Shift-Button-1>', self.selectAll)
         self.cells.bind('<Double-Button-1>', self.selectAll)
         self.cells.bind('<Control-Button-1>', self.toggle)
         self.cells.bind('<Control-Double-Button-1>', self.addAll)
+        self.cells.bind('<Control-Shift-Button-1>', self.addAll)
         self.cells.grid(sticky = tk.W, column = 0, row = 0, columnspan = self.width, rowspan = self.height)
         self.master.title("Intelligent Design")
         self.specialization_menu = tk.LabelFrame(self, text='Specialize', bg = '#000000', fg = '#FFFFFF')
