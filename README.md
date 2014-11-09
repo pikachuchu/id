@@ -1,7 +1,7 @@
 Intelligent Design
 ==================
 
-Welcome to the closed alpha. To run the game, use make.
+Welcome to the open alpha. To run the game, use make.
 You need the python imaging library, or PIL, in addition
 to Python 2.7.
 
